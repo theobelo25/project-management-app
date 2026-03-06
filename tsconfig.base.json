@@ -12,9 +12,7 @@
     "baseUrl": ".",
     "paths": {
       "@api/*": ["apps/api/src/*"],
-      "@web/*": ["apps/web/src/*"],
-      "@repo/types": ["packages/types/src/index.ts"],
-      "@repo/types/*": ["packages/types/src/*"]
+      "@web/*": ["apps/web/src/*"]
     }
   }
 }
