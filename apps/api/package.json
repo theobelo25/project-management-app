@@ -1,0 +1,15 @@
+{
+  "name": "api",
+  "private": true,
+  "scripts": {
+    "dev": "nest start --watch",
+    "build": "nest build",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "start": "node dist/main"
+  },
+  "dependencies": {
+    "@repo/database": "workspace:*",
+    "@repo/types": "workspace:*"
+  }
+}
