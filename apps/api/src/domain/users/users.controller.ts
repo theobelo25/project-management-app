@@ -1,7 +1,16 @@
-import { Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserInput, CreateUserInputSchema } from '@repo/types';
+import { CreateUserInput, CreateUserInputSchema, User } from '@repo/types';
 import { ZodBody } from '@api/common/decorators/zod-body.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '@api/common/decorators/current-user.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -15,5 +24,11 @@ export class UsersController {
   @Get(':id')
   findById(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.usersService.findById(id);
+  }
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  async getUsers(@CurrentUser() user: User) {
+    return this.usersService.getAllUsers();
   }
 }
