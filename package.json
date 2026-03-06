@@ -9,7 +9,10 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck"
+    "typecheck": "turbo run typecheck",
+    "db:migrate": "pnpm --filter database exec prisma migrate dev",
+    "db:studio": "pnpm --filter database exec prisma studio",
+    "db:generate": "pnpm --filter database exec prisma generate"
   },
   "devDependencies": {
     "@types/node": "^25.3.5",
