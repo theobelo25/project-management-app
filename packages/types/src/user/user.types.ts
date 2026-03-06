@@ -12,5 +12,5 @@ export interface User {
 export interface UserView {
   id: string;
   email: string;
-  name?: string | null;
+  name: string | null;
 }

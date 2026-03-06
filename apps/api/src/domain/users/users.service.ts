@@ -16,7 +16,6 @@ export class UsersService {
       createUserDto.email,
       db,
     );
-
     if (existing) throw new ConflictException('User already exists');
 
     return this.usersRepository.create(createUserDto, db);

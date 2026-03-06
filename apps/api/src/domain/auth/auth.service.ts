@@ -24,6 +24,16 @@ export class AuthService {
   async signup(dto: CreateUserInput) {
     const existing = await this.usersService.findPrivateUserByEmail(dto.email);
     if (existing) throw new ConflictException('User already exists');
+
+    const hashedPassword = await this.hashingService.hash(dto.password);
+
+    const createUserDto: CreateUserInput = {
+      ...dto,
+      password: hashedPassword,
+    };
+
+    const newUser = await this.usersService.create(createUserDto);
+    return newUser;
   }
 
   async login(user: User, response: Response) {

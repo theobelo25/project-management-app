@@ -11,7 +11,7 @@ export interface IUsersRepository {
   getAllUsers(): Promise<UserView[]>;
 
   create(
-    data: { email: string; name?: string | null },
+    data: { email: string; name: string | null },
     db?: Db,
   ): Promise<UserView>;
 

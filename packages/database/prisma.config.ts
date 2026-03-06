@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 
 // Go from packages/database -> repo root
 dotenv.config({
-  path: path.resolve(__dirname, "../../.env"),
+  path: path.resolve(__dirname, ".env"),
 });
 
 export default defineConfig({

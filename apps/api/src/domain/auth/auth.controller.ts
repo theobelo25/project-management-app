@@ -8,7 +8,7 @@ import { Db } from '@api/prisma/types/db.type';
 import { ZodBody } from '@api/common/decorators/zod-body.decorator';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh.guard';
 
-@Controller()
+@Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

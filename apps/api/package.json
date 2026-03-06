@@ -6,7 +6,7 @@
     "build": "nest build",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "start": "node dist/main"
+    "start": "node dist/main.js"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.16",
@@ -22,6 +22,7 @@
     "express": "^5.2.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "zod": "^4.3.6"
@@ -30,7 +31,6 @@
     "@nestjs/cli": "^11.0.16",
     "@nestjs/schematics": "^11.0.9",
     "@nestjs/testing": "^11.1.16",
-    "@types/argon2": "^0.15.4",
     "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",

@@ -1,12 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { IUsersRepository } from './users.repository.interface';
-import { PrismaService } from 'apps/api/src/prisma/prisma.service';
 import { Db } from 'apps/api/src/prisma/types/db.type';
 import { UpdateUserInputDto, User, UserView } from '@repo/types';
+import { PRISMA } from '@api/prisma';
+import { PrismaClient } from 'packages/database/dist/src';
 
 @Injectable()
 export class PrismaUsersRepository implements IUsersRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PRISMA) private readonly prisma: PrismaClient) {}
 
   private toView(user: any): UserView {
     return {
@@ -61,13 +62,19 @@ export class PrismaUsersRepository implements IUsersRepository {
   }
 
   async create(
-    data: { email: string; name?: string | null; password: string },
+    data: { email: string; name: string; password: string },
     db?: Db,
   ): Promise<UserView> {
     const prisma = db ?? this.prisma;
 
-    const user = await prisma.user.create({ data });
+    let user;
+    try {
+      user = await prisma.user.create({ data });
 
+      return this.toView(user);
+    } catch (error) {
+      console.error(error);
+    }
     return this.toView(user);
   }
 
