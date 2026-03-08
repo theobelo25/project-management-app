@@ -10,7 +10,12 @@ import {
   HASHING_SERVICE,
   HashingService,
 } from './hashing/hashing.service.interface';
-import { CreateUserDto, SignupInputDto, UserView } from '@repo/types';
+import {
+  CreateUserDto,
+  SessionPayload,
+  SignupInputDto,
+  UserView,
+} from '@repo/types';
 import {
   IUnitOfWork,
   UNIT_OF_WORK,
@@ -30,7 +35,7 @@ export class AuthService {
     @Inject(UNIT_OF_WORK) private readonly uow: IUnitOfWork,
   ) {}
 
-  async signup(dto: SignupInputDto) {
+  async signup(dto: SignupInputDto): Promise<SessionPayload> {
     return this.uow.transaction(async (tx) => {
       await this.assertEmailAvailable(dto.email, tx);
 
@@ -50,16 +55,17 @@ export class AuthService {
     });
   }
 
-  async login(user: UserView) {
+  async login(user: UserView): Promise<SessionPayload> {
     const { accessToken, refreshToken } = await this.createSession(user);
 
     return {
+      user,
       accessToken,
       refreshToken,
     };
   }
 
-  async authenticateUser(email: string, password: string) {
+  async authenticateUser(email: string, password: string): Promise<UserView> {
     const user = await this.usersService.findPrivateUserByEmail(email);
     if (!user) throw new UnauthorizedException('Credentials are not valid');
 
@@ -73,7 +79,7 @@ export class AuthService {
     return toUserView(user);
   }
 
-  async authenticateRefreshToken(rawRefreshToken: string) {
+  async authenticateRefreshToken(rawRefreshToken: string): Promise<UserView> {
     const matched =
       await this.refreshTokenService.findValidRefreshToken(rawRefreshToken);
 
@@ -85,7 +91,7 @@ export class AuthService {
     return user;
   }
 
-  async refresh(rawRefreshToken: string) {
+  async refresh(rawRefreshToken: string): Promise<SessionPayload> {
     return this.uow.transaction(async (tx) => {
       const { userId, nextRawToken } = await this.refreshTokenService.rotate(
         rawRefreshToken,
@@ -110,29 +116,34 @@ export class AuthService {
     await this.refreshTokenService.revoke(rawRefreshToken);
   }
 
-  private async createSession(user: UserView, tx?: Db) {
+  private async createSession(
+    user: UserView,
+    tx?: Db,
+  ): Promise<SessionPayload> {
     const { accessToken } = this.accessTokensService.sign(user);
     const refreshToken = await this.refreshTokenService.issueInitial(
       user.id,
       tx,
     );
 
-    return { accessToken, refreshToken };
+    return { user, accessToken, refreshToken };
   }
 
-  private async createUserWithHashedPassword(dto: SignupInputDto, tx?: Db) {
+  private async createUserWithHashedPassword(
+    dto: SignupInputDto,
+    tx?: Db,
+  ): Promise<UserView> {
     const hashedPassword = await this.hashingService.hash(dto.password);
     const createUserDto: CreateUserDto = {
       ...dto,
       passwordHash: hashedPassword,
     };
 
-    return this.usersService.create(createUserDto);
+    return this.usersService.create(createUserDto, tx);
   }
 
-  private async assertEmailAvailable(email: string, tx: Db) {
+  private async assertEmailAvailable(email: string, tx: Db): Promise<void> {
     const existing = await this.usersService.findPrivateUserByEmail(email, tx);
     if (existing) throw new ConflictException('User already exists');
-    return existing;
   }
 }

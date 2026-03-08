@@ -13,7 +13,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly authConfig: AuthConfigService,
     private readonly usersService: UsersService,
   ) {
-    super({
+    const options = {
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => request.cookies?.[authConfig.cookies.access.name],
       ]),
@@ -21,12 +21,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       secretOrKey: authConfig.access.jwt.secret,
       issuer: authConfig.access.jwt.signOptions.issuer,
       audience: authConfig.access.jwt.signOptions.audience,
-    });
+    };
+
+    super(options);
   }
 
   async validate(payload: TokenPayload): Promise<UserView> {
     const user = await this.usersService.findById(payload.userId);
-    if (!user) throw new UnauthorizedException();
+    if (!user) throw new UnauthorizedException('Unauthorized');
     return user;
   }
 }
