@@ -1,123 +1,138 @@
 import {
+  BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
-import { HashingService } from './hashing/hashing.service.interface';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
-import { Response } from 'express';
-import { CreateUserInput, User } from '@repo/types';
-import { TokenPayload } from './types/token-payload.interface';
+import {
+  HASHING_SERVICE,
+  HashingService,
+} from './hashing/hashing.service.interface';
+import { CreateUserDto, SignupInputDto, UserView } from '@repo/types';
+import {
+  IUnitOfWork,
+  UNIT_OF_WORK,
+} from '@api/prisma/uow/unit-of-work.interface';
+import { AccessTokensService } from './accessTokens/access-tokens.service';
+import { RefreshTokensService } from './refreshTokens/refresh-tokens.service';
+import { Db } from '@api/prisma';
+import { toUserView } from '../users/mappers/user.mapper';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly configService: ConfigService,
     private readonly usersService: UsersService,
-    private readonly hashingService: HashingService,
-    private readonly jwtService: JwtService,
+    @Inject(HASHING_SERVICE) private readonly hashingService: HashingService,
+    private readonly accessTokensService: AccessTokensService,
+    private readonly refreshTokenService: RefreshTokensService,
+    @Inject(UNIT_OF_WORK) private readonly uow: IUnitOfWork,
   ) {}
 
-  async signup(dto: CreateUserInput) {
-    const existing = await this.usersService.findPrivateUserByEmail(dto.email);
-    if (existing) throw new ConflictException('User already exists');
+  async signup(dto: SignupInputDto) {
+    return this.uow.transaction(async (tx) => {
+      await this.assertEmailAvailable(dto.email, tx);
 
-    const hashedPassword = await this.hashingService.hash(dto.password);
+      const newUser = await this.createUserWithHashedPassword(dto, tx);
+      if (!newUser) throw new BadRequestException('Problem creating user');
 
-    const createUserDto: CreateUserInput = {
-      ...dto,
-      password: hashedPassword,
-    };
-
-    const newUser = await this.usersService.create(createUserDto);
-    return newUser;
-  }
-
-  async login(user: User, response: Response) {
-    const expiresAccessToken = new Date();
-    expiresAccessToken.setMilliseconds(
-      expiresAccessToken.getTime() +
-        parseInt(
-          this.configService.getOrThrow<string>(
-            'JWT_ACCESS_TOKEN_EXPIRATION_MS',
-          ),
-        ),
-    );
-
-    const expiresRefreshToken = new Date();
-    expiresRefreshToken.setMilliseconds(
-      expiresRefreshToken.getTime() +
-        parseInt(
-          this.configService.getOrThrow<string>(
-            'JWT_REFRESH_TOKEN_EXPIRATION_MS',
-          ),
-        ),
-    );
-
-    const tokenPayload: TokenPayload = {
-      userId: user.id,
-    };
-
-    const accessToken = this.jwtService.sign(tokenPayload, {
-      secret: this.configService.getOrThrow('JWT_ACCESS_TOKEN_SECRET'),
-      expiresIn: `${this.configService.getOrThrow('JWT_ACCESS_TOKEN_EXPIRATION_MS')}ms`,
-    });
-    const refreshToken = this.jwtService.sign(tokenPayload, {
-      secret: this.configService.getOrThrow('JWT_REFRESH_TOKEN_SECRET'),
-      expiresIn: `${this.configService.getOrThrow('JWT_REFRESH_TOKEN_EXPIRATION_MS')}ms`,
-    });
-
-    const hashedRefreshToken = await this.hashingService.hash(refreshToken);
-    await this.usersService.updateRefreshToken(user.id, hashedRefreshToken);
-
-    response.cookie('Authentication', accessToken, {
-      httpOnly: true,
-      secure: this.configService.get('NODE_ENV') === 'production',
-      expires: expiresAccessToken,
-    });
-    response.cookie('Refresh', refreshToken, {
-      httpOnly: true,
-      secure: this.configService.get('NODE_ENV') === 'production',
-      expires: expiresRefreshToken,
-    });
-  }
-
-  async verifyUser(email: string, password: string) {
-    try {
-      const user = await this.usersService.findPrivateUserByEmail(email);
-      if (!user) throw new NotFoundException('User not found');
-
-      const authenticated = await this.hashingService.compare(
-        password,
-        user.password,
+      const { accessToken, refreshToken } = await this.createSession(
+        newUser,
+        tx,
       );
-      if (!authenticated)
-        throw new UnauthorizedException('Invalid credentials');
 
-      return user;
-    } catch (error) {
-      throw new UnauthorizedException('Credentials are not valid');
-    }
-  }
-
-  async verifyUserRefreshToken(refreshToken: string, userId: string) {
-    try {
-      const user = await this.usersService.findPrivateUserById(userId);
-      if (!user || !user.refreshToken) throw new UnauthorizedException();
-
-      const authenticated = await this.hashingService.compare(
+      return {
+        user: newUser,
+        accessToken,
         refreshToken,
-        user.refreshToken,
+      };
+    });
+  }
+
+  async login(user: UserView) {
+    const { accessToken, refreshToken } = await this.createSession(user);
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async authenticateUser(email: string, password: string) {
+    const user = await this.usersService.findPrivateUserByEmail(email);
+    if (!user) throw new UnauthorizedException('Credentials are not valid');
+
+    const authenticated = await this.hashingService.verify(
+      password,
+      user.password,
+    );
+    if (!authenticated)
+      throw new UnauthorizedException('Credentials are not valid');
+
+    return toUserView(user);
+  }
+
+  async authenticateRefreshToken(rawRefreshToken: string) {
+    const matched =
+      await this.refreshTokenService.findValidRefreshToken(rawRefreshToken);
+
+    if (!matched) throw new UnauthorizedException('Invalid refresh token');
+
+    const user = await this.usersService.findById(matched.userId);
+    if (!user) throw new UnauthorizedException('Invalid refresh token');
+
+    return user;
+  }
+
+  async refresh(rawRefreshToken: string) {
+    return this.uow.transaction(async (tx) => {
+      const { userId, nextRawToken } = await this.refreshTokenService.rotate(
+        rawRefreshToken,
+        tx,
       );
 
-      if (!authenticated) throw new UnauthorizedException();
+      const user = await this.usersService.findById(userId, tx);
 
-      return user;
-    } catch (error) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
+      if (!user) throw new UnauthorizedException('Invalid refresh token');
+
+      const { accessToken } = this.accessTokensService.sign(user);
+
+      return {
+        user,
+        accessToken,
+        refreshToken: nextRawToken,
+      };
+    });
+  }
+
+  async logout(rawRefreshToken: string): Promise<void> {
+    await this.refreshTokenService.revoke(rawRefreshToken);
+  }
+
+  private async createSession(user: UserView, tx?: Db) {
+    const { accessToken } = this.accessTokensService.sign(user);
+    const refreshToken = await this.refreshTokenService.issueInitial(
+      user.id,
+      tx,
+    );
+
+    return { accessToken, refreshToken };
+  }
+
+  private async createUserWithHashedPassword(dto: SignupInputDto, tx?: Db) {
+    const hashedPassword = await this.hashingService.hash(dto.password);
+    const createUserDto: CreateUserDto = {
+      ...dto,
+      passwordHash: hashedPassword,
+    };
+
+    return this.usersService.create(createUserDto);
+  }
+
+  private async assertEmailAvailable(email: string, tx: Db) {
+    const existing = await this.usersService.findPrivateUserByEmail(email, tx);
+    if (existing) throw new ConflictException('User already exists');
+    return existing;
   }
 }

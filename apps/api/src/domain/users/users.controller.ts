@@ -7,7 +7,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserInput, CreateUserInputSchema, User } from '@repo/types';
+import { CreateUserInputDto, CreateUserInputSchema, User } from '@repo/types';
 import { ZodBody } from '@api/common/decorators/zod-body.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '@api/common/decorators/current-user.decorator';
@@ -17,7 +17,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@ZodBody(CreateUserInputSchema) body: CreateUserInput) {
+  create(@ZodBody(CreateUserInputSchema) body: CreateUserInputDto) {
     return this.usersService.create(body);
   }
 

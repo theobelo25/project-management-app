@@ -10,6 +10,6 @@ import { PrismaUnitOfWork } from './uow/prisma-unit-of-work.service';
     { provide: PRISMA, useValue: prisma },
     { provide: UNIT_OF_WORK, useClass: PrismaUnitOfWork },
   ],
-  exports: [PRISMA],
+  exports: [PRISMA, UNIT_OF_WORK],
 })
 export class PrismaModule {}

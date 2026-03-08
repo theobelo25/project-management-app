@@ -1,17 +1,17 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { USERS_REPOSITORY } from './constants/users.tokens';
-import { IUsersRepository } from './repositories/users.repository.interface';
+import { UsersRepository } from './repositories/users.repository';
 import { Db } from '@api/prisma/types/db.type';
-import { CreateUserInput, UpdateUserInputDto } from '@repo/types';
+import { CreateUserDto, UpdateUserInputDto } from '@repo/types';
 
 @Injectable()
 export class UsersService {
   constructor(
     @Inject(USERS_REPOSITORY)
-    private readonly usersRepository: IUsersRepository,
+    private readonly usersRepository: UsersRepository,
   ) {}
 
-  async create(createUserDto: CreateUserInput, db?: Db) {
+  async create(createUserDto: CreateUserDto, db?: Db) {
     const existing = await this.usersRepository.findByEmail(
       createUserDto.email,
       db,
