@@ -3,31 +3,25 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
-  Post,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserInputDto, CreateUserInputSchema, User } from '@repo/types';
-import { ZodBody, CurrentUser } from '@api/common/';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UserView } from '@repo/types';
+import { CurrentUser } from '@api/common/';
+import { JwtAuthGuard } from '@api/common';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  create(@ZodBody(CreateUserInputSchema) body: CreateUserInputDto) {
-    return this.usersService.create(body);
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  async getUsers(@CurrentUser() user: UserView) {
+    return this.usersService.getAllUsers();
   }
 
   @Get(':id')
   findById(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.usersService.findById(id);
-  }
-
-  @Get()
-  @UseGuards(JwtAuthGuard)
-  async getUsers(@CurrentUser() user: User) {
-    return this.usersService.getAllUsers();
   }
 }

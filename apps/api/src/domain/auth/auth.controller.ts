@@ -1,5 +1,4 @@
 import { Controller, Post, Res, UseGuards } from '@nestjs/common';
-import { LocalAuthGuard } from './guards/local-auth.guard';
 import { CurrentUser, ZodBody, CurrentRefreshToken } from '@api/common';
 import {
   SignupRequestSchema,
@@ -9,9 +8,9 @@ import {
 } from '@repo/types';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
-import { RefreshAuthGuard } from './guards/jwt-refresh.guard';
+import { RefreshAuthGuard, LocalAuthGuard } from '@api/common';
 import { CookiesService } from './cookies/cookies.service';
-import { COOKIE } from '@repo/types';
+import { SuccessResponse } from '@repo/types';
 
 @Controller('auth')
 export class AuthController {
@@ -55,7 +54,7 @@ export class AuthController {
   @Post('refresh')
   @UseGuards(RefreshAuthGuard)
   async refreshToken(
-    @CurrentRefreshToken(COOKIE.REFRESH) rawRefreshToken: string,
+    @CurrentRefreshToken() rawRefreshToken: string,
     @Res({ passthrough: true }) response: Response,
   ): Promise<UserView> {
     const { user, accessToken, refreshToken } =
@@ -70,7 +69,7 @@ export class AuthController {
   async logout(
     @CurrentRefreshToken() rawRefreshToken: string,
     @Res({ passthrough: true }) response: Response,
-  ) {
+  ): Promise<SuccessResponse> {
     if (rawRefreshToken) await this.authService.logout(rawRefreshToken);
 
     this.cookieService.clearAccessCookie(response);

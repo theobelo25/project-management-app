@@ -8,38 +8,38 @@ import {
 export abstract class AuthRepository {
   abstract createRefreshToken(
     input: CreateRefreshTokenInput,
-    db?: Db,
+    tx?: Db,
   ): Promise<RefreshTokenRecord>;
 
   abstract findActiveRefreshTokensByPrefix(
     tokenPrefix: string,
-    db?: Db,
+    tx?: Db,
   ): Promise<RefreshTokenRecord[]>;
 
   abstract findRefreshTokenById(
     id: string,
-    db?: Db,
+    tx?: Db,
   ): Promise<RefreshTokenRecord | null>;
 
   abstract revokeRefreshToken(
     id: string,
     revokedAt: Date,
-    db?: Db,
+    tx?: Db,
   ): Promise<void>;
 
   abstract revokeUserRefreshTokens(
     userId: string,
     revokedAt: Date,
-    db?: Db,
+    tx?: Db,
   ): Promise<number>;
 
   abstract consumeAndReplaceRefreshToken(
     input: ConsumeAndReplaceRefreshTokenInput,
-    db?: Db,
+    tx?: Db,
   ): Promise<boolean>;
 
   abstract deleteExpiredRevokedRefreshTokens(
     now: Date,
-    db?: Db,
+    tx?: Db,
   ): Promise<number>;
 }

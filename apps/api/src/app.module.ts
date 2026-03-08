@@ -6,7 +6,6 @@ import { UsersModule } from './domain/users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './domain/auth/auth.module';
 import { validateEnv, AppConfigModule } from './config';
-import { AppConfigModule } from './config/config.module';
 
 @Module({
   imports: [

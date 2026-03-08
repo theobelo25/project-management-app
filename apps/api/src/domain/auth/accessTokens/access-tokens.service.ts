@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User, UserView } from '@repo/types';
+import { UserView } from '@repo/types';
 import { TokenPayload } from '../types/token-payload.interface';
 import { AuthConfigService } from '@api/config';
 
@@ -11,7 +11,7 @@ export class AccessTokensService {
     private readonly jwtService: JwtService,
   ) {}
 
-  private mapTokenPayload(user: UserView | User) {
+  private mapTokenPayload(user: UserView) {
     const tokenPayload: TokenPayload = {
       userId: user.id,
     };
@@ -23,7 +23,7 @@ export class AccessTokensService {
     return new Date(Date.now() + this.authConfig.access.ttlMs);
   }
 
-  sign(user: UserView | User) {
+  sign(user: UserView) {
     const accessToken = this.jwtService.sign(
       this.mapTokenPayload(user),
       this.authConfig.access.jwt,

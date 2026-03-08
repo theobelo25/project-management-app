@@ -1,27 +1,31 @@
-import { Db } from 'apps/api/src/prisma/types/db.type';
+import { Db } from '@api/prisma';
 import {
   CreateUserDto,
-  CreateUserInputDto,
+  PrivateUser,
   UpdateUserInputDto,
-  User,
   UserView,
 } from '@repo/types';
 
-export interface UsersRepository {
-  findById(id: string, db?: Db): Promise<UserView | null>;
-  findByEmail(email: string, db?: Db): Promise<UserView | null>;
+export abstract class UsersRepository {
+  abstract findById(id: string, tx?: Db): Promise<UserView | null>;
+  abstract findByEmail(email: string, tx?: Db): Promise<UserView | null>;
 
-  findPrivateUserById(id: string, db?: Db): Promise<User | null>;
-  findPrivateUserByEmail(email: string, db?: Db): Promise<User | null>;
-
-  getAllUsers(): Promise<UserView[]>;
-
-  create(dto: CreateUserDto, db?: Db): Promise<UserView>;
-
-  update(id: string, dto: UpdateUserInputDto, db?: Db): Promise<UserView>;
-  updateRefreshToken(
+  abstract findPrivateUserById(
     id: string,
-    refreshToken: string,
-    db?: Db,
+    tx?: Db,
+  ): Promise<PrivateUser | null>;
+  abstract findPrivateUserByEmail(
+    email: string,
+    tx?: Db,
+  ): Promise<PrivateUser | null>;
+
+  abstract getAllUsers(tx?: Db): Promise<UserView[]>;
+
+  abstract create(dto: CreateUserDto, tx?: Db): Promise<UserView>;
+
+  abstract update(
+    id: string,
+    dto: UpdateUserInputDto,
+    tx?: Db,
   ): Promise<UserView>;
 }

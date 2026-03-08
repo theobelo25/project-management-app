@@ -16,23 +16,24 @@ import {
   SignupInputDto,
   UserView,
 } from '@repo/types';
-import {
-  IUnitOfWork,
-  UNIT_OF_WORK,
-} from '@api/prisma/uow/unit-of-work.interface';
+import { UNIT_OF_WORK } from '@api/prisma';
+import { UnitOfWork } from '@api/prisma/uow/unit-of-work.interface';
 import { AccessTokensService } from './accessTokens/access-tokens.service';
 import { RefreshTokensService } from './refreshTokens/refresh-tokens.service';
 import { Db } from '@api/prisma';
 import { toUserView } from '../users/mappers/user.mapper';
+import { USERS_REPOSITORY } from '../users/types/users.tokens';
+import { UsersRepository } from '../users/repositories/users.repository';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly usersService: UsersService,
+    @Inject(USERS_REPOSITORY)
+    private readonly usersRepository: UsersRepository,
     @Inject(HASHING_SERVICE) private readonly hashingService: HashingService,
     private readonly accessTokensService: AccessTokensService,
     private readonly refreshTokenService: RefreshTokensService,
-    @Inject(UNIT_OF_WORK) private readonly uow: IUnitOfWork,
+    @Inject(UNIT_OF_WORK) private readonly uow: UnitOfWork,
   ) {}
 
   async signup(dto: SignupInputDto): Promise<SessionPayload> {
@@ -66,12 +67,12 @@ export class AuthService {
   }
 
   async authenticateUser(email: string, password: string): Promise<UserView> {
-    const user = await this.usersService.findPrivateUserByEmail(email);
+    const user = await this.usersRepository.findPrivateUserByEmail(email);
     if (!user) throw new UnauthorizedException('Credentials are not valid');
 
     const authenticated = await this.hashingService.verify(
       password,
-      user.password,
+      user.passwordHash,
     );
     if (!authenticated)
       throw new UnauthorizedException('Credentials are not valid');
@@ -85,7 +86,7 @@ export class AuthService {
 
     if (!matched) throw new UnauthorizedException('Invalid refresh token');
 
-    const user = await this.usersService.findById(matched.userId);
+    const user = await this.usersRepository.findById(matched.userId);
     if (!user) throw new UnauthorizedException('Invalid refresh token');
 
     return user;
@@ -98,7 +99,7 @@ export class AuthService {
         tx,
       );
 
-      const user = await this.usersService.findById(userId, tx);
+      const user = await this.usersRepository.findById(userId, tx);
 
       if (!user) throw new UnauthorizedException('Invalid refresh token');
 
@@ -139,11 +140,14 @@ export class AuthService {
       passwordHash: hashedPassword,
     };
 
-    return this.usersService.create(createUserDto, tx);
+    return this.usersRepository.create(createUserDto, tx);
   }
 
   private async assertEmailAvailable(email: string, tx: Db): Promise<void> {
-    const existing = await this.usersService.findPrivateUserByEmail(email, tx);
+    const existing = await this.usersRepository.findPrivateUserByEmail(
+      email,
+      tx,
+    );
     if (existing) throw new ConflictException('User already exists');
   }
 }

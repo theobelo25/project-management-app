@@ -10,12 +10,14 @@ import {
   CreateRefreshTokenInput,
   RefreshTokenRecord,
 } from '../types/refresh-token.types';
+import { AUTH_REPOSITORY } from '../types/auth.tokens';
 import { AuthRepository } from '../repositories/auth.repository';
 
 @Injectable()
 export class RefreshTokensService {
   constructor(
     private readonly authConfig: AuthConfigService,
+    @Inject(AUTH_REPOSITORY)
     private readonly authRepository: AuthRepository,
     @Inject(HASHING_SERVICE)
     private readonly hashingService: HashingService,

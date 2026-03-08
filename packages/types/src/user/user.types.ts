@@ -1,12 +1,10 @@
-export interface User {
+export interface PrivateUser {
   id: string;
   email: string;
   name: string | null;
-  password: string;
+  passwordHash: string;
   createdAt: Date;
   updatedAt: Date;
-
-  refreshToken: string | null;
 }
 
 export interface UserView {

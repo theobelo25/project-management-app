@@ -1,7 +1,6 @@
 import { Global, Module } from '@nestjs/common';
-import { PRISMA } from './types/prisma.constants';
-import { prisma } from 'packages/database/dist/src';
-import { UNIT_OF_WORK } from './uow/unit-of-work.interface';
+import { PRISMA, UNIT_OF_WORK } from './types/prisma.constants';
+import { prisma } from '@repo/database';
 import { PrismaUnitOfWork } from './uow/prisma-unit-of-work.service';
 
 @Global()

@@ -18,7 +18,7 @@ export const SignupRequestSchema = z
     confirmPassword: z.string().min(8),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwirds do not match",
+    message: "Passwords do not match",
     path: ["confirmPassword"],
   });
 

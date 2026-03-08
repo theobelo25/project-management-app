@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { ConfigModule, ConfigType } from '@nestjs/config';
+import { ConfigModule, ConfigService, ConfigType } from '@nestjs/config';
 
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
@@ -18,7 +18,7 @@ import { AccessTokensService } from './accessTokens/access-tokens.service';
 import { RefreshTokensService } from './refreshTokens/refresh-tokens.service';
 import { CookiesService } from './cookies/cookies.service';
 
-import { AuthRepository } from './repositories/auth.repository';
+import { AUTH_REPOSITORY } from './types/auth.tokens';
 import { PrismaAuthRepository } from './repositories/prisma-auth.repository';
 
 import { AppConfigModule, accessJwtConfig } from '@api/config';
@@ -28,10 +28,15 @@ import { AppConfigModule, accessJwtConfig } from '@api/config';
     AppConfigModule,
     UsersModule,
     PassportModule,
-
     JwtModule.registerAsync({
-      inject: [accessJwtConfig.KEY],
-      useFactory: (cfg: ConfigType<typeof accessJwtConfig>) => cfg.jwt,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const cfg =
+          configService.get<ConfigType<typeof accessJwtConfig>>('accessJwt');
+        if (!cfg?.jwt) throw new Error('accessJwt config not loaded');
+        return cfg.jwt;
+      },
     }),
   ],
   controllers: [AuthController],
@@ -39,7 +44,7 @@ import { AppConfigModule, accessJwtConfig } from '@api/config';
     AuthService,
 
     { provide: HASHING_SERVICE, useClass: Argon2Service },
-    { provide: AuthRepository, useClass: PrismaAuthRepository },
+    { provide: AUTH_REPOSITORY, useClass: PrismaAuthRepository },
 
     LocalStrategy,
     JwtStrategy,

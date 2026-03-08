@@ -1,7 +1,7 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
-import { USERS_REPOSITORY } from './constants/users.tokens';
+import { USERS_REPOSITORY } from './types/users.tokens';
 import { UsersRepository } from './repositories/users.repository';
-import { Db } from '@api/prisma/types/db.type';
+import { Db } from '@api/prisma';
 import { CreateUserDto, UpdateUserInputDto } from '@repo/types';
 
 @Injectable()
@@ -23,9 +23,6 @@ export class UsersService {
 
   async update(id: string, data: UpdateUserInputDto, db?: Db) {
     return this.usersRepository.update(id, data, db);
-  }
-  async updateRefreshToken(id: string, refreshToken: string, db?: Db) {
-    return this.usersRepository.updateRefreshToken(id, refreshToken, db);
   }
 
   async findById(id: string, db?: Db) {

@@ -1,6 +1,6 @@
-import { User, UserView } from '@repo/types';
+import { PrivateUser, UserView } from '@repo/types';
 
-export function toUserView(user: User): UserView {
+export function toUserView(user: PrivateUser): UserView {
   return {
     id: user.id,
     email: user.email,
