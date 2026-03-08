@@ -26,7 +26,7 @@ export class AccessTokensService {
   sign(user: UserView) {
     const accessToken = this.jwtService.sign(
       this.mapTokenPayload(user),
-      this.authConfig.access.jwt,
+      this.authConfig.access.jwtSign,
     );
 
     return {

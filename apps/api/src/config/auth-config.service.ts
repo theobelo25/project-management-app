@@ -9,6 +9,7 @@ export class AuthConfigService {
   readonly access: {
     jwt: ConfigType<typeof accessJwtConfig>['jwt'];
     ttlMs: ConfigType<typeof accessJwtConfig>['ttlMs'];
+    jwtSign: ConfigType<typeof accessJwtConfig>['jwtSign'];
   };
 
   readonly refresh: {
@@ -30,6 +31,7 @@ export class AuthConfigService {
     this.access = {
       jwt: accessCfg.jwt,
       ttlMs: accessCfg.ttlMs,
+      jwtSign: accessCfg.jwtSign,
     };
 
     this.refresh = {

@@ -6,7 +6,10 @@
     "build": "nest build",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "start": "node dist/main.js"
+    "start": "node dist/main.js",
+    "test": "jest --config jest.config.ts",
+    "test:watch": "jest --config jest.config.ts --watch",
+    "test:e2e": "jest --config ./test/jest-e2e.json --runInBand"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.16",

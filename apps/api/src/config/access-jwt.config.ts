@@ -1,5 +1,5 @@
 import { registerAs } from '@nestjs/config';
-import { JwtModuleOptions } from '@nestjs/jwt';
+import { JwtModuleOptions, JwtSignOptions } from '@nestjs/jwt';
 
 export const accessJwtConfig = registerAs('accessJwt', () => {
   const ttlMs = Number(process.env.JWT_ACCESS_TOKEN_EXPIRATION_MS);
@@ -16,16 +16,24 @@ export const accessJwtConfig = registerAs('accessJwt', () => {
   if (!issuer?.length) throw new Error('JWT_ISSUER must be set');
   if (!audience?.length) throw new Error('JWT_AUDIENCE must be set');
 
+  const expiresInSeconds = Math.floor(ttlMs / 1000);
+
   const config = {
     ttlMs,
     jwt: {
       secret,
       signOptions: {
-        expiresIn: Math.floor(ttlMs / 1000),
+        expiresIn: expiresInSeconds,
         issuer,
         audience,
       },
     } satisfies JwtModuleOptions,
+    jwtSign: {
+      secret,
+      expiresIn: expiresInSeconds,
+      issuer,
+      audience,
+    } satisfies JwtSignOptions,
   } as const;
 
   return config;

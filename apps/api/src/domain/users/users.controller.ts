@@ -1,13 +1,12 @@
 import {
   Controller,
   Get,
+  NotFoundException,
   Param,
   ParseUUIDPipe,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UserView } from '@repo/types';
-import { CurrentUser } from '@api/common/';
 import { JwtAuthGuard } from '@api/common';
 
 @Controller('users')
@@ -16,12 +15,16 @@ export class UsersController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async getUsers(@CurrentUser() user: UserView) {
+  async getUsers() {
     return this.usersService.getAllUsers();
   }
 
   @Get(':id')
-  findById(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.usersService.findById(id);
+  async findById(@Param('id', new ParseUUIDPipe()) id: string) {
+    const user = await this.usersService.findById(id);
+
+    if (!user) throw new NotFoundException('User not found');
+
+    return user;
   }
 }

@@ -67,7 +67,7 @@ export class AuthController {
 
   @Post('logout')
   async logout(
-    @CurrentRefreshToken() rawRefreshToken: string,
+    @CurrentRefreshToken() rawRefreshToken: string | undefined,
     @Res({ passthrough: true }) response: Response,
   ): Promise<SuccessResponse> {
     if (rawRefreshToken) await this.authService.logout(rawRefreshToken);

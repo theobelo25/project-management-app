@@ -136,7 +136,8 @@ export class AuthService {
   ): Promise<UserView> {
     const hashedPassword = await this.hashingService.hash(dto.password);
     const createUserDto: CreateUserDto = {
-      ...dto,
+      email: dto.email,
+      name: dto.name,
       passwordHash: hashedPassword,
     };
 
