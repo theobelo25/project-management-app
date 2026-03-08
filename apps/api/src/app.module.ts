@@ -5,7 +5,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { UsersModule } from './domain/users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './domain/auth/auth.module';
-import { validateEnv } from './config/env.validation';
+import { validateEnv, AppConfigModule } from './config';
+import { AppConfigModule } from './config/config.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { validateEnv } from './config/env.validation';
       validate: validateEnv,
       envFilePath: ['.env'],
     }),
+    AppConfigModule,
     PrismaModule,
     UsersModule,
     AuthModule,

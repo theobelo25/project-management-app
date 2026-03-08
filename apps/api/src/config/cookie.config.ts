@@ -1,5 +1,5 @@
 import { CookieOptions } from 'express';
-import { COOKIE } from '../domain/auth/cookies/cookies.constants';
+import { COOKIE } from '@repo/types';
 import { registerAs } from '@nestjs/config';
 
 export const cookieConfig = registerAs('cookie', () => {

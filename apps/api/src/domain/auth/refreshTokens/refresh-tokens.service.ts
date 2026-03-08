@@ -1,4 +1,4 @@
-import { AuthConfigService } from '@api/config/auth-config.service';
+import { AuthConfigService } from '@api/config';
 import { Db } from '@api/prisma';
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';

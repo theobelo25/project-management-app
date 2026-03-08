@@ -1,6 +1,6 @@
 import { Controller, Post, Res, UseGuards } from '@nestjs/common';
 import { LocalAuthGuard } from './guards/local-auth.guard';
-import { CurrentUser } from '@api/common/decorators/current-user.decorator';
+import { CurrentUser, ZodBody, CurrentRefreshToken } from '@api/common';
 import {
   SignupRequestSchema,
   SignupRequestDto,
@@ -9,10 +9,9 @@ import {
 } from '@repo/types';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
-import { ZodBody } from '@api/common/decorators/zod-body.decorator';
 import { RefreshAuthGuard } from './guards/jwt-refresh.guard';
 import { CookiesService } from './cookies/cookies.service';
-import { CurrentRefreshToken } from '@api/common/decorators/refresh-token.decorator';
+import { COOKIE } from '@repo/types';
 
 @Controller('auth')
 export class AuthController {
@@ -56,7 +55,7 @@ export class AuthController {
   @Post('refresh')
   @UseGuards(RefreshAuthGuard)
   async refreshToken(
-    @CurrentRefreshToken() rawRefreshToken: string,
+    @CurrentRefreshToken(COOKIE.REFRESH) rawRefreshToken: string,
     @Res({ passthrough: true }) response: Response,
   ): Promise<UserView> {
     const { user, accessToken, refreshToken } =

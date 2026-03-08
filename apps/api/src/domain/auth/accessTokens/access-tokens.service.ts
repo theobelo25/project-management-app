@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User, UserView } from '@repo/types';
 import { TokenPayload } from '../types/token-payload.interface';
-import { AuthConfigService } from '@api/config/auth-config.service';
+import { AuthConfigService } from '@api/config';
 
 @Injectable()
 export class AccessTokensService {

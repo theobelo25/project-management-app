@@ -16,8 +16,8 @@ export const EnvSchema = z.object({
   DATABASE_URL: z.string().min(1),
 
   JWT_SECRET: z.string().min(1),
-  JWT_TTL: z.string().min(1),
-  REFRESH_TOKEN_TTL: z.string().min(1),
+  JWT_ACCESS_TOKEN_EXPIRATION_MS: z.coerce.number().int().positive(),
+  REFRESH_TOKEN_EXPIRATION_MS: z.coerce.number().int().positive(),
   REFRESH_PREFIX_SECRET: z.string().min(32),
   JWT_ISSUER: z.string().min(1),
   JWT_AUDIENCE: z.string().min(1),

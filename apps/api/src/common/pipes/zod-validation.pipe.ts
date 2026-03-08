@@ -25,7 +25,7 @@ export class ZodValidationPipe<T> implements PipeTransform {
         });
       }
 
-      throw error;
+      throw new BadRequestException('Validation Failed');
     }
   }
 }

@@ -21,17 +21,11 @@ import { CookiesService } from './cookies/cookies.service';
 import { AuthRepository } from './repositories/auth.repository';
 import { PrismaAuthRepository } from './repositories/prisma-auth.repository';
 
-import { accessJwtConfig } from '../../config/access-jwt.config';
-import { refreshTokenConfig } from '../../config/refresh-token.config';
-import { cookieConfig } from '../../config/cookie.config';
-import { AuthConfigService } from '../../config/auth-config.service';
+import { AppConfigModule, accessJwtConfig } from '@api/config';
 
 @Module({
   imports: [
-    ConfigModule.forFeature(accessJwtConfig),
-    ConfigModule.forFeature(refreshTokenConfig),
-    ConfigModule.forFeature(cookieConfig),
-
+    AppConfigModule,
     UsersModule,
     PassportModule,
 
@@ -43,7 +37,6 @@ import { AuthConfigService } from '../../config/auth-config.service';
   controllers: [AuthController],
   providers: [
     AuthService,
-    AuthConfigService,
 
     { provide: HASHING_SERVICE, useClass: Argon2Service },
     { provide: AuthRepository, useClass: PrismaAuthRepository },

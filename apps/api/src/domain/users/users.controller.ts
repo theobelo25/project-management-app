@@ -8,9 +8,8 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserInputDto, CreateUserInputSchema, User } from '@repo/types';
-import { ZodBody } from '@api/common/decorators/zod-body.decorator';
+import { ZodBody, CurrentUser } from '@api/common/';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CurrentUser } from '@api/common/decorators/current-user.decorator';
 
 @Controller('users')
 export class UsersController {

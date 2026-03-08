@@ -1,4 +1,4 @@
-import { AuthConfigService } from '@api/config/auth-config.service';
+import { AuthConfigService } from '@api/config';
 import { Injectable } from '@nestjs/common';
 import { Response } from 'express';
 

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigObject } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { appConfig } from './app.config';
 import { corsConfig } from './cors.config';
 import { accessJwtConfig } from './access-jwt.config';

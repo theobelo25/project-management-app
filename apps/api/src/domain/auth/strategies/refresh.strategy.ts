@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-custom';
 import { Request } from 'express';
 import { AuthService } from '../auth.service';
-import { AuthConfigService } from '@api/config/auth-config.service';
+import { AuthConfigService } from '@api/config';
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(
