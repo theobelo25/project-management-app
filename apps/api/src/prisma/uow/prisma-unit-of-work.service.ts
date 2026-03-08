@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IUnitOfWork } from './unit-of-work.interface';
+import { UnitOfWork } from './unit-of-work.interface';
 import { PRISMA } from '../types/prisma.constants';
-import { PrismaClient } from 'packages/database/dist/src';
+import { PrismaClient } from '@repo/database';
 import { Db } from '../types/db.type';
 
 @Injectable()
-export class PrismaUnitOfWork implements IUnitOfWork {
+export class PrismaUnitOfWork implements UnitOfWork {
   constructor(@Inject(PRISMA) private readonly prisma: PrismaClient) {}
 
   transaction<T>(fn: (db: Db) => Promise<T>): Promise<T> {

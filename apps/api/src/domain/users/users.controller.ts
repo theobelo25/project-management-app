@@ -1,34 +1,30 @@
 import {
   Controller,
   Get,
+  NotFoundException,
   Param,
   ParseUUIDPipe,
-  Post,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserInput, CreateUserInputSchema, User } from '@repo/types';
-import { ZodBody } from '@api/common/decorators/zod-body.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CurrentUser } from '@api/common/decorators/current-user.decorator';
+import { JwtAuthGuard } from '@api/common';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  create(@ZodBody(CreateUserInputSchema) body: CreateUserInput) {
-    return this.usersService.create(body);
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  async getUsers() {
+    return this.usersService.getAllUsers();
   }
 
   @Get(':id')
-  findById(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.usersService.findById(id);
-  }
+  async findById(@Param('id', new ParseUUIDPipe()) id: string) {
+    const user = await this.usersService.findById(id);
 
-  @Get()
-  @UseGuards(JwtAuthGuard)
-  async getUsers(@CurrentUser() user: User) {
-    return this.usersService.getAllUsers();
+    if (!user) throw new NotFoundException('User not found');
+
+    return user;
   }
 }

@@ -1,7 +1,6 @@
-import { Injectable } from '@nestjs/common';
+export const HASHING_SERVICE = Symbol('HASHING_SERVICE');
 
-@Injectable()
 export abstract class HashingService {
   abstract hash(data: string): Promise<string>;
-  abstract compare(data: string, encrypted: string): Promise<boolean>;
+  abstract verify(plaintext: string, hashed: string): Promise<boolean>;
 }

@@ -1,42 +1,39 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IUsersRepository } from './users.repository.interface';
-import { Db } from 'apps/api/src/prisma/types/db.type';
-import { UpdateUserInputDto, User, UserView } from '@repo/types';
-import { PRISMA } from '@api/prisma';
-import { PrismaClient } from 'packages/database/dist/src';
+import { UsersRepository } from './users.repository';
+import {
+  CreateUserDto,
+  UpdateUserInputDto,
+  PrivateUser,
+  UserView,
+} from '@repo/types';
+import { PRISMA, Db } from '@api/prisma';
+import { PrismaClient } from '@repo/database';
+import { toUserView } from '../mappers/user.mapper';
 
 @Injectable()
-export class PrismaUsersRepository implements IUsersRepository {
+export class PrismaUsersRepository implements UsersRepository {
   constructor(@Inject(PRISMA) private readonly prisma: PrismaClient) {}
 
-  private toView(user: any): UserView {
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-    };
-  }
-
-  async findById(id: string, db?: Db): Promise<UserView | null> {
-    const prisma = db ?? this.prisma;
+  async findById(id: string, tx?: Db): Promise<UserView | null> {
+    const prisma = tx ?? this.prisma;
 
     const user = await prisma.user.findUnique({ where: { id } });
 
     if (!user) return null;
-    return this.toView(user);
+    return toUserView(user);
   }
 
-  async findByEmail(email: string, db?: Db): Promise<UserView | null> {
-    const prisma = db ?? this.prisma;
+  async findByEmail(email: string, tx?: Db): Promise<UserView | null> {
+    const prisma = tx ?? this.prisma;
 
     const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) return null;
-    return this.toView(user);
+    return toUserView(user);
   }
 
-  async findPrivateUserById(id: string, db?: Db): Promise<User | null> {
-    const prisma = db ?? this.prisma;
+  async findPrivateUserById(id: string, tx?: Db): Promise<PrivateUser | null> {
+    const prisma = tx ?? this.prisma;
 
     const user = await prisma.user.findUnique({ where: { id } });
 
@@ -44,8 +41,11 @@ export class PrismaUsersRepository implements IUsersRepository {
     return user;
   }
 
-  async findPrivateUserByEmail(email: string, db?: Db): Promise<User | null> {
-    const prisma = db ?? this.prisma;
+  async findPrivateUserByEmail(
+    email: string,
+    tx?: Db,
+  ): Promise<PrivateUser | null> {
+    const prisma = tx ?? this.prisma;
 
     const user = await prisma.user.findUnique({ where: { email } });
 
@@ -53,55 +53,31 @@ export class PrismaUsersRepository implements IUsersRepository {
     return user;
   }
 
-  async getAllUsers(db?: Db): Promise<UserView[]> {
-    const prisma = db ?? this.prisma;
+  async getAllUsers(tx?: Db): Promise<UserView[]> {
+    const prisma = tx ?? this.prisma;
 
     const users = await prisma.user.findMany();
 
-    return users.map((u) => this.toView(u));
+    return users.map((u) => toUserView(u));
   }
 
-  async create(
-    data: { email: string; name: string; password: string },
-    db?: Db,
-  ): Promise<UserView> {
-    const prisma = db ?? this.prisma;
+  async create(dto: CreateUserDto, tx?: Db): Promise<UserView> {
+    const prisma = tx ?? this.prisma;
 
-    let user;
-    try {
-      user = await prisma.user.create({ data });
+    const user = await prisma.user.create({ data: dto });
 
-      return this.toView(user);
-    } catch (error) {
-      console.error(error);
-    }
-    return this.toView(user);
+    return toUserView(user);
   }
 
   async update(
     id: string,
     dto: UpdateUserInputDto,
-    db?: Db,
+    tx?: Db,
   ): Promise<UserView> {
-    const prisma = db ?? this.prisma;
+    const prisma = tx ?? this.prisma;
 
     const updatedUser = await prisma.user.update({ where: { id }, data: dto });
 
-    return this.toView(updatedUser);
-  }
-
-  async updateRefreshToken(
-    id: string,
-    refreshToken: string,
-    db?: Db,
-  ): Promise<UserView> {
-    const prisma = db ?? this.prisma;
-
-    const updatedUser = await prisma.user.update({
-      where: { id },
-      data: { refreshToken },
-    });
-
-    return this.toView(updatedUser);
+    return toUserView(updatedUser);
   }
 }
