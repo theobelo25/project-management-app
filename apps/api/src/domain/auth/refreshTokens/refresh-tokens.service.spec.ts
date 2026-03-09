@@ -1,6 +1,5 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { AuthConfigService } from '@api/config';
-import { AUTH_REPOSITORY } from '../types/auth.tokens';
 import { HASHING_SERVICE } from '../hashing/hashing.service.interface';
 import { RefreshTokensService } from './refresh-tokens.service';
 import { PinoLogger } from 'nestjs-pino';
@@ -16,8 +15,7 @@ describe('RefreshTokensService', () => {
 
   let authRepository: {
     createRefreshToken: jest.Mock;
-    findActiveRefreshTokensByPrefix: jest.Mock;
-    findRefreshTokenById: jest.Mock;
+    findRefreshTokensByPrefix: jest.Mock;
     consumeAndReplaceRefreshToken: jest.Mock;
     revokeUserRefreshTokens: jest.Mock;
     revokeRefreshToken: jest.Mock;
@@ -51,8 +49,7 @@ describe('RefreshTokensService', () => {
 
     authRepository = {
       createRefreshToken: jest.fn(),
-      findActiveRefreshTokensByPrefix: jest.fn(),
-      findRefreshTokenById: jest.fn(),
+      findRefreshTokensByPrefix: jest.fn(),
       consumeAndReplaceRefreshToken: jest.fn(),
       revokeUserRefreshTokens: jest.fn(),
       revokeRefreshToken: jest.fn(),
@@ -114,36 +111,13 @@ describe('RefreshTokensService', () => {
   });
 
   describe('rotate', () => {
-    it('throws UnauthorizedException when the raw token does not match any active token', async () => {
-      authRepository.findActiveRefreshTokensByPrefix.mockResolvedValue([]);
+    it('throws UnauthorizedException when the raw token does not match any token', async () => {
+      authRepository.findRefreshTokensByPrefix.mockResolvedValue([]);
 
       await expect(service.rotate('raw-refresh-token')).rejects.toThrow(
         UnauthorizedException,
       );
       await expect(service.rotate('raw-refresh-token')).rejects.toThrow(
-        'Invalid refresh token',
-      );
-
-      expect(authRepository.findRefreshTokenById).not.toHaveBeenCalled();
-    });
-
-    it('throws UnauthorizedException when the matched token no longer exists', async () => {
-      const rawToken = 'abcdefghijklmnopqrstuvwx';
-
-      authRepository.findActiveRefreshTokensByPrefix.mockResolvedValue([
-        {
-          id: 'rt-1',
-          userId,
-          tokenHash: 'stored-hash',
-        },
-      ]);
-      hashingService.verify.mockResolvedValue(true);
-      authRepository.findRefreshTokenById.mockResolvedValue(null);
-
-      await expect(service.rotate(rawToken)).rejects.toThrow(
-        UnauthorizedException,
-      );
-      await expect(service.rotate(rawToken)).rejects.toThrow(
         'Invalid refresh token',
       );
     });
@@ -151,25 +125,21 @@ describe('RefreshTokensService', () => {
     it('throws UnauthorizedException when the matched token is expired', async () => {
       const rawToken = 'abcdefghijklmnopqrstuvwx';
 
-      authRepository.findActiveRefreshTokensByPrefix.mockResolvedValue([
+      authRepository.findRefreshTokensByPrefix.mockResolvedValue([
         {
           id: 'rt-1',
           userId,
           tokenHash: 'stored-hash',
+          tokenPrefix: rawToken.slice(0, 12),
+          expiresAt: new Date(fixedNow.getTime() - 1000),
+          revokedAt: null,
+          replacedByTokenId: null,
+          createdAt: fixedNow,
+          updatedAt: fixedNow,
         },
       ]);
+
       hashingService.verify.mockResolvedValue(true);
-      authRepository.findRefreshTokenById.mockResolvedValue({
-        id: 'rt-1',
-        userId,
-        tokenHash: 'stored-hash',
-        tokenPrefix: rawToken.slice(0, 12),
-        expiresAt: new Date(fixedNow.getTime() - 1000),
-        revokedAt: null,
-        replacedById: null,
-        createdAt: fixedNow,
-        updatedAt: fixedNow,
-      });
 
       await expect(service.rotate(rawToken)).rejects.toThrow(
         UnauthorizedException,
@@ -179,28 +149,57 @@ describe('RefreshTokensService', () => {
       );
     });
 
-    it('revokes all user refresh tokens and throws when reuse is detected on an already revoked token', async () => {
+    it('revokes all user refresh tokens and throws when a revoked token is reused', async () => {
       const rawToken = 'abcdefghijklmnopqrstuvwx';
 
-      authRepository.findActiveRefreshTokensByPrefix.mockResolvedValue([
+      authRepository.findRefreshTokensByPrefix.mockResolvedValue([
         {
           id: 'rt-1',
           userId,
           tokenHash: 'stored-hash',
+          tokenPrefix: rawToken.slice(0, 12),
+          expiresAt: new Date(fixedNow.getTime() + 1000),
+          revokedAt: fixedNow,
+          replacedByTokenId: 'rt-2',
+          createdAt: fixedNow,
+          updatedAt: fixedNow,
         },
       ]);
+
       hashingService.verify.mockResolvedValue(true);
-      authRepository.findRefreshTokenById.mockResolvedValue({
-        id: 'rt-1',
+
+      await expect(service.rotate(rawToken)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(service.rotate(rawToken)).rejects.toThrow(
+        'Refresh token reuse detected',
+      );
+
+      expect(authRepository.revokeUserRefreshTokens).toHaveBeenCalledWith(
         userId,
-        tokenHash: 'stored-hash',
-        tokenPrefix: rawToken.slice(0, 12),
-        expiresAt: new Date(fixedNow.getTime() + 1000),
-        revokedAt: fixedNow,
-        replacedById: 'rt-2',
-        createdAt: fixedNow,
-        updatedAt: fixedNow,
-      });
+        fixedNow,
+        undefined,
+      );
+    });
+
+    it('revokes all user refresh tokens and throws when a replaced token is reused', async () => {
+      const rawToken = 'abcdefghijklmnopqrstuvwx';
+
+      authRepository.findRefreshTokensByPrefix.mockResolvedValue([
+        {
+          id: 'rt-1',
+          userId,
+          tokenHash: 'stored-hash',
+          tokenPrefix: rawToken.slice(0, 12),
+          expiresAt: new Date(fixedNow.getTime() + 1000),
+          revokedAt: null,
+          replacedByTokenId: 'rt-2',
+          createdAt: fixedNow,
+          updatedAt: fixedNow,
+        },
+      ]);
+
+      hashingService.verify.mockResolvedValue(true);
 
       await expect(service.rotate(rawToken)).rejects.toThrow(
         UnauthorizedException,
@@ -219,27 +218,21 @@ describe('RefreshTokensService', () => {
     it('successfully rotates a refresh token', async () => {
       const rawToken = 'abcdefghijklmnopqrstuvwx';
 
-      authRepository.findActiveRefreshTokensByPrefix.mockResolvedValue([
+      authRepository.findRefreshTokensByPrefix.mockResolvedValue([
         {
           id: 'rt-1',
           userId,
           tokenHash: 'stored-hash',
+          tokenPrefix: rawToken.slice(0, 12),
+          expiresAt: new Date(fixedNow.getTime() + 1000),
+          revokedAt: null,
+          replacedByTokenId: null,
+          createdAt: fixedNow,
+          updatedAt: fixedNow,
         },
       ]);
+
       hashingService.verify.mockResolvedValue(true);
-
-      authRepository.findRefreshTokenById.mockResolvedValue({
-        id: 'rt-1',
-        userId,
-        tokenHash: 'stored-hash',
-        tokenPrefix: rawToken.slice(0, 12),
-        expiresAt: new Date(fixedNow.getTime() + 1000),
-        revokedAt: null,
-        replacedById: null,
-        createdAt: fixedNow,
-        updatedAt: fixedNow,
-      });
-
       hashingService.hash.mockResolvedValue('hashed-next-raw-token');
 
       authRepository.createRefreshToken.mockResolvedValue({
@@ -249,7 +242,7 @@ describe('RefreshTokensService', () => {
         tokenPrefix: 'next-prefix',
         expiresAt: new Date(fixedNow.getTime() + authConfig.refresh.ttlMs),
         revokedAt: null,
-        replacedById: null,
+        replacedByTokenId: null,
         createdAt: fixedNow,
         updatedAt: fixedNow,
       });
@@ -275,7 +268,7 @@ describe('RefreshTokensService', () => {
       expect(authRepository.consumeAndReplaceRefreshToken).toHaveBeenCalledWith(
         {
           currentId: 'rt-1',
-          replacedById: 'rt-2',
+          replacedByTokenId: 'rt-2',
           now: fixedNow,
         },
         undefined,
@@ -290,27 +283,21 @@ describe('RefreshTokensService', () => {
     it('revokes all user tokens and throws when consume-and-replace fails', async () => {
       const rawToken = 'abcdefghijklmnopqrstuvwx';
 
-      authRepository.findActiveRefreshTokensByPrefix.mockResolvedValue([
+      authRepository.findRefreshTokensByPrefix.mockResolvedValue([
         {
           id: 'rt-1',
           userId,
           tokenHash: 'stored-hash',
+          tokenPrefix: rawToken.slice(0, 12),
+          expiresAt: new Date(fixedNow.getTime() + 1000),
+          revokedAt: null,
+          replacedByTokenId: null,
+          createdAt: fixedNow,
+          updatedAt: fixedNow,
         },
       ]);
+
       hashingService.verify.mockResolvedValue(true);
-
-      authRepository.findRefreshTokenById.mockResolvedValue({
-        id: 'rt-1',
-        userId,
-        tokenHash: 'stored-hash',
-        tokenPrefix: rawToken.slice(0, 12),
-        expiresAt: new Date(fixedNow.getTime() + 1000),
-        revokedAt: null,
-        replacedById: null,
-        createdAt: fixedNow,
-        updatedAt: fixedNow,
-      });
-
       hashingService.hash.mockResolvedValue('hashed-next-raw-token');
 
       authRepository.createRefreshToken.mockResolvedValue({
@@ -337,7 +324,7 @@ describe('RefreshTokensService', () => {
 
   describe('revoke', () => {
     it('does nothing when no matching refresh token is found', async () => {
-      authRepository.findActiveRefreshTokensByPrefix.mockResolvedValue([]);
+      authRepository.findRefreshTokensByPrefix.mockResolvedValue([]);
 
       await expect(
         service.revoke('raw-refresh-token'),
@@ -346,16 +333,47 @@ describe('RefreshTokensService', () => {
       expect(authRepository.revokeRefreshToken).not.toHaveBeenCalled();
     });
 
-    it('revokes the matched refresh token', async () => {
+    it('does nothing when the matched refresh token is already revoked', async () => {
       const rawToken = 'abcdefghijklmnopqrstuvwx';
 
-      authRepository.findActiveRefreshTokensByPrefix.mockResolvedValue([
+      authRepository.findRefreshTokensByPrefix.mockResolvedValue([
         {
           id: 'rt-1',
           userId,
           tokenHash: 'stored-hash',
+          tokenPrefix: rawToken.slice(0, 12),
+          expiresAt: new Date(fixedNow.getTime() + 1000),
+          revokedAt: fixedNow,
+          replacedByTokenId: null,
+          createdAt: fixedNow,
+          updatedAt: fixedNow,
         },
       ]);
+
+      hashingService.verify.mockResolvedValue(true);
+
+      await service.revoke(rawToken);
+
+      expect(authRepository.revokeRefreshToken).not.toHaveBeenCalled();
+    });
+
+    it('revokes the matched refresh token', async () => {
+      const rawToken = 'abcdefghijklmnopqrstuvwx';
+
+      authRepository.findRefreshTokensByPrefix.mockResolvedValue([
+        {
+          id: 'rt-1',
+          userId,
+          tokenHash: 'stored-hash',
+          tokenPrefix: rawToken.slice(0, 12),
+          expiresAt: new Date(fixedNow.getTime() + 1000),
+          revokedAt: null,
+          replacedByTokenId: null,
+          createdAt: fixedNow,
+          updatedAt: fixedNow,
+        },
+      ]);
+
       hashingService.verify.mockResolvedValue(true);
 
       await service.revoke(rawToken);
@@ -364,43 +382,6 @@ describe('RefreshTokensService', () => {
         'rt-1',
         fixedNow,
       );
-    });
-  });
-
-  describe('findValidRefreshToken', () => {
-    it('returns the matching refresh token record', async () => {
-      const rawToken = 'abcdefghijklmnopqrstuvwx';
-      const matchedRecord = {
-        id: 'rt-1',
-        userId,
-        tokenHash: 'stored-hash',
-      };
-
-      authRepository.findActiveRefreshTokensByPrefix.mockResolvedValue([
-        matchedRecord,
-      ]);
-      hashingService.verify.mockResolvedValue(true);
-
-      const result = await service.findValidRefreshToken(rawToken);
-
-      expect(
-        authRepository.findActiveRefreshTokensByPrefix,
-      ).toHaveBeenCalledWith(rawToken.slice(0, 12), undefined);
-      expect(hashingService.verify).toHaveBeenCalledWith(
-        rawToken,
-        matchedRecord.tokenHash,
-      );
-      expect(result).toEqual(matchedRecord);
-    });
-
-    it('returns null when no matching refresh token record is found', async () => {
-      authRepository.findActiveRefreshTokensByPrefix.mockResolvedValue([]);
-
-      const result = await service.findValidRefreshToken(
-        'abcdefghijklmnopqrstuvwx',
-      );
-
-      expect(result).toBeNull();
     });
   });
 });

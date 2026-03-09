@@ -91,7 +91,7 @@ describe('AccessTokensService', () => {
       expect(jwtService.sign).toHaveBeenCalledTimes(1);
       expect(jwtService.sign).toHaveBeenCalledWith(
         {
-          userId: user.id,
+          sub: user.id,
         },
         authConfig.access.jwtSign,
       );
@@ -104,20 +104,20 @@ describe('AccessTokensService', () => {
       });
     });
 
-    it('only includes userId in the token payload', () => {
+    it('only includes sub in the token payload', () => {
       jwtService.sign.mockReturnValue('signed-access-token');
 
       service.sign(user);
 
       expect(jwtService.sign).toHaveBeenCalledWith(
         {
-          userId: user.id,
+          sub: user.id,
         },
         authConfig.access.jwtSign,
       );
 
       const payload = jwtService.sign.mock.calls[0][0];
-      expect(payload).toEqual({ userId: user.id });
+      expect(payload).toEqual({ sub: user.id });
       expect(payload).not.toHaveProperty('email');
       expect(payload).not.toHaveProperty('name');
       expect(payload).not.toHaveProperty('createdAt');

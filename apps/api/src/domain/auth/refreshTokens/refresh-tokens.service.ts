@@ -74,11 +74,10 @@ export class RefreshTokensService {
   ): Promise<RefreshTokenRecord | null> {
     const tokenPrefix = this.getTokenPrefix(rawToken);
 
-    const candidates =
-      await this.authRepository.findActiveRefreshTokensByPrefix(
-        tokenPrefix,
-        tx,
-      );
+    const candidates = await this.authRepository.findRefreshTokensByPrefix(
+      tokenPrefix,
+      tx,
+    );
 
     for (const candidate of candidates) {
       const isMatch = await this.hashingService.verify(
@@ -120,56 +119,51 @@ export class RefreshTokensService {
 
     const now = new Date();
 
-    const current = await this.authRepository.findRefreshTokenById(
-      matched.id,
-      tx,
-    );
-
-    if (!current || current.expiresAt <= now) {
+    if (matched.expiresAt <= now) {
       this.logger.warn(
         {
           tokenId: matched.id,
           userId: matched.userId,
         },
-        'Expired or missing refresh token presented for rotation',
+        'Expired refresh token presented for rotation',
       );
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    if (current.revokedAt) {
-      return this.revokeAllAndThrowReuse(current.userId, now, tx);
+    if (matched.revokedAt || matched.replacedByTokenId) {
+      return this.revokeAllAndThrowReuse(matched.userId, now, tx);
     }
 
     const { rawToken: nextRawToken, dto } = await this.buildRefreshTokenRecord(
-      current.userId,
+      matched.userId,
     );
 
     const next = await this.authRepository.createRefreshToken(dto, tx);
 
     const consumed = await this.authRepository.consumeAndReplaceRefreshToken(
       {
-        currentId: current.id,
-        replacedById: next.id,
+        currentId: matched.id,
+        replacedByTokenId: next.id,
         now,
       },
       tx,
     );
 
     if (!consumed) {
-      return this.revokeAllAndThrowReuse(current.userId, now, tx);
+      return this.revokeAllAndThrowReuse(matched.userId, now, tx);
     }
 
     this.logger.info(
       {
-        userId: current.userId,
-        previousTokenId: current.id,
+        userId: matched.userId,
+        previousTokenId: matched.id,
         nextTokenId: next.id,
       },
       'Refresh token rotated',
     );
 
     return {
-      userId: current.userId,
+      userId: matched.userId,
       nextRawToken,
     };
   }
@@ -180,6 +174,10 @@ export class RefreshTokensService {
       this.logger.debug(
         'Refresh token revoke requested but no matching token was found',
       );
+      return;
+    }
+
+    if (matched.revokedAt) {
       return;
     }
 

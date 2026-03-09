@@ -32,7 +32,6 @@ describe('AuthService', () => {
 
   let refreshTokensService: {
     issueInitial: jest.Mock;
-    findValidRefreshToken: jest.Mock;
     rotate: jest.Mock;
     revoke: jest.Mock;
   };
@@ -92,7 +91,6 @@ describe('AuthService', () => {
 
     refreshTokensService = {
       issueInitial: jest.fn(),
-      findValidRefreshToken: jest.fn(),
       rotate: jest.fn(),
       revoke: jest.fn(),
     };
@@ -219,12 +217,12 @@ describe('AuthService', () => {
     });
   });
 
-  describe('login', () => {
+  describe('issueSession', () => {
     it('returns a full session payload for a valid user', async () => {
       accessTokensService.sign.mockReturnValue({ accessToken: 'access-token' });
       refreshTokensService.issueInitial.mockResolvedValue('refresh-token');
 
-      const result = await service.login(userView);
+      const result = await service.issueSession(userView);
 
       expect(accessTokensService.sign).toHaveBeenCalledWith(userView);
       expect(refreshTokensService.issueInitial).toHaveBeenCalledWith(
@@ -243,12 +241,12 @@ describe('AuthService', () => {
     });
   });
 
-  describe('authenticateUser', () => {
-    it('returns a UserView when email and password are valid', async () => {
+  describe('validateCredentials', () => {
+    it('returns a user when credentials are valid', async () => {
       usersRepository.findPrivateUserByEmail.mockResolvedValue(privateUser);
       hashingService.verify.mockResolvedValue(true);
 
-      const result = await service.authenticateUser(
+      const result = await service.validateCredentials(
         'test@example.com',
         'password123',
       );
@@ -263,16 +261,12 @@ describe('AuthService', () => {
       expect(result).toEqual(userView);
     });
 
-    it('throws UnauthorizedException when user does not exist', async () => {
+    it('throws UnauthorizedException when user is not found', async () => {
       usersRepository.findPrivateUserByEmail.mockResolvedValue(null);
 
       await expect(
-        service.authenticateUser('missing@example.com', 'password123'),
+        service.validateCredentials('missing@example.com', 'password123'),
       ).rejects.toThrow(UnauthorizedException);
-
-      await expect(
-        service.authenticateUser('missing@example.com', 'password123'),
-      ).rejects.toThrow('Credentials are not valid');
 
       expect(hashingService.verify).not.toHaveBeenCalled();
     });
@@ -282,59 +276,8 @@ describe('AuthService', () => {
       hashingService.verify.mockResolvedValue(false);
 
       await expect(
-        service.authenticateUser('test@example.com', 'wrong-password'),
+        service.validateCredentials('test@example.com', 'wrong-password'),
       ).rejects.toThrow(UnauthorizedException);
-
-      await expect(
-        service.authenticateUser('test@example.com', 'wrong-password'),
-      ).rejects.toThrow('Credentials are not valid');
-    });
-  });
-
-  describe('authenticateRefreshToken', () => {
-    it('returns the user when refresh token is valid', async () => {
-      refreshTokensService.findValidRefreshToken.mockResolvedValue({
-        userId: userView.id,
-      });
-      usersRepository.findById.mockResolvedValue(userView);
-
-      const result =
-        await service.authenticateRefreshToken('raw-refresh-token');
-
-      expect(refreshTokensService.findValidRefreshToken).toHaveBeenCalledWith(
-        'raw-refresh-token',
-      );
-      expect(usersRepository.findById).toHaveBeenCalledWith(userView.id);
-      expect(result).toEqual(userView);
-    });
-
-    it('throws UnauthorizedException when refresh token is invalid', async () => {
-      refreshTokensService.findValidRefreshToken.mockResolvedValue(null);
-
-      await expect(
-        service.authenticateRefreshToken('bad-token'),
-      ).rejects.toThrow(UnauthorizedException);
-
-      await expect(
-        service.authenticateRefreshToken('bad-token'),
-      ).rejects.toThrow('Invalid refresh token');
-
-      expect(usersRepository.findById).not.toHaveBeenCalled();
-    });
-
-    it('throws UnauthorizedException when token exists but user does not', async () => {
-      refreshTokensService.findValidRefreshToken.mockResolvedValue({
-        userId: 'missing-user',
-      });
-      usersRepository.findById.mockResolvedValue(null);
-
-      await expect(
-        service.authenticateRefreshToken('raw-refresh-token'),
-      ).rejects.toThrow(UnauthorizedException);
-
-      await expect(
-        service.authenticateRefreshToken('raw-refresh-token'),
-      ).rejects.toThrow('Invalid refresh token');
     });
   });
 
@@ -344,16 +287,17 @@ describe('AuthService', () => {
         userId: userView.id,
         nextRawToken: 'new-refresh-token',
       });
+
       usersRepository.findById.mockResolvedValue(userView);
       accessTokensService.sign.mockReturnValue({
         accessToken: 'new-access-token',
       });
 
-      const result = await service.refresh('old-refresh-token');
+      const result = await service.refresh('raw-refresh-token');
 
       expect(uow.transaction).toHaveBeenCalledTimes(1);
       expect(refreshTokensService.rotate).toHaveBeenCalledWith(
-        'old-refresh-token',
+        'raw-refresh-token',
         tx,
       );
       expect(usersRepository.findById).toHaveBeenCalledWith(userView.id, tx);
@@ -364,31 +308,26 @@ describe('AuthService', () => {
         accessToken: 'new-access-token',
         refreshToken: 'new-refresh-token',
       });
-      expect(logger.info).toHaveBeenCalledWith(
-        { userId: userView.id },
-        'Refresh token rotated successfully',
-      );
     });
 
-    it('throws UnauthorizedException when rotated token references a missing user', async () => {
+    it('throws UnauthorizedException when rotated token user no longer exists', async () => {
       refreshTokensService.rotate.mockResolvedValue({
-        userId: 'missing-user',
+        userId: userView.id,
         nextRawToken: 'new-refresh-token',
       });
+
       usersRepository.findById.mockResolvedValue(null);
 
-      await expect(service.refresh('old-refresh-token')).rejects.toThrow(
+      await expect(service.refresh('raw-refresh-token')).rejects.toThrow(
         UnauthorizedException,
       );
 
-      await expect(service.refresh('old-refresh-token')).rejects.toThrow(
-        'Invalid refresh token',
-      );
+      expect(accessTokensService.sign).not.toHaveBeenCalled();
     });
   });
 
   describe('logout', () => {
-    it('revokes the refresh token', async () => {
+    it('revokes the provided refresh token', async () => {
       refreshTokensService.revoke.mockResolvedValue(undefined);
 
       await expect(

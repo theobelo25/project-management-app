@@ -31,20 +31,15 @@ export class PrismaAuthRepository extends AuthRepository {
     return this.toDomain(created);
   }
 
-  async findActiveRefreshTokensByPrefix(
+  async findRefreshTokensByPrefix(
     tokenPrefix: string,
     tx?: Db,
   ): Promise<RefreshTokenRecord[]> {
     const prisma = tx ?? this.prisma;
-    const now = new Date();
 
     const tokens = await prisma.refreshToken.findMany({
       where: {
         tokenPrefix,
-        revokedAt: null,
-        expiresAt: {
-          gt: now,
-        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -114,7 +109,7 @@ export class PrismaAuthRepository extends AuthRepository {
       },
       data: {
         revokedAt: input.now,
-        replacedByTokenId: input.replacedById,
+        replacedByTokenId: input.replacedByTokenId,
       },
     });
 

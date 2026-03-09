@@ -10,8 +10,8 @@ describe('AuthController', () => {
 
   let authService: {
     signup: jest.Mock;
-    authenticateUser: jest.Mock;
-    login: jest.Mock;
+    validateCredentials: jest.Mock;
+    issueSession: jest.Mock;
     refresh: jest.Mock;
     logout: jest.Mock;
   };
@@ -35,8 +35,8 @@ describe('AuthController', () => {
   beforeEach(async () => {
     authService = {
       signup: jest.fn(),
-      authenticateUser: jest.fn(),
-      login: jest.fn(),
+      validateCredentials: jest.fn(),
+      issueSession: jest.fn(),
       refresh: jest.fn(),
       logout: jest.fn(),
     };
@@ -102,25 +102,26 @@ describe('AuthController', () => {
   });
 
   describe('login', () => {
-    it('logs in a user and sets auth cookies', async () => {
+    it('validates credentials, issues a session, and sets auth cookies', async () => {
       const loginBody = {
         email: 'test@example.com',
         password: 'password123',
       };
 
-      authService.authenticateUser.mockResolvedValue(userView);
-      authService.login.mockResolvedValue({
+      authService.validateCredentials.mockResolvedValue(userView);
+      authService.issueSession.mockResolvedValue({
+        user: userView,
         accessToken: 'access-token',
         refreshToken: 'refresh-token',
       });
 
-      const result = await controller.login(loginBody, response as Response);
+      const result = await controller.login(loginBody, response);
 
-      expect(authService.authenticateUser).toHaveBeenCalledWith(
+      expect(authService.validateCredentials).toHaveBeenCalledWith(
         loginBody.email,
         loginBody.password,
       );
-      expect(authService.login).toHaveBeenCalledWith(userView);
+      expect(authService.issueSession).toHaveBeenCalledWith(userView);
       expect(cookiesService.setAuthCookies).toHaveBeenCalledWith(
         response,
         'access-token',

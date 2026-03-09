@@ -5,14 +5,13 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
 import {
   HASHING_SERVICE,
   HashingService,
 } from './hashing/hashing.service.interface';
 import {
+  AuthSession,
   CreateUserDto,
-  SessionPayload,
   SignupInputDto,
   UserView,
 } from '@repo/types';
@@ -40,7 +39,7 @@ export class AuthService {
     this.logger.setContext(AuthService.name);
   }
 
-  async signup(dto: SignupInputDto): Promise<SessionPayload> {
+  async signup(dto: SignupInputDto): Promise<AuthSession> {
     return this.uow.transaction(async (tx) => {
       await this.assertEmailAvailable(dto.email, tx);
 
@@ -62,19 +61,10 @@ export class AuthService {
     });
   }
 
-  async login(user: UserView): Promise<SessionPayload> {
-    const { accessToken, refreshToken } = await this.createSession(user);
-
-    this.logger.info({ userId: user.id }, 'User logged in successfully');
-
-    return {
-      user,
-      accessToken,
-      refreshToken,
-    };
-  }
-
-  async authenticateUser(email: string, password: string): Promise<UserView> {
+  async validateCredentials(
+    email: string,
+    password: string,
+  ): Promise<UserView> {
     const user = await this.usersRepository.findPrivateUserByEmail(email);
     if (!user) {
       this.logger.warn({ email }, 'Authentication failed: user not found');
@@ -97,30 +87,19 @@ export class AuthService {
     return toUserView(user);
   }
 
-  async authenticateRefreshToken(rawRefreshToken: string): Promise<UserView> {
-    const matched =
-      await this.refreshTokenService.findValidRefreshToken(rawRefreshToken);
+  async issueSession(user: UserView): Promise<AuthSession> {
+    const { accessToken, refreshToken } = await this.createSession(user);
 
-    if (!matched) {
-      this.logger.warn(
-        'Refresh token authentication failed: token not found or invalid',
-      );
-      throw new UnauthorizedException('Invalid refresh token');
-    }
+    this.logger.info({ userId: user.id }, 'User logged in successfully');
 
-    const user = await this.usersRepository.findById(matched.userId);
-    if (!user) {
-      this.logger.warn(
-        { userId: matched.userId },
-        'Refresh token authentication failed: user not found',
-      );
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-
-    return user;
+    return {
+      user,
+      accessToken,
+      refreshToken,
+    };
   }
 
-  async refresh(rawRefreshToken: string): Promise<SessionPayload> {
+  async refresh(rawRefreshToken: string): Promise<AuthSession> {
     return this.uow.transaction(async (tx) => {
       const { userId, nextRawToken } = await this.refreshTokenService.rotate(
         rawRefreshToken,
@@ -154,10 +133,7 @@ export class AuthService {
     this.logger.info('User logged out successfully');
   }
 
-  private async createSession(
-    user: UserView,
-    tx?: Db,
-  ): Promise<SessionPayload> {
+  private async createSession(user: UserView, tx?: Db): Promise<AuthSession> {
     const { accessToken } = this.accessTokensService.sign(user);
     const refreshToken = await this.refreshTokenService.issueInitial(
       user.id,

@@ -4,7 +4,7 @@ export * from './decorators/refresh-token.decorator';
 
 // GUARDS
 export * from './guards/jwt-auth.guard';
-export * from './guards/jwt-refresh.guard';
+export * from './guards/refresh.guard';
 
 // PAGINATION
 export * from './pagination/pagination.schema';

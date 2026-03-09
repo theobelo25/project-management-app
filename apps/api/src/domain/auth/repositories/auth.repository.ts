@@ -11,7 +11,7 @@ export abstract class AuthRepository {
     tx?: Db,
   ): Promise<RefreshTokenRecord>;
 
-  abstract findActiveRefreshTokensByPrefix(
+  abstract findRefreshTokensByPrefix(
     tokenPrefix: string,
     tx?: Db,
   ): Promise<RefreshTokenRecord[]>;
