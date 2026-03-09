@@ -1,11 +1,6 @@
-import { Controller, Post, Res, UseGuards } from '@nestjs/common';
-import { CurrentUser, ZodBody, CurrentRefreshToken } from '@api/common';
-import {
-  SignupRequestSchema,
-  SignupRequestDto,
-  UserView,
-  SignupInputDto,
-} from '@repo/types';
+import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
+import { CurrentUser, CurrentRefreshToken } from '@api/common';
+import { SignupRequestDto, UserView, SignupInputDto } from '@repo/types';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { RefreshAuthGuard, LocalAuthGuard } from '@api/common';
@@ -21,7 +16,7 @@ export class AuthController {
 
   @Post('signup')
   async signup(
-    @ZodBody(SignupRequestSchema) body: SignupRequestDto,
+    @Body() body: SignupRequestDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<UserView> {
     const signupInput: SignupInputDto = {

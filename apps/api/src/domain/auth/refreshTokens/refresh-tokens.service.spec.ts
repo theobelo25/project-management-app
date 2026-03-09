@@ -3,6 +3,7 @@ import { AuthConfigService } from '@api/config';
 import { AUTH_REPOSITORY } from '../types/auth.tokens';
 import { HASHING_SERVICE } from '../hashing/hashing.service.interface';
 import { RefreshTokensService } from './refresh-tokens.service';
+import { PinoLogger } from 'nestjs-pino';
 
 describe('RefreshTokensService', () => {
   let service: RefreshTokensService;
@@ -25,6 +26,14 @@ describe('RefreshTokensService', () => {
   let hashingService: {
     hash: jest.Mock;
     verify: jest.Mock;
+  };
+
+  let logger: {
+    setContext: jest.Mock;
+    info: jest.Mock;
+    warn: jest.Mock;
+    debug: jest.Mock;
+    error: jest.Mock;
   };
 
   const fixedNow = new Date('2026-03-08T19:30:00.000Z');
@@ -54,10 +63,19 @@ describe('RefreshTokensService', () => {
       verify: jest.fn(),
     };
 
+    logger = {
+      setContext: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+      error: jest.fn(),
+    };
+
     service = new RefreshTokensService(
       authConfig as unknown as AuthConfigService,
       authRepository as any,
       hashingService as any,
+      logger as unknown as PinoLogger,
     );
   });
 

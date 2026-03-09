@@ -7,6 +7,8 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './domain/auth/auth.module';
 import { validateEnv, AppConfigModule } from './config';
 import { LoggerModule } from './logger/logger.module';
+import { APP_PIPE } from '@nestjs/core';
+import { ZodValidationPipe } from './common';
 
 @Module({
   imports: [
@@ -22,6 +24,12 @@ import { LoggerModule } from './logger/logger.module';
     LoggerModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_PIPE,
+      useClass: ZodValidationPipe,
+    },
+  ],
 })
 export class AppModule {}

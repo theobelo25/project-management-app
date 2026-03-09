@@ -10,6 +10,7 @@ import {
   ConflictException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { PinoLogger } from 'nestjs-pino';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -38,6 +39,14 @@ describe('AuthService', () => {
 
   let uow: {
     transaction: jest.Mock;
+  };
+
+  let logger: {
+    setContext: jest.Mock;
+    info: jest.Mock;
+    warn: jest.Mock;
+    debug: jest.Mock;
+    error: jest.Mock;
   };
 
   const signupDto = {
@@ -94,6 +103,14 @@ describe('AuthService', () => {
       }),
     };
 
+    logger = {
+      setContext: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+      error: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -116,6 +133,10 @@ describe('AuthService', () => {
         {
           provide: UNIT_OF_WORK,
           useValue: uow,
+        },
+        {
+          provide: PinoLogger,
+          useValue: logger,
         },
       ],
     }).compile();
@@ -161,6 +182,10 @@ describe('AuthService', () => {
         accessToken: 'access-token',
         refreshToken: 'refresh-token',
       });
+      expect(logger.info).toHaveBeenCalledWith(
+        { userId: userView.id },
+        'User signed up successfully',
+      );
     });
 
     it('throws ConflictException when email is already taken', async () => {
@@ -211,6 +236,10 @@ describe('AuthService', () => {
         accessToken: 'access-token',
         refreshToken: 'refresh-token',
       });
+      expect(logger.info).toHaveBeenCalledWith(
+        { userId: userView.id },
+        'User logged in successfully',
+      );
     });
   });
 
@@ -335,6 +364,10 @@ describe('AuthService', () => {
         accessToken: 'new-access-token',
         refreshToken: 'new-refresh-token',
       });
+      expect(logger.info).toHaveBeenCalledWith(
+        { userId: userView.id },
+        'Refresh token rotated successfully',
+      );
     });
 
     it('throws UnauthorizedException when rotated token references a missing user', async () => {
@@ -365,6 +398,7 @@ describe('AuthService', () => {
       expect(refreshTokensService.revoke).toHaveBeenCalledWith(
         'raw-refresh-token',
       );
+      expect(logger.info).toHaveBeenCalledWith('User logged out successfully');
     });
   });
 });

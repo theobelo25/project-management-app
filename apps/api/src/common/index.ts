@@ -15,3 +15,4 @@ export * from './pagination/pagination.util';
 
 // PIPES
 export * from './pipes/zod-validation.pipe';
+export * from './zod/zod-dto.util';
