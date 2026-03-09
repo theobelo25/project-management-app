@@ -24,6 +24,7 @@ import { Db } from '@api/prisma';
 import { toUserView } from '../users/mappers/user.mapper';
 import { USERS_REPOSITORY } from '../users/types/users.tokens';
 import { UsersRepository } from '../users/repositories/users.repository';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class AuthService {
@@ -34,7 +35,10 @@ export class AuthService {
     private readonly accessTokensService: AccessTokensService,
     private readonly refreshTokenService: RefreshTokensService,
     @Inject(UNIT_OF_WORK) private readonly uow: UnitOfWork,
-  ) {}
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(AuthService.name);
+  }
 
   async signup(dto: SignupInputDto): Promise<SessionPayload> {
     return this.uow.transaction(async (tx) => {
@@ -48,6 +52,8 @@ export class AuthService {
         tx,
       );
 
+      this.logger.info({ userId: newUser.id }, 'User signed up successfully');
+
       return {
         user: newUser,
         accessToken,
@@ -59,6 +65,8 @@ export class AuthService {
   async login(user: UserView): Promise<SessionPayload> {
     const { accessToken, refreshToken } = await this.createSession(user);
 
+    this.logger.info({ userId: user.id }, 'User logged in successfully');
+
     return {
       user,
       accessToken,
@@ -68,15 +76,24 @@ export class AuthService {
 
   async authenticateUser(email: string, password: string): Promise<UserView> {
     const user = await this.usersRepository.findPrivateUserByEmail(email);
-    if (!user) throw new UnauthorizedException('Credentials are not valid');
+    if (!user) {
+      this.logger.warn({ email }, 'Authentication failed: user not found');
+      throw new UnauthorizedException('Credentials are not valid');
+    }
 
     const authenticated = await this.hashingService.verify(
       password,
       user.passwordHash,
     );
-    if (!authenticated)
+    if (!authenticated) {
+      this.logger.warn(
+        { userId: user.id },
+        'Authentication failed: invalid password',
+      );
       throw new UnauthorizedException('Credentials are not valid');
+    }
 
+    this.logger.debug({ userId: user.id }, 'User credentials authenticated');
     return toUserView(user);
   }
 
@@ -84,10 +101,21 @@ export class AuthService {
     const matched =
       await this.refreshTokenService.findValidRefreshToken(rawRefreshToken);
 
-    if (!matched) throw new UnauthorizedException('Invalid refresh token');
+    if (!matched) {
+      this.logger.warn(
+        'Refresh token authentication failed: token not found or invalid',
+      );
+      throw new UnauthorizedException('Invalid refresh token');
+    }
 
     const user = await this.usersRepository.findById(matched.userId);
-    if (!user) throw new UnauthorizedException('Invalid refresh token');
+    if (!user) {
+      this.logger.warn(
+        { userId: matched.userId },
+        'Refresh token authentication failed: user not found',
+      );
+      throw new UnauthorizedException('Invalid refresh token');
+    }
 
     return user;
   }
@@ -101,9 +129,17 @@ export class AuthService {
 
       const user = await this.usersRepository.findById(userId, tx);
 
-      if (!user) throw new UnauthorizedException('Invalid refresh token');
+      if (!user) {
+        this.logger.warn(
+          { userId },
+          'Refresh failed: token rotated but user no longer exists',
+        );
+        throw new UnauthorizedException('Invalid refresh token');
+      }
 
       const { accessToken } = this.accessTokensService.sign(user);
+
+      this.logger.info({ userId }, 'User session refreshed successfully');
 
       return {
         user,
@@ -115,6 +151,7 @@ export class AuthService {
 
   async logout(rawRefreshToken: string): Promise<void> {
     await this.refreshTokenService.revoke(rawRefreshToken);
+    this.logger.info('User logged out');
   }
 
   private async createSession(
@@ -149,6 +186,12 @@ export class AuthService {
       email,
       tx,
     );
-    if (existing) throw new ConflictException('User already exists');
+    if (existing) {
+      this.logger.warn(
+        { email },
+        'Signup rejected because email is already in use',
+      );
+      throw new ConflictException('User already exists');
+    }
   }
 }

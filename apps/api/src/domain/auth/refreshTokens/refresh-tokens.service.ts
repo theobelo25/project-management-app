@@ -12,6 +12,7 @@ import {
 } from '../types/refresh-token.types';
 import { AUTH_REPOSITORY } from '../types/auth.tokens';
 import { AuthRepository } from '../repositories/auth.repository';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class RefreshTokensService {
@@ -21,7 +22,10 @@ export class RefreshTokensService {
     private readonly authRepository: AuthRepository,
     @Inject(HASHING_SERVICE)
     private readonly hashingService: HashingService,
-  ) {}
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(RefreshTokensService.name);
+  }
 
   private generateRefreshToken(): string {
     return randomBytes(32).toString('base64url');
@@ -57,6 +61,10 @@ export class RefreshTokensService {
     tx?: Db,
   ): Promise<never> {
     await this.authRepository.revokeUserRefreshTokens(userId, now, tx);
+    this.logger.warn(
+      { userId, revokedAt: now.toISOString() },
+      'Refresh token reuse detected; revoked all active refresh tokens',
+    );
     throw new UnauthorizedException('Refresh token reuse detected');
   }
 
@@ -89,7 +97,12 @@ export class RefreshTokensService {
   async issueInitial(userId: string, tx?: Db): Promise<string> {
     const { rawToken, dto } = await this.buildRefreshTokenRecord(userId);
 
-    await this.authRepository.createRefreshToken(dto, tx);
+    const created = await this.authRepository.createRefreshToken(dto, tx);
+
+    this.logger.info(
+      { userId, tokenId: created.id },
+      'Initial refresh token issued',
+    );
 
     return rawToken;
   }
@@ -100,7 +113,10 @@ export class RefreshTokensService {
   ): Promise<{ userId: string; nextRawToken: string }> {
     const matched = await this.findByRaw(rawToken, tx);
 
-    if (!matched) throw new UnauthorizedException('Invalid refresh token');
+    if (!matched) {
+      this.logger.warn('Invalid refresh token presented for rotation');
+      throw new UnauthorizedException('Invalid refresh token');
+    }
 
     const now = new Date();
 
@@ -109,8 +125,16 @@ export class RefreshTokensService {
       tx,
     );
 
-    if (!current || current.expiresAt <= now)
+    if (!current || current.expiresAt <= now) {
+      this.logger.warn(
+        {
+          tokenId: matched.id,
+          userId: matched.userId,
+        },
+        'Expired or missing refresh token presented for rotation',
+      );
       throw new UnauthorizedException('Invalid refresh token');
+    }
 
     if (current.revokedAt) {
       return this.revokeAllAndThrowReuse(current.userId, now, tx);
@@ -135,6 +159,15 @@ export class RefreshTokensService {
       return this.revokeAllAndThrowReuse(current.userId, now, tx);
     }
 
+    this.logger.info(
+      {
+        userId: current.userId,
+        previousTokenId: current.id,
+        nextTokenId: next.id,
+      },
+      'Refresh token rotated',
+    );
+
     return {
       userId: current.userId,
       nextRawToken,
@@ -143,7 +176,12 @@ export class RefreshTokensService {
 
   async revoke(rawToken: string) {
     const matched = await this.findByRaw(rawToken);
-    if (!matched) return;
+    if (!matched) {
+      this.logger.debug(
+        'Refresh token revoke requested but no matching token was found',
+      );
+      return;
+    }
 
     await this.authRepository.revokeRefreshToken(matched.id, new Date());
   }

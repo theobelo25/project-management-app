@@ -8,12 +8,14 @@ import {
   UpdateUserInputDto,
   UserView,
 } from '@repo/types';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class UsersService {
   constructor(
     @Inject(USERS_REPOSITORY)
     private readonly usersRepository: UsersRepository,
+    private readonly logger: PinoLogger,
   ) {}
 
   async create(createUserDto: CreateUserDto, db?: Db): Promise<UserView> {
@@ -21,9 +23,18 @@ export class UsersService {
       createUserDto.email,
       db,
     );
-    if (existing) throw new ConflictException('User already exists');
+    if (existing) {
+      this.logger.warn(
+        { email: createUserDto.email },
+        'User creation rejected because email is already in use',
+      );
+      throw new ConflictException('User already exists');
+    }
 
-    return this.usersRepository.create(createUserDto, db);
+    const user = await this.usersRepository.create(createUserDto, db);
+    this.logger.info({ userId: user.id }, 'User created successfully');
+
+    return user;
   }
 
   async update(
@@ -31,7 +42,9 @@ export class UsersService {
     data: UpdateUserInputDto,
     db?: Db,
   ): Promise<UserView> {
-    return this.usersRepository.update(id, data, db);
+    const user = await this.usersRepository.update(id, data, db);
+    this.logger.info({ userId: id }, 'User updated successfully');
+    return user;
   }
 
   async findById(id: string, db?: Db): Promise<UserView | null> {
