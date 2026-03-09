@@ -2,22 +2,21 @@ import { BadRequestException } from '@nestjs/common';
 import { z } from 'zod';
 
 import { ZodValidationPipe } from './zod-validation.pipe';
+import { createZodDto } from '../zod/zod-dto.util';
 
 describe('ZodValidationPipe', () => {
   const schema = z.object({
-    email: z.email(),
+    email: z.string().email(),
     name: z.string().min(1),
     age: z.number().int().positive(),
   });
 
-  let pipe: ZodValidationPipe<{
-    email: string;
-    name: string;
-    age: number;
-  }>;
+  class TestBodyDto extends createZodDto(schema) {}
+
+  let pipe: ZodValidationPipe;
 
   beforeEach(() => {
-    pipe = new ZodValidationPipe(schema);
+    pipe = new ZodValidationPipe();
   });
 
   describe('transform', () => {
@@ -28,7 +27,11 @@ describe('ZodValidationPipe', () => {
         age: 30,
       };
 
-      const result = pipe.transform(value);
+      const result = pipe.transform(value, {
+        type: 'body',
+        metatype: TestBodyDto,
+        data: undefined,
+      });
 
       expect(result).toEqual(value);
     });
@@ -40,7 +43,13 @@ describe('ZodValidationPipe', () => {
         age: -1,
       };
 
-      expect(() => pipe.transform(value)).toThrow(BadRequestException);
+      expect(() =>
+        pipe.transform(value, {
+          type: 'body',
+          metatype: TestBodyDto,
+          data: undefined,
+        }),
+      ).toThrow(BadRequestException);
     });
 
     it('returns the expected 400 error structure for an invalid body', () => {
@@ -51,7 +60,11 @@ describe('ZodValidationPipe', () => {
       };
 
       try {
-        pipe.transform(value);
+        pipe.transform(value, {
+          type: 'body',
+          metatype: TestBodyDto,
+          data: undefined,
+        });
         fail('Expected transform to throw');
       } catch (error) {
         expect(error).toBeInstanceOf(BadRequestException);
@@ -90,7 +103,7 @@ describe('ZodValidationPipe', () => {
         }),
       });
 
-      const nestedPipe = new ZodValidationPipe(nestedSchema);
+      class NestedDto extends createZodDto(nestedSchema) {}
 
       const value = {
         user: {
@@ -101,7 +114,11 @@ describe('ZodValidationPipe', () => {
       };
 
       try {
-        nestedPipe.transform(value);
+        pipe.transform(value, {
+          type: 'body',
+          metatype: NestedDto,
+          data: undefined,
+        });
         fail('Expected transform to throw');
       } catch (error) {
         const response = (error as BadRequestException).getResponse() as {
@@ -118,6 +135,18 @@ describe('ZodValidationPipe', () => {
           ]),
         );
       }
+    });
+
+    it('passes through values when metatype is not a zod dto', () => {
+      const value = { anything: true };
+
+      const result = pipe.transform(value, {
+        type: 'body',
+        metatype: Object,
+        data: undefined,
+      });
+
+      expect(result).toBe(value);
     });
   });
 });

@@ -5,14 +5,19 @@ import {
   PipeTransform,
 } from '@nestjs/common';
 import { ZodError, ZodType } from 'zod';
+import { isZodDto } from '../zod/zod-dto.util';
 
 @Injectable()
-export class ZodValidationPipe<T> implements PipeTransform {
-  constructor(private readonly schema: ZodType<T>) {}
+export class ZodValidationPipe implements PipeTransform {
+  transform(value: unknown, metadata: ArgumentMetadata) {
+    const schema = this.getSchema(metadata);
 
-  transform(value: unknown): T {
+    if (!schema) {
+      return value;
+    }
+
     try {
-      return this.schema.parse(value);
+      return schema.parse(value);
     } catch (error: unknown) {
       if (error instanceof ZodError) {
         throw new BadRequestException({
@@ -25,7 +30,25 @@ export class ZodValidationPipe<T> implements PipeTransform {
         });
       }
 
-      throw new BadRequestException('Validation Failed');
+      throw new BadRequestException('Validation failed');
     }
+  }
+
+  private getSchema(metadata: ArgumentMetadata): ZodType<object> | null {
+    const { metatype, type } = metadata;
+
+    if (!metatype) {
+      return null;
+    }
+
+    if (type !== 'body' && type !== 'query' && type !== 'param') {
+      return null;
+    }
+
+    if (!isZodDto(metatype)) {
+      return null;
+    }
+
+    return metatype.schema;
   }
 }

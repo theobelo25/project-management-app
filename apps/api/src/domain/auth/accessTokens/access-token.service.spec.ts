@@ -3,6 +3,7 @@ import { UserView } from '@repo/types';
 import { AuthConfigService } from '@api/config';
 
 import { AccessTokensService } from './access-tokens.service';
+import { PinoLogger } from 'nestjs-pino';
 
 describe('AccessTokensService', () => {
   let service: AccessTokensService;
@@ -21,6 +22,14 @@ describe('AccessTokensService', () => {
 
   let jwtService: {
     sign: jest.Mock;
+  };
+
+  let logger: {
+    setContext: jest.Mock;
+    info: jest.Mock;
+    warn: jest.Mock;
+    debug: jest.Mock;
+    error: jest.Mock;
   };
 
   const fixedNow = new Date('2026-03-08T19:00:00.000Z');
@@ -53,9 +62,18 @@ describe('AccessTokensService', () => {
       sign: jest.fn(),
     };
 
+    logger = {
+      setContext: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+      error: jest.fn(),
+    };
+
     service = new AccessTokensService(
       authConfig as unknown as AuthConfigService,
       jwtService as unknown as JwtService,
+      logger as unknown as PinoLogger,
     );
   });
 

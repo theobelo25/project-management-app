@@ -10,7 +10,6 @@ import { AuthService } from './auth.service';
 import { HASHING_SERVICE } from './hashing/hashing.service.interface';
 import { Argon2Service } from './hashing/argon2.service';
 
-import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RefreshTokenStrategy } from './strategies/refresh.strategy';
 
@@ -46,7 +45,6 @@ import { AppConfigModule, accessJwtConfig } from '@api/config';
     { provide: HASHING_SERVICE, useClass: Argon2Service },
     { provide: AUTH_REPOSITORY, useClass: PrismaAuthRepository },
 
-    LocalStrategy,
     JwtStrategy,
     RefreshTokenStrategy,
 

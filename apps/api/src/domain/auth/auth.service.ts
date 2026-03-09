@@ -139,7 +139,7 @@ export class AuthService {
 
       const { accessToken } = this.accessTokensService.sign(user);
 
-      this.logger.info({ userId }, 'User session refreshed successfully');
+      this.logger.info({ userId }, 'Refresh token rotated successfully');
 
       return {
         user,
@@ -151,7 +151,7 @@ export class AuthService {
 
   async logout(rawRefreshToken: string): Promise<void> {
     await this.refreshTokenService.revoke(rawRefreshToken);
-    this.logger.info('User logged out');
+    this.logger.info('User logged out successfully');
   }
 
   private async createSession(

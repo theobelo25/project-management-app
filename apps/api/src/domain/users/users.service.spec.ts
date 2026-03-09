@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { UsersService } from './users.service';
 import { USERS_REPOSITORY } from './types/users.tokens';
+import { PinoLogger } from 'nestjs-pino';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -15,6 +16,14 @@ describe('UsersService', () => {
     findPrivateUserById: jest.Mock;
     findPrivateUserByEmail: jest.Mock;
     getAllUsers: jest.Mock;
+  };
+
+  let logger: {
+    setContext: jest.Mock;
+    info: jest.Mock;
+    warn: jest.Mock;
+    debug: jest.Mock;
+    error: jest.Mock;
   };
 
   const db = { prisma: 'tx' };
@@ -53,12 +62,24 @@ describe('UsersService', () => {
       getAllUsers: jest.fn(),
     };
 
+    logger = {
+      setContext: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+      error: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
         {
           provide: USERS_REPOSITORY,
           useValue: usersRepository,
+        },
+        {
+          provide: PinoLogger,
+          useValue: logger,
         },
       ],
     }).compile();
@@ -83,6 +104,10 @@ describe('UsersService', () => {
       );
       expect(usersRepository.create).toHaveBeenCalledWith(createUserDto, db);
       expect(result).toEqual(userView);
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: userView.id }),
+        'User created successfully',
+      );
     });
 
     it('throws ConflictException when email already exists', async () => {
@@ -96,6 +121,10 @@ describe('UsersService', () => {
       );
 
       expect(usersRepository.create).not.toHaveBeenCalled();
+      expect(logger.warn).toHaveBeenCalledWith(
+        { email: createUserDto.email },
+        'User creation rejected because email is already in use',
+      );
     });
 
     it('creates a user without db when no db is provided', async () => {

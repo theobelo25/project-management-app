@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { UserView } from '@repo/types';
+import { NotFoundException } from '@nestjs/common';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -66,23 +67,21 @@ describe('UsersController', () => {
     it('returns a user by id from the service', async () => {
       usersService.findById.mockResolvedValue(userView);
 
-      const result = await controller.findById(userView.id);
+      const result = await controller.findById({ id: userView.id });
 
       expect(usersService.findById).toHaveBeenCalledWith(userView.id);
       expect(result).toEqual(userView);
     });
 
-    it('returns null when the service returns null', async () => {
+    it('throws NotFoundException when the service returns null', async () => {
+      const missingId = '3415c2fc-4067-4c4f-a7e1-748afc4e9b73';
       usersService.findById.mockResolvedValue(null);
 
-      const result = await controller.findById(
-        '3415c2fc-4067-4c4f-a7e1-748afc4e9b73',
+      await expect(controller.findById({ id: missingId })).rejects.toThrow(
+        NotFoundException,
       );
 
-      expect(usersService.findById).toHaveBeenCalledWith(
-        '3415c2fc-4067-4c4f-a7e1-748afc4e9b73',
-      );
-      expect(result).toBeNull();
+      expect(usersService.findById).toHaveBeenCalledWith(missingId);
     });
   });
 });
