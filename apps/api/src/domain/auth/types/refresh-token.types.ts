@@ -19,6 +19,6 @@ export type CreateRefreshTokenInput = {
 
 export type ConsumeAndReplaceRefreshTokenInput = {
   currentId: string;
-  replacedById: string;
+  replacedByTokenId: string;
   now: Date;
 };

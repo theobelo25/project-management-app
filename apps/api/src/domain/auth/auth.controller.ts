@@ -1,12 +1,13 @@
-import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { CurrentRefreshToken } from '@api/common';
 import {
   SignupRequestDto,
   UserView,
   SignupInputDto,
   LoginRequestDto as LoginInput,
+  COOKIE,
 } from '@repo/types';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { RefreshAuthGuard } from '@api/common';
 import { CookiesService } from './cookies/cookies.service';
@@ -49,12 +50,13 @@ export class AuthController {
       password: body.password,
     };
 
-    const user = await this.authService.authenticateUser(
+    const user = await this.authService.validateCredentials(
       loginInput.email,
       loginInput.password,
     );
 
-    const { accessToken, refreshToken } = await this.authService.login(user);
+    const { accessToken, refreshToken } =
+      await this.authService.issueSession(user);
 
     this.cookieService.setAuthCookies(response, accessToken, refreshToken);
 
@@ -77,10 +79,13 @@ export class AuthController {
 
   @Post('logout')
   async logout(
-    @CurrentRefreshToken() rawRefreshToken: string | undefined,
+    @Req() req: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<SuccessResponse> {
-    if (rawRefreshToken) await this.authService.logout(rawRefreshToken);
+    const rawRefreshToken = req.cookies?.[COOKIE.REFRESH];
+
+    if (typeof rawRefreshToken === 'string')
+      await this.authService.logout(rawRefreshToken);
 
     this.cookieService.clearAccessCookie(response);
     this.cookieService.clearRefreshCookie(response);

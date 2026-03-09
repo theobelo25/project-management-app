@@ -106,3 +106,4 @@ coverage
 *.tgz
 temp
 tmp
+.zip

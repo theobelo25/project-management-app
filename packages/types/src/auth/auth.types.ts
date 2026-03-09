@@ -6,7 +6,7 @@ export type SignupInputDto = {
   name: string;
 };
 
-export type SessionPayload = {
+export type AuthSession = {
   user: UserView;
   accessToken: string;
   refreshToken: string;
