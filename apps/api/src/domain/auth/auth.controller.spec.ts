@@ -10,6 +10,7 @@ describe('AuthController', () => {
 
   let authService: {
     signup: jest.Mock;
+    authenticateUser: jest.Mock;
     login: jest.Mock;
     refresh: jest.Mock;
     logout: jest.Mock;
@@ -34,6 +35,7 @@ describe('AuthController', () => {
   beforeEach(async () => {
     authService = {
       signup: jest.fn(),
+      authenticateUser: jest.fn(),
       login: jest.fn(),
       refresh: jest.fn(),
       logout: jest.fn(),
@@ -100,23 +102,30 @@ describe('AuthController', () => {
   });
 
   describe('login', () => {
-    it('logs in the user, sets auth cookies, and returns the user', async () => {
+    it('logs in a user and sets auth cookies', async () => {
+      const loginBody = {
+        email: 'test@example.com',
+        password: 'password123',
+      };
+
+      authService.authenticateUser.mockResolvedValue(userView);
       authService.login.mockResolvedValue({
-        user: userView,
         accessToken: 'access-token',
         refreshToken: 'refresh-token',
       });
 
-      const result = await controller.login(userView, response);
+      const result = await controller.login(loginBody, response as Response);
 
+      expect(authService.authenticateUser).toHaveBeenCalledWith(
+        loginBody.email,
+        loginBody.password,
+      );
       expect(authService.login).toHaveBeenCalledWith(userView);
-
       expect(cookiesService.setAuthCookies).toHaveBeenCalledWith(
         response,
         'access-token',
         'refresh-token',
       );
-
       expect(result).toEqual(userView);
     });
   });

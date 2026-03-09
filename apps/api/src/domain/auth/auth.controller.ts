@@ -1,11 +1,17 @@
 import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
-import { CurrentUser, CurrentRefreshToken } from '@api/common';
-import { SignupRequestDto, UserView, SignupInputDto } from '@repo/types';
+import { CurrentRefreshToken } from '@api/common';
+import {
+  SignupRequestDto,
+  UserView,
+  SignupInputDto,
+  LoginRequestDto as LoginInput,
+} from '@repo/types';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
-import { RefreshAuthGuard, LocalAuthGuard } from '@api/common';
+import { RefreshAuthGuard } from '@api/common';
 import { CookiesService } from './cookies/cookies.service';
 import { SuccessResponse } from '@repo/types';
+import { LoginRequestDto } from './dto/login-request.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -34,11 +40,20 @@ export class AuthController {
   }
 
   @Post('login')
-  @UseGuards(LocalAuthGuard)
   async login(
-    @CurrentUser() user: UserView,
+    @Body() body: LoginRequestDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<UserView> {
+    const loginInput: LoginInput = {
+      email: body.email,
+      password: body.password,
+    };
+
+    const user = await this.authService.authenticateUser(
+      loginInput.email,
+      loginInput.password,
+    );
+
     const { accessToken, refreshToken } = await this.authService.login(user);
 
     this.cookieService.setAuthCookies(response, accessToken, refreshToken);
