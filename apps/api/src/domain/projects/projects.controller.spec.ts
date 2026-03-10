@@ -1,12 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
+import { ProjectMembersService } from './members/project-members.service';
+import { ProjectOwnershipService } from './members/project-ownership.service';
 import { ProjectRole } from '@repo/database';
 import type {
   CreateProjectDto,
   GetProjectsQueryDto,
-  UpdateProjectDto,
   ProjectView,
+  UpdateProjectDto,
 } from '@repo/types';
 
 describe('ProjectsController', () => {
@@ -19,10 +21,16 @@ describe('ProjectsController', () => {
     update: jest.fn(),
     archive: jest.fn(),
     unarchive: jest.fn(),
+  };
+
+  const projectMembersService = {
     getMembers: jest.fn(),
     addMember: jest.fn(),
     updateMemberRole: jest.fn(),
     removeMember: jest.fn(),
+  };
+
+  const projectOwnershipService = {
     transferOwnership: jest.fn(),
   };
 
@@ -49,6 +57,14 @@ describe('ProjectsController', () => {
           provide: ProjectsService,
           useValue: projectsService,
         },
+        {
+          provide: ProjectMembersService,
+          useValue: projectMembersService,
+        },
+        {
+          provide: ProjectOwnershipService,
+          useValue: projectOwnershipService,
+        },
       ],
     }).compile();
 
@@ -58,7 +74,7 @@ describe('ProjectsController', () => {
   });
 
   describe('create', () => {
-    it('calls service.create', async () => {
+    it('calls projectsService.create', async () => {
       const dto: CreateProjectDto = {
         name: 'Project Alpha',
         description: 'Test project',
@@ -69,13 +85,12 @@ describe('ProjectsController', () => {
       const result = await controller.create(user as any, dto);
 
       expect(projectsService.create).toHaveBeenCalledWith('user-1', dto);
-
       expect(result).toEqual(projectView);
     });
   });
 
   describe('findMany', () => {
-    it('calls service.findManyForUser', async () => {
+    it('calls projectsService.findManyForUser', async () => {
       const query: GetProjectsQueryDto = {
         page: 1,
         pageSize: 20,
@@ -98,13 +113,12 @@ describe('ProjectsController', () => {
         'user-1',
         query,
       );
-
       expect(result).toEqual(response);
     });
   });
 
   describe('findById', () => {
-    it('calls service.findById', async () => {
+    it('calls projectsService.findById', async () => {
       projectsService.findById.mockResolvedValue(projectView);
 
       const result = await controller.findById(user as any, {
@@ -115,13 +129,12 @@ describe('ProjectsController', () => {
         'project-1',
         'user-1',
       );
-
       expect(result).toEqual(projectView);
     });
   });
 
   describe('update', () => {
-    it('calls service.update', async () => {
+    it('calls projectsService.update', async () => {
       const dto: UpdateProjectDto = {
         name: 'Updated Project',
       };
@@ -139,13 +152,12 @@ describe('ProjectsController', () => {
         'user-1',
         dto,
       );
-
       expect(result).toEqual(projectView);
     });
   });
 
   describe('archive', () => {
-    it('calls service.archive', async () => {
+    it('calls projectsService.archive', async () => {
       projectsService.archive.mockResolvedValue(projectView);
 
       const result = await controller.archive(user as any, { id: 'project-1' });
@@ -154,13 +166,12 @@ describe('ProjectsController', () => {
         'project-1',
         'user-1',
       );
-
       expect(result).toEqual(projectView);
     });
   });
 
   describe('unarchive', () => {
-    it('calls service.unarchive', async () => {
+    it('calls projectsService.unarchive', async () => {
       projectsService.unarchive.mockResolvedValue(projectView);
 
       const result = await controller.unarchive(user as any, {
@@ -171,13 +182,12 @@ describe('ProjectsController', () => {
         'project-1',
         'user-1',
       );
-
       expect(result).toEqual(projectView);
     });
   });
 
   describe('getMembers', () => {
-    it('calls service.getMembers', async () => {
+    it('calls projectMembersService.getMembers', async () => {
       const response = {
         items: [
           {
@@ -188,15 +198,13 @@ describe('ProjectsController', () => {
         ],
       };
 
-      (projectsService as any).getMembers = jest
-        .fn()
-        .mockResolvedValue(response);
+      projectMembersService.getMembers.mockResolvedValue(response);
 
-      const result = await controller.getMembers({ id: 'user-1' } as any, {
+      const result = await controller.getMembers(user as any, {
         id: 'project-1',
       });
 
-      expect((projectsService as any).getMembers).toHaveBeenCalledWith(
+      expect(projectMembersService.getMembers).toHaveBeenCalledWith(
         'project-1',
         'user-1',
       );
@@ -205,17 +213,17 @@ describe('ProjectsController', () => {
   });
 
   describe('addMember', () => {
-    it('calls service.addMember', async () => {
+    it('calls projectMembersService.addMember', async () => {
       const response = {
         userId: 'user-2',
         role: ProjectRole.MEMBER,
         joinedAt: '2026-03-09T13:00:00.000Z',
       };
 
-      projectsService.addMember.mockResolvedValue(response);
+      projectMembersService.addMember.mockResolvedValue(response);
 
       const result = await controller.addMember(
-        { id: 'user-1' } as any,
+        user as any,
         { id: 'project-1' },
         {
           userId: 'user-2',
@@ -223,7 +231,7 @@ describe('ProjectsController', () => {
         },
       );
 
-      expect(projectsService.addMember).toHaveBeenCalledWith(
+      expect(projectMembersService.addMember).toHaveBeenCalledWith(
         'project-1',
         'user-1',
         {
@@ -231,73 +239,69 @@ describe('ProjectsController', () => {
           role: ProjectRole.MEMBER,
         },
       );
-
       expect(result).toEqual(response);
     });
   });
 
   describe('updateMemberRole', () => {
-    it('calls service.updateMemberRole', async () => {
+    it('calls projectMembersService.updateMemberRole', async () => {
       const response = {
         userId: 'user-2',
         role: ProjectRole.ADMIN,
         joinedAt: '2026-03-09T13:00:00.000Z',
       };
 
-      projectsService.updateMemberRole.mockResolvedValue(response);
+      projectMembersService.updateMemberRole.mockResolvedValue(response);
 
       const result = await controller.updateMemberRole(
-        { id: 'user-1' } as any,
+        user as any,
         { id: 'project-1', userId: 'user-2' },
         { role: ProjectRole.ADMIN },
       );
 
-      expect(projectsService.updateMemberRole).toHaveBeenCalledWith(
+      expect(projectMembersService.updateMemberRole).toHaveBeenCalledWith(
         'project-1',
         'user-1',
         'user-2',
         { role: ProjectRole.ADMIN },
       );
-
       expect(result).toEqual(response);
     });
   });
 
   describe('removeMember', () => {
-    it('calls service.removeMember', async () => {
-      projectsService.removeMember.mockResolvedValue(undefined);
+    it('calls projectMembersService.removeMember', async () => {
+      projectMembersService.removeMember.mockResolvedValue(undefined);
 
-      const result = await controller.removeMember({ id: 'user-1' } as any, {
+      const result = await controller.removeMember(user as any, {
         id: 'project-1',
         userId: 'user-2',
       });
 
-      expect(projectsService.removeMember).toHaveBeenCalledWith(
+      expect(projectMembersService.removeMember).toHaveBeenCalledWith(
         'project-1',
         'user-1',
         'user-2',
       );
-
       expect(result).toBeUndefined();
     });
   });
 
   describe('transferOwnership', () => {
-    it('calls service.transferOwnership', async () => {
-      projectsService.transferOwnership.mockResolvedValue(projectView);
+    it('calls projectOwnershipService.transferOwnership', async () => {
+      projectOwnershipService.transferOwnership.mockResolvedValue(projectView);
 
       const result = await controller.transferOwnership(
-        { id: 'user-1' } as any,
+        user as any,
         { id: 'project-1' },
         { userId: 'user-2' },
       );
 
-      expect(projectsService.transferOwnership).toHaveBeenCalledWith(
+      expect(projectOwnershipService.transferOwnership).toHaveBeenCalledWith(
         'project-1',
         'user-1',
         { userId: 'user-2' },
       );
-
       expect(result).toEqual(projectView);
     });
   });

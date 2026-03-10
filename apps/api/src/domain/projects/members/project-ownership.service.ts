@@ -1,0 +1,81 @@
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { PROJECTS_REPOSITORY } from '../types/projects.tokens';
+import { ProjectsRepository } from '../repositories/projects.repository';
+import { ProjectView, TransferProjectOwnershipDto } from '@repo/types';
+import { ProjectAccessService } from '../access/project-access.service';
+import { UNIT_OF_WORK } from '@api/prisma';
+import { UnitOfWork } from '@api/prisma/uow/unit-of-work.interface';
+import { ProjectRole } from '@repo/database';
+import { toProjectView } from '../mappers/project.mapper';
+
+@Injectable()
+export class ProjectOwnershipService {
+  constructor(
+    @Inject(PROJECTS_REPOSITORY)
+    private readonly projectsRepository: ProjectsRepository,
+    private readonly projectAccessService: ProjectAccessService,
+    @Inject(UNIT_OF_WORK)
+    private readonly uow: UnitOfWork,
+  ) {}
+
+  async transferOwnership(
+    projectId: string,
+    actorUserId: string,
+    dto: TransferProjectOwnershipDto,
+  ): Promise<ProjectView> {
+    return this.uow.transaction(async (db) => {
+      await this.projectAccessService.requireOwner(projectId, actorUserId, db);
+
+      if (dto.userId === actorUserId) {
+        throw new ConflictException('User is already the project owner');
+      }
+
+      const targetMembership = await this.projectsRepository.findMembership(
+        projectId,
+        dto.userId,
+        db,
+      );
+
+      if (!targetMembership) {
+        throw new NotFoundException('Target user is not a project member');
+      }
+
+      await this.projectsRepository.updateOwner(projectId, dto.userId, db);
+
+      await this.projectsRepository.updateMemberRole(
+        {
+          projectId,
+          userId: dto.userId,
+          role: ProjectRole.OWNER,
+        },
+        db,
+      );
+
+      await this.projectsRepository.updateMemberRole(
+        {
+          projectId,
+          userId: actorUserId,
+          role: ProjectRole.ADMIN,
+        },
+        db,
+      );
+
+      const updatedProject = await this.projectsRepository.findAuthorizedById(
+        projectId,
+        dto.userId,
+        db,
+      );
+
+      if (!updatedProject) {
+        throw new NotFoundException('Project not found');
+      }
+
+      return toProjectView(updatedProject);
+    });
+  }
+}

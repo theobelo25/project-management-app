@@ -13,27 +13,33 @@ import {
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import {
-  AddProjectMemberDto,
   AuthUser,
   PaginatedProjectsView,
-  ProjectMemberParamDto,
   ProjectMembersView,
   ProjectMemberView,
   ProjectView,
-  TransferProjectOwnershipDto,
-  UpdateProjectMemberRoleDto,
 } from '@repo/types';
 import {
   CreateProjectDto,
   GetProjectsQueryDto,
   ProjectIdParamDto,
   UpdateProjectDto,
+  TransferProjectOwnershipDto,
+  ProjectMemberParamDto,
+  UpdateProjectMemberRoleDto,
+  AddProjectMemberDto,
 } from './dto';
+import { ProjectMembersService } from './members/project-members.service';
+import { ProjectOwnershipService } from './members/project-ownership.service';
 
 @Controller('projects')
 @UseGuards(JwtAuthGuard)
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(
+    private readonly projectsService: ProjectsService,
+    private readonly projectMembersService: ProjectMembersService,
+    private readonly projectOwnershipService: ProjectOwnershipService,
+  ) {}
 
   @Post()
   async create(
@@ -89,27 +95,25 @@ export class ProjectsController {
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
   ): Promise<ProjectMembersView> {
-    return this.projectsService.getMembers(params.id, user.id);
+    return this.projectMembersService.getMembers(params.id, user.id);
   }
 
-  // CHECK DTO
   @Post(':id/members')
   async addMember(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
     @Body() body: AddProjectMemberDto,
   ): Promise<ProjectMemberView> {
-    return this.projectsService.addMember(params.id, user.id, body);
+    return this.projectMembersService.addMember(params.id, user.id, body);
   }
 
-  // CHECK DTO
   @Patch(':id/members/:userId')
   async updateMemberRole(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectMemberParamDto,
     @Body() body: UpdateProjectMemberRoleDto,
   ): Promise<ProjectMemberView> {
-    return this.projectsService.updateMemberRole(
+    return this.projectMembersService.updateMemberRole(
       params.id,
       user.id,
       params.userId,
@@ -117,23 +121,29 @@ export class ProjectsController {
     );
   }
 
-  // CHECK DTO
   @Delete(':id/members/:userId')
   @HttpCode(204)
   async removeMember(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectMemberParamDto,
   ): Promise<void> {
-    return this.projectsService.removeMember(params.id, user.id, params.userId);
+    return this.projectMembersService.removeMember(
+      params.id,
+      user.id,
+      params.userId,
+    );
   }
 
-  // CHECK DTO
   @Patch(':id/owner')
   async transferOwnership(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
     @Body() body: TransferProjectOwnershipDto,
   ): Promise<ProjectView> {
-    return this.projectsService.transferOwnership(params.id, user.id, body);
+    return this.projectOwnershipService.transferOwnership(
+      params.id,
+      user.id,
+      body,
+    );
   }
 }
