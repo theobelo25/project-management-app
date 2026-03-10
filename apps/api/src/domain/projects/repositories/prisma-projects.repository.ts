@@ -14,11 +14,11 @@ import {
   FindManyForUserInput,
   PaginatedProjectsResult,
   ProjectMemberWithUser,
-  ProjectsRepository,
   ProjectWithRole,
   UpdateProjectInput,
   UpdateProjectMemberRoleInput,
-} from './projects.repository';
+} from '../types/projects.repository.types';
+import { ProjectsRepository } from './projects.repository';
 import { toProjectWithRole } from '../mappers/prisma-repository.mapper';
 
 @Injectable()

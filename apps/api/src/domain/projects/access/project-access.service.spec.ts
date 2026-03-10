@@ -1,10 +1,8 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ProjectRole } from '@repo/database';
 import { ProjectAccessService } from './project-access.service';
-import type {
-  ProjectWithRole,
-  ProjectsRepository,
-} from '../repositories/projects.repository';
+import type { ProjectsRepository } from '../repositories/projects.repository';
+import { ProjectWithRole } from '../types/projects.repository.types';
 
 describe('ProjectAccessService', () => {
   let service: ProjectAccessService;
@@ -19,6 +17,11 @@ describe('ProjectAccessService', () => {
     archiveForUser: jest.fn(),
     unarchiveForUser: jest.fn(),
     delete: jest.fn(),
+    findMembersByProjectId: jest.fn(),
+    addMember: jest.fn(),
+    updateMemberRole: jest.fn(),
+    removeMember: jest.fn(),
+    updateOwner: jest.fn(),
   };
 
   const makeProject = (

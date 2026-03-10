@@ -1,5 +1,5 @@
 import { ProjectRole } from '@repo/database';
-import { ProjectWithRole } from '../repositories/projects.repository';
+import { ProjectWithRole } from '../types/projects.repository.types';
 
 type PrismaProjectWithMemberRole = {
   id: string;

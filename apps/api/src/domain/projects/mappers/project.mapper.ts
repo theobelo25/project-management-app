@@ -2,7 +2,7 @@ import { PaginatedProjectsView, ProjectView } from '@repo/types';
 import {
   ProjectWithRole,
   PaginatedProjectsResult,
-} from '../repositories/projects.repository';
+} from '../types/projects.repository.types';
 
 export function toProjectView(project: ProjectWithRole): ProjectView {
   return {
