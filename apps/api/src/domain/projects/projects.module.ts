@@ -1,19 +1,22 @@
-import { PrismaModule } from '@api/prisma';
 import { Module } from '@nestjs/common';
-import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
-import { PROJECTS_REPOSITORY } from './types/projects.tokens';
-import { PrismaAuthRepository } from '../auth/repositories/prisma-auth.repository';
+import { ProjectMembersService } from './members/project-members.service';
+import { ProjectOwnershipService } from './members/project-ownership.service';
 import { ProjectAccessService } from './access/project-access.service';
+import { PROJECTS_REPOSITORY } from './types/projects.tokens';
+import { PrismaProjectsRepository } from './repositories/prisma-projects.repository';
 
 @Module({
-  imports: [PrismaModule],
-  controllers: [ProjectsController],
   providers: [
     ProjectsService,
+    ProjectMembersService,
+    ProjectOwnershipService,
     ProjectAccessService,
-    { provide: PROJECTS_REPOSITORY, useClass: PrismaAuthRepository },
+    {
+      provide: PROJECTS_REPOSITORY,
+      useClass: PrismaProjectsRepository,
+    },
   ],
-  exports: [ProjectsService, ProjectAccessService],
+  exports: [ProjectsService, ProjectMembersService, ProjectOwnershipService],
 })
-export class ProjectsModel {}
+export class ProjectsModule {}
