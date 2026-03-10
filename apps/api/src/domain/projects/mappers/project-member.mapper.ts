@@ -1,5 +1,5 @@
 import { ProjectMemberView, ProjectMembersView } from '@repo/types';
-import { ProjectMemberWithUser } from '../repositories/projects.repository';
+import { ProjectMemberWithUser } from '../types/projects.repository.types';
 
 export function toProjectMemberView(
   member: ProjectMemberWithUser,
