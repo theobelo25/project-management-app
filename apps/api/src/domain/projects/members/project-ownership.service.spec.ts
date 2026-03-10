@@ -4,6 +4,7 @@ import { ProjectOwnershipService } from './project-ownership.service';
 import { ProjectAccessService } from '../access/project-access.service';
 import { ProjectsRepository } from '../repositories/projects.repository';
 import { ProjectWithRole } from '../types/projects.repository.types';
+import { PinoLogger } from 'nestjs-pino';
 
 describe('ProjectOwnershipService', () => {
   let service: ProjectOwnershipService;
@@ -54,6 +55,18 @@ describe('ProjectOwnershipService', () => {
     transaction: jest.fn(),
   };
 
+  const logger: jest.Mocked<PinoLogger> = {
+    setContext: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    fatal: jest.fn(),
+    trace: jest.fn(),
+    level: 'info',
+    child: jest.fn() as any,
+  } as unknown as jest.Mocked<PinoLogger>;
+
   beforeEach(() => {
     jest.clearAllMocks();
 
@@ -61,6 +74,7 @@ describe('ProjectOwnershipService', () => {
       projectsRepository,
       projectAccessService,
       unitOfWork as any,
+      logger,
     );
 
     unitOfWork.transaction.mockImplementation(async (fn) =>
@@ -147,6 +161,16 @@ describe('ProjectOwnershipService', () => {
         updatedAt: '2026-03-09T12:00:00.000Z',
         currentUserRole: ProjectRole.OWNER,
       });
+
+      expect(logger.info).toHaveBeenCalledWith(
+        {
+          event: 'project.owner.transfered',
+          projectId: 'project-1',
+          previousOwnerId: 'user-1',
+          newOwnerId: 'user-2',
+        },
+        'Project ownership transferred successfully',
+      );
     });
 
     it('throws when target user is already the owner', async () => {

@@ -14,6 +14,7 @@ import { ProjectMembersView, ProjectMemberView } from '@repo/types';
 import { ProjectAccessService } from '../access/project-access.service';
 import { ProjectsRepository } from '../repositories/projects.repository';
 import { PROJECTS_REPOSITORY } from '../types/projects.tokens';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class ProjectMembersService {
@@ -21,7 +22,10 @@ export class ProjectMembersService {
     @Inject(PROJECTS_REPOSITORY)
     private readonly projectsRepository: ProjectsRepository,
     private readonly projectAccessService: ProjectAccessService,
-  ) {}
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(ProjectMembersService.name);
+  }
 
   async getMembers(
     projectId: string,
@@ -31,6 +35,9 @@ export class ProjectMembersService {
 
     const members =
       await this.projectsRepository.findMembersByProjectId(projectId);
+
+    this.logger.debug({ projectId, userId }, 'Fetched project members');
+
     return toProjectMembersView(members);
   }
 
@@ -59,6 +66,17 @@ export class ProjectMembersService {
       userId: dto.userId,
       role: dto.role,
     });
+
+    this.logger.info(
+      {
+        event: 'project.member.added',
+        projectId,
+        actorUserId,
+        addedUserId: dto.userId,
+        role: dto.role,
+      },
+      'Project member added',
+    );
 
     return toProjectMemberView(member);
   }
@@ -92,6 +110,17 @@ export class ProjectMembersService {
       role: dto.role,
     });
 
+    this.logger.info(
+      {
+        event: 'project.member.role.updated',
+        projectId,
+        actorUserId,
+        memberUserId,
+        newRole: dto.role,
+      },
+      'Project member role updated',
+    );
+
     return toProjectMemberView(member);
   }
 
@@ -116,5 +145,15 @@ export class ProjectMembersService {
     }
 
     await this.projectsRepository.removeMember(projectId, memberUserId);
+
+    this.logger.info(
+      {
+        event: 'project.member.removed',
+        projectId,
+        actorUserId,
+        removedUserId: memberUserId,
+      },
+      'Project member removed',
+    );
   }
 }
