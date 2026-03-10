@@ -1,0 +1,6 @@
+export function getSingleParam(
+  param: string | string[] | undefined,
+): string | null {
+  if (!param || Array.isArray(param)) return null;
+  return param;
+}

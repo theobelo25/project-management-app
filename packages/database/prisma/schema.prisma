@@ -7,16 +7,23 @@ datasource db {
     provider = "postgresql"
 }
 
+enum ProjectRole {
+    OWNER
+    ADMIN
+    MEMBER
+}
+
 model User {
-    id           String @id @default(uuid()) @db.Uuid
-    email        String @unique
-    name         String
+    id           String   @id @default(uuid()) @db.Uuid
+    email        String   @unique
+    name         String?
     passwordHash String
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    refreshTokens RefreshToken[]
+    ownedProjects  Project[]       @relation("OwnedProjects")
+    projectMembers ProjectMember[] @relation("ProjectMemberships")
+    refreshTokens  RefreshToken[]
 }
 
 model RefreshToken {
@@ -42,4 +49,38 @@ model RefreshToken {
     @@index([tokenPrefix])
     @@index([userId, revokedAt])
     @@index([expiresAt])
+}
+
+model Project {
+    id          String    @id @default(uuid()) @db.Uuid
+    name        String
+    description String?
+    ownerId     String    @db.Uuid
+    archivedAt  DateTime?
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+
+    owner   User            @relation("OwnedProjects", fields: [ownerId], references: [id], onDelete: Restrict)
+    members ProjectMember[]
+
+    @@index([ownerId])
+    @@index([archivedAt])
+    @@index([createdAt])
+    @@index([ownerId, archivedAt])
+}
+
+model ProjectMember {
+    id        String      @id @default(uuid()) @db.Uuid
+    projectId String      @db.Uuid
+    userId    String      @db.Uuid
+    role      ProjectRole @default(MEMBER)
+    createdAt DateTime    @default(now())
+
+    project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    user    User    @relation("ProjectMemberships", fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([projectId, userId])
+    @@index([userId])
+    @@index([projectId])
+    @@index([projectId, role])
 }
