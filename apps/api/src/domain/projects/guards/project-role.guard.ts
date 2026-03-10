@@ -3,7 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { ProjectRole } from '@repo/database';
 import { REQUIRE_PROJECT_ROLE_KEY } from '../decorators/require-project-role.decorator';
-import { ProjectAccessService } from '../access/project-access.service';
+import { ProjectAccessService } from '../policies/project-access.service';
 import { getSingleParam } from '@api/common/utils/http.utils';
 
 type RequestUser = {

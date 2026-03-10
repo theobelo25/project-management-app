@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { ProjectRole } from '@repo/database';
 import { ProjectMembersService } from './project-members.service';
-import { ProjectAccessService } from '../access/project-access.service';
+import { ProjectAccessService } from '../policies/project-access.service';
 import { ProjectsRepository } from '../repositories/projects.repository';
 import { ProjectWithRole } from '../types/projects.repository.types';
 import { PinoLogger } from 'nestjs-pino';

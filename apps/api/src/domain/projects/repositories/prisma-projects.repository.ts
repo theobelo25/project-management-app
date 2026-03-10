@@ -22,8 +22,10 @@ import { ProjectsRepository } from './projects.repository';
 import { toProjectWithRole } from '../mappers/prisma-repository.mapper';
 
 @Injectable()
-export class PrismaProjectsRepository implements ProjectsRepository {
-  constructor(@Inject(PRISMA) private readonly prisma: PrismaClient) {}
+export class PrismaProjectsRepository extends ProjectsRepository {
+  constructor(@Inject(PRISMA) private readonly prisma: PrismaClient) {
+    super();
+  }
 
   async createWithOwner(
     input: CreateProjectWithOwnerInput,

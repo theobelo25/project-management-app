@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
-import { USERS_REPOSITORY } from '../users/types/users.tokens';
 import { HASHING_SERVICE } from './hashing/hashing.service.interface';
 import { AccessTokensService } from './accessTokens/access-tokens.service';
 import { RefreshTokensService } from './refreshTokens/refresh-tokens.service';
@@ -11,6 +10,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
+import { UsersRepository } from '../users/repositories/users.repository';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -113,7 +113,7 @@ describe('AuthService', () => {
       providers: [
         AuthService,
         {
-          provide: USERS_REPOSITORY,
+          provide: UsersRepository,
           useValue: usersRepository,
         },
         {

@@ -10,7 +10,6 @@ import {
   CreateRefreshTokenInput,
   RefreshTokenRecord,
 } from '../types/refresh-token.types';
-import { AUTH_REPOSITORY } from '../types/auth.tokens';
 import { AuthRepository } from '../repositories/auth.repository';
 import { PinoLogger } from 'nestjs-pino';
 
@@ -18,7 +17,6 @@ import { PinoLogger } from 'nestjs-pino';
 export class RefreshTokensService {
   constructor(
     private readonly authConfig: AuthConfigService,
-    @Inject(AUTH_REPOSITORY)
     private readonly authRepository: AuthRepository,
     @Inject(HASHING_SERVICE)
     private readonly hashingService: HashingService,

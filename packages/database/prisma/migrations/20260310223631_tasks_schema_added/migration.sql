@@ -1,6 +1,12 @@
 -- CreateEnum
 CREATE TYPE "ProjectRole" AS ENUM ('OWNER', 'ADMIN', 'MEMBER');
 
+-- CreateEnum
+CREATE TYPE "TaskStatus" AS ENUM ('TODO', 'IN_PROGRESS', 'DONE');
+
+-- CreateEnum
+CREATE TYPE "TaskPriority" AS ENUM ('LOW', 'MEDIUM', 'HIGH');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" UUID NOT NULL,
@@ -52,6 +58,24 @@ CREATE TABLE "ProjectMember" (
     CONSTRAINT "ProjectMember_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "Task" (
+    "id" UUID NOT NULL,
+    "projectId" UUID NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "status" "TaskStatus" NOT NULL DEFAULT 'TODO',
+    "priority" "TaskPriority" NOT NULL DEFAULT 'MEDIUM',
+    "assigneeId" UUID,
+    "createdById" UUID NOT NULL,
+    "dueDate" TIMESTAMP(3),
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Task_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
@@ -83,6 +107,9 @@ CREATE INDEX "Project_archivedAt_idx" ON "Project"("archivedAt");
 CREATE INDEX "Project_createdAt_idx" ON "Project"("createdAt");
 
 -- CreateIndex
+CREATE INDEX "Project_ownerId_archivedAt_idx" ON "Project"("ownerId", "archivedAt");
+
+-- CreateIndex
 CREATE INDEX "ProjectMember_userId_idx" ON "ProjectMember"("userId");
 
 -- CreateIndex
@@ -93,6 +120,15 @@ CREATE INDEX "ProjectMember_projectId_role_idx" ON "ProjectMember"("projectId", 
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ProjectMember_projectId_userId_key" ON "ProjectMember"("projectId", "userId");
+
+-- CreateIndex
+CREATE INDEX "Task_projectId_status_position_idx" ON "Task"("projectId", "status", "position");
+
+-- CreateIndex
+CREATE INDEX "Task_assigneeId_idx" ON "Task"("assigneeId");
+
+-- CreateIndex
+CREATE INDEX "Task_createdById_idx" ON "Task"("createdById");
 
 -- AddForeignKey
 ALTER TABLE "RefreshToken" ADD CONSTRAINT "RefreshToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -108,3 +144,12 @@ ALTER TABLE "ProjectMember" ADD CONSTRAINT "ProjectMember_projectId_fkey" FOREIG
 
 -- AddForeignKey
 ALTER TABLE "ProjectMember" ADD CONSTRAINT "ProjectMember_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Task" ADD CONSTRAINT "Task_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Task" ADD CONSTRAINT "Task_assigneeId_fkey" FOREIGN KEY ("assigneeId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Task" ADD CONSTRAINT "Task_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

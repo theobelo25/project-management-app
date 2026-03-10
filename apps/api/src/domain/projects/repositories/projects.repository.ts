@@ -11,63 +11,76 @@ import {
   UpdateProjectMemberRoleInput,
 } from '../types/projects.repository.types';
 
-export interface ProjectsRepository {
-  createWithOwner(
+export abstract class ProjectsRepository {
+  abstract createWithOwner(
     input: CreateProjectWithOwnerInput,
     db?: Db,
   ): Promise<ProjectWithRole>;
 
-  findById(id: string, db?: Db): Promise<Project | null>;
+  abstract findById(id: string, db?: Db): Promise<Project | null>;
 
-  findManyForUser(
+  abstract findManyForUser(
     input: FindManyForUserInput,
     db?: Db,
   ): Promise<PaginatedProjectsResult>;
 
-  findAuthorizedById(
+  abstract findAuthorizedById(
     projectId: string,
     userId: string,
     db?: Db,
   ): Promise<ProjectWithRole | null>;
 
-  findMembership(
+  abstract findMembership(
     projectId: string,
     userId: string,
     db?: Db,
   ): Promise<ProjectMember | null>;
 
-  findMembersByProjectId(
+  abstract findMembersByProjectId(
     projectId: string,
     db?: Db,
   ): Promise<ProjectMemberWithUser[]>;
 
-  addMember(
+  abstract addMember(
     input: AddProjectMemberInput,
     db?: Db,
   ): Promise<ProjectMemberWithUser>;
 
-  updateOwner(projectId: string, ownerId: string, db?: Db): Promise<void>;
+  abstract updateOwner(
+    projectId: string,
+    ownerId: string,
+    db?: Db,
+  ): Promise<void>;
 
-  updateMemberRole(
+  abstract updateMemberRole(
     input: UpdateProjectMemberRoleInput,
     db?: Db,
   ): Promise<ProjectMemberWithUser>;
 
-  removeMember(projectId: string, userId: string, db?: Db): Promise<void>;
+  abstract removeMember(
+    projectId: string,
+    userId: string,
+    db?: Db,
+  ): Promise<void>;
 
-  updateForUser(
+  abstract updateForUser(
     id: string,
     userId: string,
     data: UpdateProjectInput,
     db?: Db,
   ): Promise<ProjectWithRole>;
 
-  archiveForUser(id: string, userId: string, db?: Db): Promise<ProjectWithRole>;
-  unarchiveForUser(
+  abstract archiveForUser(
     id: string,
     userId: string,
     db?: Db,
   ): Promise<ProjectWithRole>;
 
-  delete(id: string, db?: Db): Promise<Project>;
+  abstract unarchiveForUser(
+    id: string,
+    userId: string,
+    db?: Db,
+  ): Promise<ProjectWithRole>;
+
+  abstract delete(id: string, db?: Db): Promise<Project>;
 }

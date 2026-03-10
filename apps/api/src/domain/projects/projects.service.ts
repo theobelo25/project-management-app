@@ -1,5 +1,4 @@
 import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
-import { PROJECTS_REPOSITORY } from './types/projects.tokens';
 import { CreateProjectWithOwnerInput } from './types/projects.repository.types';
 import {
   CreateProjectDto,
@@ -12,7 +11,7 @@ import {
   toPaginatedProjectsView,
   toProjectView,
 } from './mappers/project.mapper';
-import { ProjectAccessService } from './access/project-access.service';
+import { ProjectAccessService } from './policies/project-access.service';
 import { ProjectRole } from '@repo/database';
 import { ProjectsRepository } from './repositories/projects.repository';
 import { PinoLogger } from 'nestjs-pino';
@@ -20,7 +19,6 @@ import { PinoLogger } from 'nestjs-pino';
 @Injectable()
 export class ProjectsService {
   constructor(
-    @Inject(PROJECTS_REPOSITORY)
     private readonly projectsRepository: ProjectsRepository,
     private readonly projectAccessService: ProjectAccessService,
     private readonly logger: PinoLogger,

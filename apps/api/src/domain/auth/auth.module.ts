@@ -17,10 +17,10 @@ import { AccessTokensService } from './accessTokens/access-tokens.service';
 import { RefreshTokensService } from './refreshTokens/refresh-tokens.service';
 import { CookiesService } from './cookies/cookies.service';
 
-import { AUTH_REPOSITORY } from './types/auth.tokens';
 import { PrismaAuthRepository } from './repositories/prisma-auth.repository';
 
 import { AppConfigModule, accessJwtConfig } from '@api/config';
+import { AuthRepository } from './repositories/auth.repository';
 
 @Module({
   imports: [
@@ -43,7 +43,7 @@ import { AppConfigModule, accessJwtConfig } from '@api/config';
     AuthService,
 
     { provide: HASHING_SERVICE, useClass: Argon2Service },
-    { provide: AUTH_REPOSITORY, useClass: PrismaAuthRepository },
+    { provide: AuthRepository, useClass: PrismaAuthRepository },
 
     JwtStrategy,
     RefreshTokenStrategy,
