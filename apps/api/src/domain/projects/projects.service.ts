@@ -15,6 +15,7 @@ import {
 import { ProjectAccessService } from './access/project-access.service';
 import { ProjectRole } from '@repo/database';
 import { ProjectsRepository } from './repositories/projects.repository';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class ProjectsService {
@@ -22,7 +23,10 @@ export class ProjectsService {
     @Inject(PROJECTS_REPOSITORY)
     private readonly projectsRepository: ProjectsRepository,
     private readonly projectAccessService: ProjectAccessService,
-  ) {}
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(ProjectsService.name);
+  }
 
   async create(ownerId: string, dto: CreateProjectDto): Promise<ProjectView> {
     const input: CreateProjectWithOwnerInput = {
@@ -32,6 +36,12 @@ export class ProjectsService {
     };
 
     const project = await this.projectsRepository.createWithOwner(input);
+
+    this.logger.info(
+      { event: 'project.created', ownerId, projectId: project.id },
+      'Project created successfully',
+    );
+
     return toProjectView(project);
   }
 
@@ -83,6 +93,11 @@ export class ProjectsService {
       },
     );
 
+    this.logger.info(
+      { event: 'project.updated', userId, projectId },
+      'Project updated successfully',
+    );
+
     return toProjectView(updatedProject);
   }
 
@@ -100,6 +115,11 @@ export class ProjectsService {
       userId,
     );
 
+    this.logger.info(
+      { event: 'project.archived', userId, projectId },
+      'Project archived successfully',
+    );
+
     return toProjectView(archivedProject);
   }
 
@@ -115,6 +135,11 @@ export class ProjectsService {
     const unarchivedProject = await this.projectsRepository.unarchiveForUser(
       projectId,
       userId,
+    );
+
+    this.logger.info(
+      { event: 'project.unarchived', userId, projectId },
+      'Project unarchived successfully',
     );
 
     return toProjectView(unarchivedProject);

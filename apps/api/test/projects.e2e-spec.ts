@@ -517,6 +517,117 @@ describe('Projects E2E', () => {
     expect(oldOwnerMembership?.role).toBe(ProjectRole.ADMIN);
     expect(newOwnerMembership?.role).toBe(ProjectRole.OWNER);
   });
+
+  it('prevents transferring ownership to a non-member', async () => {
+    const owner = await signUpAndLogin(
+      app,
+      'owner-transfer-nonmember@example.com',
+      'Owner Transfer NonMember',
+    );
+    const nonMember = await signUpAndLogin(
+      app,
+      'nonmember-transfer@example.com',
+      'NonMember Transfer',
+    );
+    const createResponse = await owner.agent.post('/projects').send({
+      name: 'Ownership NonMember Project',
+      description: 'Do not transfer to non-member',
+    });
+    expect(createResponse.status).toBe(201);
+    const projectId = createResponse.body.id as string;
+    const transferResponse = await owner.agent
+      .patch(`/projects/${projectId}/owner`)
+      .send({
+        userId: nonMember.userId,
+      });
+    expect(transferResponse.status).toBe(404);
+  });
+
+  it('prevents transferring ownership to the current owner', async () => {
+    const owner = await signUpAndLogin(
+      app,
+      'owner-transfer-self@example.com',
+      'Owner Transfer Self',
+    );
+    const createResponse = await owner.agent.post('/projects').send({
+      name: 'Ownership Self Project',
+      description: 'Do not transfer to self',
+    });
+    expect(createResponse.status).toBe(201);
+    const projectId = createResponse.body.id as string;
+    const transferResponse = await owner.agent
+      .patch(`/projects/${projectId}/owner`)
+      .send({
+        userId: owner.userId,
+      });
+    expect(transferResponse.status).toBe(409);
+  });
+
+  it('prevents adding the owner as a member and prevents removing the owner', async () => {
+    const owner = await signUpAndLogin(
+      app,
+      'owner-members-owner-edge@example.com',
+      'Owner Members Edge',
+    );
+    const createResponse = await owner.agent.post('/projects').send({
+      name: 'Owner Edge Project',
+      description: 'Test owner membership invariants',
+    });
+    expect(createResponse.status).toBe(201);
+    const projectId = createResponse.body.id as string;
+    const addOwnerResponse = await owner.agent
+      .post(`/projects/${projectId}/members`)
+      .send({
+        userId: owner.userId,
+        role: ProjectRole.MEMBER,
+      });
+    expect(addOwnerResponse.status).toBe(409);
+    const removeOwnerResponse = await owner.agent.delete(
+      `/projects/${projectId}/members/${owner.userId}`,
+    );
+    expect(removeOwnerResponse.status).toBe(403);
+  });
+
+  it('blocks membership changes while project is archived', async () => {
+    const owner = await signUpAndLogin(
+      app,
+      'owner-archive-members@example.com',
+      'Owner Archive Members',
+    );
+    const member = await signUpAndLogin(
+      app,
+      'member-archive-members@example.com',
+      'Member Archive Members',
+    );
+    const createResponse = await owner.agent.post('/projects').send({
+      name: 'Archive Members Project',
+      description: 'Membership changes while archived',
+    });
+    expect(createResponse.status).toBe(201);
+    const projectId = createResponse.body.id as string;
+    const addMemberResponse = await owner.agent
+      .post(`/projects/${projectId}/members`)
+      .send({
+        userId: member.userId,
+        role: ProjectRole.MEMBER,
+      });
+    expect(addMemberResponse.status).toBe(201);
+    const archiveResponse = await owner.agent.patch(
+      `/projects/${projectId}/archive`,
+    );
+    expect(archiveResponse.status).toBe(200);
+    const addWhileArchived = await owner.agent
+      .post(`/projects/${projectId}/members`)
+      .send({
+        userId: 'some-other-user-id',
+        role: ProjectRole.MEMBER,
+      });
+    expect(addWhileArchived.status).toBe(403);
+    const removeWhileArchived = await owner.agent.delete(
+      `/projects/${projectId}/members/${member.userId}`,
+    );
+    expect(removeWhileArchived.status).toBe(403);
+  });
 });
 
 async function signUpAndLogin(

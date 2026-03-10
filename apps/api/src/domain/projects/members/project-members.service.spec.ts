@@ -8,6 +8,7 @@ import { ProjectMembersService } from './project-members.service';
 import { ProjectAccessService } from '../access/project-access.service';
 import { ProjectsRepository } from '../repositories/projects.repository';
 import { ProjectWithRole } from '../types/projects.repository.types';
+import { PinoLogger } from 'nestjs-pino';
 describe('ProjectMembersService', () => {
   let service: ProjectMembersService;
 
@@ -53,11 +54,24 @@ describe('ProjectMembersService', () => {
     ...overrides,
   });
 
+  const logger: jest.Mocked<PinoLogger> = {
+    setContext: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    fatal: jest.fn(),
+    trace: jest.fn(),
+    level: 'info',
+    child: jest.fn() as any,
+  } as unknown as jest.Mocked<PinoLogger>;
+
   beforeEach(() => {
     jest.clearAllMocks();
     service = new ProjectMembersService(
       projectsRepository,
       projectAccessService,
+      logger,
     );
   });
 
@@ -151,6 +165,17 @@ describe('ProjectMembersService', () => {
         role: ProjectRole.MEMBER,
         joinedAt: '2026-03-09T13:00:00.000Z',
       });
+
+      expect(logger.info).toHaveBeenCalledWith(
+        {
+          event: 'project.member.added',
+          projectId: 'project-1',
+          actorUserId: 'user-1',
+          addedUserId: 'user-2',
+          role: ProjectRole.MEMBER,
+        },
+        'Project member added',
+      );
     });
 
     it('throws when user is already a member', async () => {
@@ -301,6 +326,16 @@ describe('ProjectMembersService', () => {
       expect(projectsRepository.removeMember).toHaveBeenCalledWith(
         'project-1',
         'user-2',
+      );
+
+      expect(logger.info).toHaveBeenCalledWith(
+        {
+          event: 'project.member.removed',
+          projectId: 'project-1',
+          actorUserId: 'user-1',
+          removedUserId: 'user-2',
+        },
+        'Project member removed',
       );
     });
 

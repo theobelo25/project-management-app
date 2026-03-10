@@ -5,12 +5,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PROJECTS_REPOSITORY } from '../types/projects.tokens';
-import {
-  ProjectsRepository,
-  ProjectWithRole,
-} from '../repositories/projects.repository';
+import { ProjectsRepository } from '../repositories/projects.repository';
 import { ProjectRole } from '@repo/database';
 import { Db } from '@api/prisma';
+import { ProjectWithRole } from '../types/projects.repository.types';
 
 @Injectable()
 export class ProjectAccessService {
@@ -45,7 +43,10 @@ export class ProjectAccessService {
 
     if (project) return project;
 
-    const existingProject = await this.projectsRepository.findById(projectId);
+    const existingProject = await this.projectsRepository.findById(
+      projectId,
+      db,
+    );
     if (!existingProject) throw new NotFoundException('Project not found');
 
     throw new ForbiddenException('You do not have access to this project');

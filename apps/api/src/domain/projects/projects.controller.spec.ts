@@ -10,6 +10,7 @@ import type {
   ProjectView,
   UpdateProjectDto,
 } from '@repo/types';
+import { ProjectRoleGuard } from './guards/project-role.guard';
 
 describe('ProjectsController', () => {
   let controller: ProjectsController;
@@ -66,10 +67,11 @@ describe('ProjectsController', () => {
           useValue: projectOwnershipService,
         },
       ],
-    }).compile();
-
+    })
+      .overrideGuard(ProjectRoleGuard) // <-- override the guard
+      .useValue({ canActivate: jest.fn().mockReturnValue(true) })
+      .compile();
     controller = module.get<ProjectsController>(ProjectsController);
-
     jest.clearAllMocks();
   });
 

@@ -31,9 +31,12 @@ import {
 } from './dto';
 import { ProjectMembersService } from './members/project-members.service';
 import { ProjectOwnershipService } from './members/project-ownership.service';
+import { RequireProjectRole } from './decorators/require-project-role.decorator';
+import { ProjectRole } from '@repo/database';
+import { ProjectRoleGuard } from './guards/project-role.guard';
 
 @Controller('projects')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ProjectRoleGuard)
 export class ProjectsController {
   constructor(
     private readonly projectsService: ProjectsService,
@@ -66,6 +69,7 @@ export class ProjectsController {
   }
 
   @Patch(':id')
+  @RequireProjectRole(ProjectRole.ADMIN)
   async update(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
@@ -75,6 +79,7 @@ export class ProjectsController {
   }
 
   @Patch(':id/archive')
+  @RequireProjectRole(ProjectRole.OWNER)
   async archive(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
@@ -83,6 +88,7 @@ export class ProjectsController {
   }
 
   @Patch(':id/unarchive')
+  @RequireProjectRole(ProjectRole.OWNER)
   async unarchive(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
@@ -99,6 +105,7 @@ export class ProjectsController {
   }
 
   @Post(':id/members')
+  @RequireProjectRole(ProjectRole.OWNER)
   async addMember(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
@@ -108,6 +115,7 @@ export class ProjectsController {
   }
 
   @Patch(':id/members/:userId')
+  @RequireProjectRole(ProjectRole.OWNER)
   async updateMemberRole(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectMemberParamDto,
@@ -122,6 +130,7 @@ export class ProjectsController {
   }
 
   @Delete(':id/members/:userId')
+  @RequireProjectRole(ProjectRole.OWNER)
   @HttpCode(204)
   async removeMember(
     @CurrentUser() user: AuthUser,
@@ -135,6 +144,7 @@ export class ProjectsController {
   }
 
   @Patch(':id/owner')
+  @RequireProjectRole(ProjectRole.OWNER)
   async transferOwnership(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,

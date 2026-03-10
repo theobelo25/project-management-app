@@ -12,6 +12,7 @@ import { UNIT_OF_WORK } from '@api/prisma';
 import { UnitOfWork } from '@api/prisma/uow/unit-of-work.interface';
 import { ProjectRole } from '@repo/database';
 import { toProjectView } from '../mappers/project.mapper';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class ProjectOwnershipService {
@@ -21,7 +22,10 @@ export class ProjectOwnershipService {
     private readonly projectAccessService: ProjectAccessService,
     @Inject(UNIT_OF_WORK)
     private readonly uow: UnitOfWork,
-  ) {}
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(ProjectOwnershipService.name);
+  }
 
   async transferOwnership(
     projectId: string,
@@ -34,6 +38,11 @@ export class ProjectOwnershipService {
       if (dto.userId === actorUserId) {
         throw new ConflictException('User is already the project owner');
       }
+
+      this.logger.info(
+        { projectId, actorUserId, targetUserId: dto.userId },
+        'Initiating project ownership transfer',
+      );
 
       const targetMembership = await this.projectsRepository.findMembership(
         projectId,
@@ -74,6 +83,16 @@ export class ProjectOwnershipService {
       if (!updatedProject) {
         throw new NotFoundException('Project not found');
       }
+
+      this.logger.info(
+        {
+          event: 'project.owner.transfered',
+          projectId,
+          previousOwnerId: actorUserId,
+          newOwnerId: dto.userId,
+        },
+        'Project ownership transferred successfully',
+      );
 
       return toProjectView(updatedProject);
     });

@@ -12,6 +12,7 @@ import {
   CreateProjectWithOwnerInput,
   ProjectWithRole,
 } from './types/projects.repository.types';
+import { PinoLogger } from 'nestjs-pino';
 
 describe('ProjectsService', () => {
   let service: ProjectsService;
@@ -58,10 +59,28 @@ describe('ProjectsService', () => {
     ...overrides,
   });
 
+  const logger: jest.Mocked<PinoLogger> = {
+    // core methods used in services
+    setContext: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    fatal: jest.fn(),
+    trace: jest.fn(),
+    // pino-logger specific extras (can be no-op)
+    level: 'info',
+    child: jest.fn() as any,
+  } as unknown as jest.Mocked<PinoLogger>;
+
   beforeEach(() => {
     jest.clearAllMocks();
 
-    service = new ProjectsService(projectsRepository, projectAccessService);
+    service = new ProjectsService(
+      projectsRepository,
+      projectAccessService,
+      logger,
+    );
   });
 
   describe('create', () => {
@@ -93,6 +112,11 @@ describe('ProjectsService', () => {
         updatedAt: '2026-03-09T12:00:00.000Z',
         currentUserRole: ProjectRole.OWNER,
       });
+
+      expect(logger.info).toHaveBeenCalledWith(
+        { event: 'project.created', ownerId: 'user-1', projectId: 'project-1' },
+        'Project created successfully',
+      );
     });
   });
 
@@ -276,6 +300,11 @@ describe('ProjectsService', () => {
         updatedAt: '2026-03-09T12:00:00.000Z',
         currentUserRole: ProjectRole.OWNER,
       });
+
+      expect(logger.info).toHaveBeenCalledWith(
+        { event: 'project.archived', userId: 'user-1', projectId: 'project-1' },
+        'Project archived successfully',
+      );
     });
 
     it('throws when project is already archived', async () => {

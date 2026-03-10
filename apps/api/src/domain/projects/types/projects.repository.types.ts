@@ -1,4 +1,4 @@
-import { Project, ProjectRole } from 'packages/database/dist/src';
+import { Project, ProjectRole } from '@repo/database';
 
 export type ProjectWithRole = Project & {
   currentUserRole?: ProjectRole;
