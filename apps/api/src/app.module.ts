@@ -8,6 +8,7 @@ import { AuthModule } from './domain/auth/auth.module';
 import { validateEnv, AppConfigModule } from './config';
 import { LoggerModule } from './logger/logger.module';
 import { ProjectsModule } from './domain/projects/projects.module';
+import { TasksModule } from './domain/tasks/tasks.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ProjectsModule } from './domain/projects/projects.module';
     AuthModule,
     LoggerModule,
     ProjectsModule,
+    TasksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

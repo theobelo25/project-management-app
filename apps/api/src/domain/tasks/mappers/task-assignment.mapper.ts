@@ -10,3 +10,9 @@ export function toTaskAssignmentView(
     assignedAt: assignment.assignedAt.toISOString(),
   };
 }
+
+export function toTaskAssigneeViews(
+  assignees: TaskAssignee[],
+): TaskAssignmentView[] {
+  return assignees.map(toTaskAssignmentView);
+}

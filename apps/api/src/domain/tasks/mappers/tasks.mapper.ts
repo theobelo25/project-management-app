@@ -2,8 +2,14 @@ import {
   toIsoString,
   toIsoStringOrNull,
 } from '@api/common/mappers/mapper.utils';
-import { TaskWithAssignees } from '../types/tasks.repository.types';
+import {
+  TaskWithAssignees,
+  CreateTaskInput,
+  UpdateTaskInput,
+} from '../types/tasks.repository.types';
 import { TaskView } from '@repo/types';
+import { CreateTaskDto } from '../dto/create-task.dto';
+import { UpdateTaskDto } from '../dto/update-task.dto';
 
 export function toTaskView(task: TaskWithAssignees): TaskView {
   return {
@@ -32,4 +38,27 @@ export function toTaskView(task: TaskWithAssignees): TaskView {
 
 export function toTaskViews(tasks: TaskWithAssignees[]): TaskView[] {
   return tasks.map(toTaskView);
+}
+
+export function toCreateTaskInput(
+  dto: CreateTaskDto,
+  userId: string,
+): CreateTaskInput {
+  return {
+    ...dto,
+    createdById: userId,
+    dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
+  };
+}
+
+export function toUpdateTaskInput(dto: UpdateTaskDto): UpdateTaskInput {
+  return {
+    ...dto,
+    dueDate:
+      dto.dueDate !== undefined
+        ? dto.dueDate === null
+          ? null
+          : new Date(dto.dueDate)
+        : undefined,
+  };
 }

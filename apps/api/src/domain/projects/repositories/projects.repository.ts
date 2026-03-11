@@ -30,6 +30,12 @@ export abstract class ProjectsRepository {
     db?: Db,
   ): Promise<ProjectWithRole | null>;
 
+  abstract findByIdWithMemberRole(
+    projectId: string,
+    userId: string,
+    db?: Db,
+  ): Promise<ProjectWithRole | null>;
+
   abstract findMembership(
     projectId: string,
     userId: string,

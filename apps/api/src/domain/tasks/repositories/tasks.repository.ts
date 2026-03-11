@@ -7,6 +7,7 @@ import {
   PaginatedTasksResult,
   TaskWithAssignees,
 } from '../types/tasks.repository.types';
+import { TaskAccessContext } from '../types/tasks.repository.types';
 
 export abstract class TasksRepository {
   abstract create(data: CreateTaskInput, db?: Db): Promise<TaskWithAssignees>;
@@ -17,7 +18,11 @@ export abstract class TasksRepository {
     db?: Db,
   ): Promise<TaskWithAssignees>;
 
-  abstract findById(taskId: string, db?: Db): Promise<TaskWithAssignees | null>;
+  abstract findByIdOrThrow(taskId: string, db?: Db): Promise<TaskWithAssignees>;
+  abstract findByIdWithAccessContext(
+    taskId: string,
+    userId: string,
+  ): Promise<TaskAccessContext | null>;
 
   abstract findMany(
     input: FindTasksInput,

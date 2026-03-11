@@ -7,7 +7,7 @@ import { ProjectAccessService } from '../policies/project-access.service';
 import { getSingleParam } from '@api/common/utils/http.utils';
 
 type RequestUser = {
-  userId: string;
+  id: string;
   email: string;
 };
 
@@ -31,7 +31,7 @@ export class ProjectRoleGuard implements CanActivate {
     if (!requiredRole) return true;
 
     const request = context.switchToHttp().getRequest<RequestWithUser>();
-    const userId = request.user?.userId;
+    const userId = request.user?.id;
     const projectId = getSingleParam(request.params.id);
 
     if (!projectId || !userId) {

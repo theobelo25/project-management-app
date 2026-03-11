@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { TaskPriority, TaskStatus } from "./task.enums";
+import { TaskStatusSchema } from "./task-status.schema";
+import { TaskPrioritySchema } from "./task-priority.schema";
 
 export const CreateTaskSchema = z.object({
   projectId: z.uuid(),
@@ -8,9 +9,9 @@ export const CreateTaskSchema = z.object({
 
   description: z.string().max(5000).nullable().optional(),
 
-  status: z.enum(TaskStatus).optional(),
+  status: TaskStatusSchema.optional(),
 
-  priority: z.enum(TaskPriority).optional(),
+  priority: TaskPrioritySchema.optional(),
 
   dueDate: z.iso.datetime().optional().nullable(),
 

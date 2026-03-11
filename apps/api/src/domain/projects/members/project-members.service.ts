@@ -44,7 +44,16 @@ export class ProjectMembersService {
     actorUserId: string,
     dto: AddProjectMemberDto,
   ): Promise<ProjectMemberView> {
-    await this.projectAccessService.requireOwner(projectId, actorUserId);
+    const project = await this.projectAccessService.requireOwner(
+      projectId,
+      actorUserId,
+    );
+
+    if (project.archivedAt) {
+      throw new ForbiddenException(
+        'Archived projects cannot modify membership',
+      );
+    }
 
     if (dto.userId === actorUserId) {
       throw new ConflictException('Owner is already a member of this project');
@@ -85,7 +94,16 @@ export class ProjectMembersService {
     memberUserId: string,
     dto: UpdateProjectMemberRoleDto,
   ): Promise<ProjectMemberView> {
-    await this.projectAccessService.requireOwner(projectId, actorUserId);
+    const project = await this.projectAccessService.requireOwner(
+      projectId,
+      actorUserId,
+    );
+
+    if (project.archivedAt) {
+      throw new ForbiddenException(
+        'Archived projects cannot modify membership',
+      );
+    }
 
     if (memberUserId === actorUserId) {
       throw new ForbiddenException(
@@ -127,7 +145,16 @@ export class ProjectMembersService {
     actorUserId: string,
     memberUserId: string,
   ): Promise<void> {
-    await this.projectAccessService.requireOwner(projectId, actorUserId);
+    const project = await this.projectAccessService.requireOwner(
+      projectId,
+      actorUserId,
+    );
+
+    if (project.archivedAt) {
+      throw new ForbiddenException(
+        'Archived projects cannot modify membership',
+      );
+    }
 
     if (memberUserId === actorUserId) {
       throw new ForbiddenException('Project owner cannot be removed');

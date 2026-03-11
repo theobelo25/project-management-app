@@ -1,15 +1,18 @@
 import { Db, PRISMA } from '@api/prisma';
-import { Prisma, PrismaClient, TaskAssignee } from '@repo/database';
+import { Prisma, PrismaClient } from '@repo/database';
 import {
   CreateTaskInput,
   TaskWithAssignees,
   UpdateTaskInput,
   FindTasksInput,
   PaginatedTasksResult,
+  TaskAssigneeWithUser,
+  taskWithAssigneesInclude,
 } from '../types/tasks.repository.types';
 import { TasksRepository } from './tasks.repository';
 import { Inject, Injectable } from '@nestjs/common';
 import { buildPaginationResult, getPaginationParams } from '@api/common';
+import { TaskAccessContext } from '../types/tasks.repository.types';
 
 @Injectable()
 export class PrismaTasksRepository extends TasksRepository {
@@ -22,7 +25,7 @@ export class PrismaTasksRepository extends TasksRepository {
 
     return prisma.task.create({
       data,
-      include: { assignees: { include: { user: true } } },
+      include: taskWithAssigneesInclude,
     });
   }
 
@@ -36,27 +39,25 @@ export class PrismaTasksRepository extends TasksRepository {
     return prisma.task.update({
       where: { id: taskId },
       data: {
-        ...(data.title ? { title: data.title } : {}),
-        ...(data.description ? { description: data.description } : {}),
-        ...(data.status ? { status: data.status } : {}),
-        ...(data.priority ? { priority: data.priority } : {}),
-        ...(data.dueDate ? { dueDate: data.dueDate } : {}),
-        ...(data.position ? { position: data.position } : {}),
+        ...(data.title !== undefined ? { title: data.title } : {}),
+        ...(data.description !== undefined
+          ? { description: data.description }
+          : {}),
+        ...(data.status !== undefined ? { status: data.status } : {}),
+        ...(data.priority !== undefined ? { priority: data.priority } : {}),
+        ...(data.dueDate !== undefined ? { dueDate: data.dueDate } : {}),
+        ...(data.position !== undefined ? { position: data.position } : {}),
       },
-      include: {
-        assignees: { include: { user: true } },
-      },
+      include: taskWithAssigneesInclude,
     });
   }
 
-  findById(taskId: string, db?: Db): Promise<TaskWithAssignees | null> {
+  findByIdOrThrow(taskId: string, db?: Db): Promise<TaskWithAssignees> {
     const prisma = db ?? this.prisma;
 
-    return prisma.task.findUnique({
+    return prisma.task.findUniqueOrThrow({
       where: { id: taskId },
-      include: {
-        assignees: { include: { user: true } },
-      },
+      include: taskWithAssigneesInclude,
     });
   }
 
@@ -91,34 +92,85 @@ export class PrismaTasksRepository extends TasksRepository {
       }),
     };
 
-    const findManyArgs = {
-      where,
-      include: {
-        assignees: { include: { user: true } },
-      },
-      orderBy: [
-        { position: 'asc' as const },
-        { createdAt: 'asc' as const },
-        { id: 'asc' as const },
-      ],
-      skip,
-      take,
-    };
+    const taskOrderBy = [
+      { position: 'asc' as const },
+      { createdAt: 'asc' as const },
+      { id: 'asc' as const },
+    ];
 
-    let data: TaskWithAssignees[];
-    let total: number;
+    let data;
+    let total;
 
     if (db) {
-      data = await prisma.task.findMany(findManyArgs);
+      data = await prisma.task.findMany({
+        where,
+        include: taskWithAssigneesInclude,
+        orderBy: taskOrderBy,
+        skip,
+        take,
+      });
       total = await prisma.task.count({ where });
     } else {
       [data, total] = await this.prisma.$transaction([
-        this.prisma.task.findMany(findManyArgs),
+        this.prisma.task.findMany({
+          where,
+          include: taskWithAssigneesInclude,
+          orderBy: taskOrderBy,
+          skip,
+          take,
+        }),
         this.prisma.task.count({ where }),
       ]);
     }
 
     return buildPaginationResult(data, total, { page, limit });
+  }
+
+  async findByIdWithAccessContext(
+    taskId: string,
+    userId: string,
+    db?: Db,
+  ): Promise<TaskAccessContext | null> {
+    const prisma = db ?? this.prisma;
+
+    return prisma.task
+      .findUnique({
+        where: { id: taskId },
+        select: {
+          id: true,
+          createdById: true,
+          projectId: true,
+          assignees: {
+            select: {
+              userId: true,
+            },
+          },
+          project: {
+            select: {
+              ownerId: true,
+              members: {
+                where: { userId },
+                select: { role: true },
+                take: 1,
+              },
+            },
+          },
+        },
+      })
+      .then((task) => {
+        if (!task) return null;
+
+        return {
+          id: task.id,
+          createdById: task.createdById,
+          projectId: task.projectId,
+          assignees: task.assignees,
+          project: {
+            ownerId: task.project.ownerId,
+            currentUserRole: task.project.members[0]?.role ?? null,
+          },
+        };
+      });
   }
 
   async delete(taskId: string, db?: Db): Promise<void> {
@@ -127,7 +179,11 @@ export class PrismaTasksRepository extends TasksRepository {
     await prisma.task.delete({ where: { id: taskId } });
   }
 
-  assignUser(taskId: string, userId: string, db?: Db): Promise<TaskAssignee> {
+  assignUser(
+    taskId: string,
+    userId: string,
+    db?: Db,
+  ): Promise<TaskAssigneeWithUser> {
     const prisma = db ?? this.prisma;
 
     return prisma.taskAssignee.upsert({

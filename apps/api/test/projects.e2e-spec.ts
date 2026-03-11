@@ -6,6 +6,8 @@ import cookieParser from 'cookie-parser';
 import { AppModule } from '../src/app.module';
 import { PRISMA } from '../src/prisma/types/prisma.constants';
 import { PrismaClient, ProjectRole } from '@repo/database';
+import { ZodValidationPipe } from '@api/common';
+import { AppExceptionFilter } from '@api/common/filters/app-exception.filter';
 
 describe('Projects E2E', () => {
   let app: INestApplication;
@@ -18,6 +20,9 @@ describe('Projects E2E', () => {
 
     app = moduleRef.createNestApplication();
     app.use(cookieParser());
+    app.setGlobalPrefix('api'); // mirror main.ts
+    app.useGlobalPipes(new ZodValidationPipe());
+    app.useGlobalFilters(new AppExceptionFilter());
     await app.init();
 
     prisma = app.get(PRISMA);
@@ -45,7 +50,7 @@ describe('Projects E2E', () => {
       'Owner Create',
     );
 
-    const response = await owner.agent.post('/projects').send({
+    const response = await owner.agent.post('/api/projects').send({
       name: 'Project Alpha',
       description: 'First project',
     });
@@ -107,24 +112,24 @@ describe('Projects E2E', () => {
       'Outsider List',
     );
 
-    const ownerProject = await owner.agent.post('/projects').send({
+    const ownerProject = await owner.agent.post('/api/projects').send({
       name: 'Owner Project',
       description: 'Visible to owner',
     });
     expect(ownerProject.status).toBe(201);
 
-    const outsiderProject = await outsider.agent.post('/projects').send({
+    const outsiderProject = await outsider.agent.post('/api/projects').send({
       name: 'Outsider Project',
       description: 'Should not be visible to owner',
     });
     expect(outsiderProject.status).toBe(201);
 
     const archiveResponse = await owner.agent.patch(
-      `/projects/${ownerProject.body.id}/archive`,
+      `/api/projects/${ownerProject.body.id}/archive`,
     );
     expect(archiveResponse.status).toBe(200);
 
-    const defaultListResponse = await owner.agent.get('/projects');
+    const defaultListResponse = await owner.agent.get('/api/projects');
 
     expect(defaultListResponse.status).toBe(200);
     expect(defaultListResponse.body).toEqual(
@@ -138,7 +143,7 @@ describe('Projects E2E', () => {
     );
 
     const includeArchivedResponse = await owner.agent.get(
-      '/projects?includeArchived=true',
+      '/api/projects?includeArchived=true',
     );
 
     expect(includeArchivedResponse.status).toBe(200);
@@ -175,7 +180,7 @@ describe('Projects E2E', () => {
       'Outsider View',
     );
 
-    const createResponse = await owner.agent.post('/projects').send({
+    const createResponse = await owner.agent.post('/api/projects').send({
       name: 'Shared Project',
       description: 'Test access rules',
     });
@@ -184,7 +189,7 @@ describe('Projects E2E', () => {
     const projectId = createResponse.body.id as string;
 
     const addMemberResponse = await owner.agent
-      .post(`/projects/${projectId}/members`)
+      .post(`/api/projects/${projectId}/members`)
       .send({
         userId: member.userId,
         role: ProjectRole.MEMBER,
@@ -192,7 +197,9 @@ describe('Projects E2E', () => {
 
     expect(addMemberResponse.status).toBe(201);
 
-    const memberViewResponse = await member.agent.get(`/projects/${projectId}`);
+    const memberViewResponse = await member.agent.get(
+      `/api/projects/${projectId}`,
+    );
     expect(memberViewResponse.status).toBe(200);
     expect(memberViewResponse.body).toEqual(
       expect.objectContaining({
@@ -202,12 +209,14 @@ describe('Projects E2E', () => {
     );
 
     const outsiderViewResponse = await outsider.agent.get(
-      `/projects/${projectId}`,
+      `/api/projects/${projectId}`,
     );
     expect(outsiderViewResponse.status).toBe(403);
 
-    const missingResponse = await owner.agent.get('/projects/does-not-exist');
-    expect(missingResponse.status).toBe(404);
+    const missingResponse = await owner.agent.get(
+      '/api/projects/does-not-exist',
+    );
+    expect(missingResponse.status).toBe(400);
   });
 
   it('supports membership management: add, list, update role, remove', async () => {
@@ -222,7 +231,7 @@ describe('Projects E2E', () => {
       'Member Members',
     );
 
-    const createResponse = await owner.agent.post('/projects').send({
+    const createResponse = await owner.agent.post('/api/projects').send({
       name: 'Membership Project',
       description: 'Manage members',
     });
@@ -231,7 +240,7 @@ describe('Projects E2E', () => {
     const projectId = createResponse.body.id as string;
 
     const addMemberResponse = await owner.agent
-      .post(`/projects/${projectId}/members`)
+      .post(`/api/projects/${projectId}/members`)
       .send({
         userId: member.userId,
         role: ProjectRole.MEMBER,
@@ -247,7 +256,7 @@ describe('Projects E2E', () => {
     );
 
     const duplicateMemberResponse = await owner.agent
-      .post(`/projects/${projectId}/members`)
+      .post(`/api/projects/${projectId}/members`)
       .send({
         userId: member.userId,
         role: ProjectRole.MEMBER,
@@ -256,7 +265,7 @@ describe('Projects E2E', () => {
     expect(duplicateMemberResponse.status).toBe(409);
 
     const membersResponse = await owner.agent.get(
-      `/projects/${projectId}/members`,
+      `/api/projects/${projectId}/members`,
     );
 
     expect(membersResponse.status).toBe(200);
@@ -274,7 +283,7 @@ describe('Projects E2E', () => {
     );
 
     const updateRoleResponse = await owner.agent
-      .patch(`/projects/${projectId}/members/${member.userId}`)
+      .patch(`/api/projects/${projectId}/members/${member.userId}`)
       .send({
         role: ProjectRole.ADMIN,
       });
@@ -288,7 +297,7 @@ describe('Projects E2E', () => {
     );
 
     const removeMemberResponse = await owner.agent.delete(
-      `/projects/${projectId}/members/${member.userId}`,
+      `/api/projects/${projectId}/members/${member.userId}`,
     );
 
     expect(removeMemberResponse.status).toBe(204);
@@ -322,7 +331,7 @@ describe('Projects E2E', () => {
       'Outsider Guard',
     );
 
-    const createResponse = await owner.agent.post('/projects').send({
+    const createResponse = await owner.agent.post('/api/projects').send({
       name: 'Protected Membership Project',
       description: 'Permission checks',
     });
@@ -331,7 +340,7 @@ describe('Projects E2E', () => {
     const projectId = createResponse.body.id as string;
 
     const addMemberResponse = await owner.agent
-      .post(`/projects/${projectId}/members`)
+      .post(`/api/projects/${projectId}/members`)
       .send({
         userId: member.userId,
         role: ProjectRole.MEMBER,
@@ -340,7 +349,7 @@ describe('Projects E2E', () => {
     expect(addMemberResponse.status).toBe(201);
 
     const memberAddResponse = await member.agent
-      .post(`/projects/${projectId}/members`)
+      .post(`/api/projects/${projectId}/members`)
       .send({
         userId: outsider.userId,
         role: ProjectRole.MEMBER,
@@ -349,7 +358,7 @@ describe('Projects E2E', () => {
     expect(memberAddResponse.status).toBe(403);
 
     const outsiderAddResponse = await outsider.agent
-      .post(`/projects/${projectId}/members`)
+      .post(`/api/projects/${projectId}/members`)
       .send({
         userId: outsider.userId,
         role: ProjectRole.MEMBER,
@@ -358,7 +367,7 @@ describe('Projects E2E', () => {
     expect(outsiderAddResponse.status).toBe(403);
 
     const memberRemoveResponse = await member.agent.delete(
-      `/projects/${projectId}/members/${member.userId}`,
+      `/api/projects/${projectId}/members/${member.userId}`,
     );
 
     expect(memberRemoveResponse.status).toBe(403);
@@ -376,7 +385,7 @@ describe('Projects E2E', () => {
       'Member Archive',
     );
 
-    const createResponse = await owner.agent.post('/projects').send({
+    const createResponse = await owner.agent.post('/api/projects').send({
       name: 'Archive Project',
       description: 'Archive me',
     });
@@ -385,7 +394,7 @@ describe('Projects E2E', () => {
     const projectId = createResponse.body.id as string;
 
     const addMemberResponse = await owner.agent
-      .post(`/projects/${projectId}/members`)
+      .post(`/api/projects/${projectId}/members`)
       .send({
         userId: member.userId,
         role: ProjectRole.ADMIN,
@@ -394,7 +403,7 @@ describe('Projects E2E', () => {
     expect(addMemberResponse.status).toBe(201);
 
     const archiveResponse = await owner.agent.patch(
-      `/projects/${projectId}/archive`,
+      `/api/projects/${projectId}/archive`,
     );
 
     expect(archiveResponse.status).toBe(200);
@@ -406,7 +415,7 @@ describe('Projects E2E', () => {
     );
 
     const ownerUpdateWhileArchived = await owner.agent
-      .patch(`/projects/${projectId}`)
+      .patch(`/api/projects/${projectId}`)
       .send({
         name: 'Updated While Archived',
       });
@@ -414,13 +423,13 @@ describe('Projects E2E', () => {
     expect(ownerUpdateWhileArchived.status).toBe(403);
 
     const memberArchiveResponse = await member.agent.patch(
-      `/projects/${projectId}/archive`,
+      `/api/projects/${projectId}/archive`,
     );
 
     expect(memberArchiveResponse.status).toBe(403);
 
     const unarchiveResponse = await owner.agent.patch(
-      `/projects/${projectId}/unarchive`,
+      `/api/projects/${projectId}/unarchive`,
     );
 
     expect(unarchiveResponse.status).toBe(200);
@@ -432,7 +441,7 @@ describe('Projects E2E', () => {
     );
 
     const ownerUpdateAfterUnarchive = await owner.agent
-      .patch(`/projects/${projectId}`)
+      .patch(`/api/projects/${projectId}`)
       .send({
         name: 'Updated After Unarchive',
       });
@@ -458,7 +467,7 @@ describe('Projects E2E', () => {
       'Next Owner Transfer',
     );
 
-    const createResponse = await owner.agent.post('/projects').send({
+    const createResponse = await owner.agent.post('/api/projects').send({
       name: 'Ownership Project',
       description: 'Transfer me',
     });
@@ -467,7 +476,7 @@ describe('Projects E2E', () => {
     const projectId = createResponse.body.id as string;
 
     const addMemberResponse = await owner.agent
-      .post(`/projects/${projectId}/members`)
+      .post(`/api/projects/${projectId}/members`)
       .send({
         userId: nextOwner.userId,
         role: ProjectRole.ADMIN,
@@ -476,7 +485,7 @@ describe('Projects E2E', () => {
     expect(addMemberResponse.status).toBe(201);
 
     const transferResponse = await owner.agent
-      .patch(`/projects/${projectId}/owner`)
+      .patch(`/api/projects/${projectId}/owner`)
       .send({
         userId: nextOwner.userId,
       });
@@ -529,14 +538,14 @@ describe('Projects E2E', () => {
       'nonmember-transfer@example.com',
       'NonMember Transfer',
     );
-    const createResponse = await owner.agent.post('/projects').send({
+    const createResponse = await owner.agent.post('/api/projects').send({
       name: 'Ownership NonMember Project',
       description: 'Do not transfer to non-member',
     });
     expect(createResponse.status).toBe(201);
     const projectId = createResponse.body.id as string;
     const transferResponse = await owner.agent
-      .patch(`/projects/${projectId}/owner`)
+      .patch(`/api/projects/${projectId}/owner`)
       .send({
         userId: nonMember.userId,
       });
@@ -549,14 +558,14 @@ describe('Projects E2E', () => {
       'owner-transfer-self@example.com',
       'Owner Transfer Self',
     );
-    const createResponse = await owner.agent.post('/projects').send({
+    const createResponse = await owner.agent.post('/api/projects').send({
       name: 'Ownership Self Project',
       description: 'Do not transfer to self',
     });
     expect(createResponse.status).toBe(201);
     const projectId = createResponse.body.id as string;
     const transferResponse = await owner.agent
-      .patch(`/projects/${projectId}/owner`)
+      .patch(`/api/projects/${projectId}/owner`)
       .send({
         userId: owner.userId,
       });
@@ -569,21 +578,21 @@ describe('Projects E2E', () => {
       'owner-members-owner-edge@example.com',
       'Owner Members Edge',
     );
-    const createResponse = await owner.agent.post('/projects').send({
+    const createResponse = await owner.agent.post('/api/projects').send({
       name: 'Owner Edge Project',
       description: 'Test owner membership invariants',
     });
     expect(createResponse.status).toBe(201);
     const projectId = createResponse.body.id as string;
     const addOwnerResponse = await owner.agent
-      .post(`/projects/${projectId}/members`)
+      .post(`/api/projects/${projectId}/members`)
       .send({
         userId: owner.userId,
         role: ProjectRole.MEMBER,
       });
     expect(addOwnerResponse.status).toBe(409);
     const removeOwnerResponse = await owner.agent.delete(
-      `/projects/${projectId}/members/${owner.userId}`,
+      `/api/projects/${projectId}/members/${owner.userId}`,
     );
     expect(removeOwnerResponse.status).toBe(403);
   });
@@ -599,32 +608,32 @@ describe('Projects E2E', () => {
       'member-archive-members@example.com',
       'Member Archive Members',
     );
-    const createResponse = await owner.agent.post('/projects').send({
+    const createResponse = await owner.agent.post('/api/projects').send({
       name: 'Archive Members Project',
       description: 'Membership changes while archived',
     });
     expect(createResponse.status).toBe(201);
     const projectId = createResponse.body.id as string;
     const addMemberResponse = await owner.agent
-      .post(`/projects/${projectId}/members`)
+      .post(`/api/projects/${projectId}/members`)
       .send({
         userId: member.userId,
         role: ProjectRole.MEMBER,
       });
     expect(addMemberResponse.status).toBe(201);
     const archiveResponse = await owner.agent.patch(
-      `/projects/${projectId}/archive`,
+      `/api/projects/${projectId}/archive`,
     );
     expect(archiveResponse.status).toBe(200);
     const addWhileArchived = await owner.agent
-      .post(`/projects/${projectId}/members`)
+      .post(`/api/projects/${projectId}/members`)
       .send({
         userId: 'some-other-user-id',
         role: ProjectRole.MEMBER,
       });
     expect(addWhileArchived.status).toBe(403);
     const removeWhileArchived = await owner.agent.delete(
-      `/projects/${projectId}/members/${member.userId}`,
+      `/api/projects/${projectId}/members/${member.userId}`,
     );
     expect(removeWhileArchived.status).toBe(403);
   });
@@ -637,7 +646,7 @@ async function signUpAndLogin(
 ): Promise<{ agent: any; userId: string }> {
   const agent = request.agent(app.getHttpServer());
 
-  const signupResponse = await agent.post('/auth/signup').send({
+  const signupResponse = await agent.post('/api/auth/signup').send({
     email,
     name,
     password: 'Password123!',

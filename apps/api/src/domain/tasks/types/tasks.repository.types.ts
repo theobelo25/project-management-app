@@ -1,11 +1,16 @@
 import {
+  Prisma,
   Task,
   TaskAssignee,
   TaskPriority,
   TaskStatus,
   User,
 } from '@repo/database';
-import { PaginationQuery, PaginationResult } from '@repo/types';
+import { PaginationQuery, PaginationResult, ProjectRole } from '@repo/types';
+
+export const taskWithAssigneesInclude = {
+  assignees: { include: { user: true } },
+} satisfies Prisma.TaskInclude;
 
 export type TaskAssigneeWithUser = TaskAssignee & {
   user: User;
@@ -45,3 +50,14 @@ export type FindTasksInput = {
 } & PaginationQuery;
 
 export type PaginatedTasksResult = PaginationResult<TaskWithAssignees>;
+
+export type TaskAccessContext = {
+  id: string;
+  createdById: string;
+  projectId: string;
+  assignees: { userId: string }[];
+  project: {
+    ownerId: string;
+    currentUserRole?: ProjectRole | null;
+  };
+};

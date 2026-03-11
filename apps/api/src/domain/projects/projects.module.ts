@@ -21,6 +21,11 @@ import { ProjectsRepository } from './repositories/projects.repository';
       useClass: PrismaProjectsRepository,
     },
   ],
-  exports: [ProjectsService, ProjectMembersService, ProjectOwnershipService],
+  exports: [
+    ProjectsService,
+    ProjectMembersService,
+    ProjectOwnershipService,
+    ProjectsRepository,
+  ],
 })
 export class ProjectsModule {}

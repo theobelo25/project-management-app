@@ -7,6 +7,8 @@ import { AppModule } from '../src/app.module';
 import { PRISMA } from '../src/prisma/types/prisma.constants';
 import { COOKIE } from '../src/domain/auth/cookies/cookies.constants';
 import { prisma } from '@repo/database';
+import { ZodValidationPipe } from '@api/common';
+import { AppExceptionFilter } from '@api/common/filters/app-exception.filter';
 
 type PrismaDb = typeof prisma;
 
@@ -18,9 +20,11 @@ describe('Users E2E', () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
-
     app = moduleRef.createNestApplication();
     app.use(cookieParser());
+    app.setGlobalPrefix('api'); // if you want to mirror main.ts
+    app.useGlobalPipes(new ZodValidationPipe());
+    app.useGlobalFilters(new AppExceptionFilter());
     await app.init();
 
     db = app.get<PrismaDb>(PRISMA);
@@ -40,27 +44,27 @@ describe('Users E2E', () => {
 
   describe('GET /users', () => {
     it('returns 401 when unauthenticated', async () => {
-      await request(app.getHttpServer()).get('/users').expect(401);
+      await request(app.getHttpServer()).get('/api/users').expect(401);
     });
 
     it('returns users when authenticated', async () => {
       const agent = request.agent(app.getHttpServer());
 
-      await agent.post('/auth/signup').send({
+      await agent.post('/api/auth/signup').send({
         email: 'owner@example.com',
         name: 'Owner User',
         password: 'Password123!',
         confirmPassword: 'Password123!',
       });
 
-      await request(app.getHttpServer()).post('/auth/signup').send({
+      await request(app.getHttpServer()).post('/api/auth/signup').send({
         email: 'second@example.com',
         name: 'Second User',
         password: 'Password123!',
         confirmPassword: 'Password123!',
       });
 
-      const response = await agent.get('/users').expect(200);
+      const response = await agent.get('/api/users').expect(200);
 
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.length).toBe(2);
@@ -85,7 +89,7 @@ describe('Users E2E', () => {
   describe('GET /users/:id', () => {
     it('returns a user by id', async () => {
       const signupResponse = await request(app.getHttpServer())
-        .post('/auth/signup')
+        .post('/api/auth/signup')
         .send({
           email: 'findme@example.com',
           name: 'Find Me',
@@ -97,7 +101,7 @@ describe('Users E2E', () => {
       const userId = signupResponse.body.id as string;
 
       const response = await request(app.getHttpServer())
-        .get(`/users/${userId}`)
+        .get(`/api/users/${userId}`)
         .expect(200);
 
       expect(response.body).toEqual(
@@ -111,7 +115,7 @@ describe('Users E2E', () => {
 
     it('returns 400 for an invalid UUID', async () => {
       const response = await request(app.getHttpServer())
-        .get('/users/not-a-uuid')
+        .get('/api/users/not-a-uuid')
         .expect(400);
 
       expect(response.body.message).toBeDefined();

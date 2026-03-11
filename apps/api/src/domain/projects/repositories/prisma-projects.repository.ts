@@ -139,6 +139,48 @@ export class PrismaProjectsRepository extends ProjectsRepository {
     return toProjectWithRole(project, userId);
   }
 
+  async findByIdWithMemberRole(
+    projectId: string,
+    userId: string,
+    db?: Db,
+  ): Promise<ProjectWithRole | null> {
+    const prisma = db ?? this.prisma;
+
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        ownerId: true,
+        archivedAt: true,
+        createdAt: true,
+        updatedAt: true,
+        members: {
+          where: { userId },
+          select: { role: true },
+          take: 1,
+        },
+      },
+    });
+
+    if (!project) return null;
+
+    return {
+      id: project.id,
+      name: project.name,
+      description: project.description,
+      ownerId: project.ownerId,
+      archivedAt: project.archivedAt,
+      createdAt: project.createdAt,
+      updatedAt: project.updatedAt,
+      currentUserRole:
+        project.ownerId === userId
+          ? ProjectRole.OWNER
+          : (project.members[0]?.role ?? null),
+    };
+  }
+
   async findMembership(
     projectId: string,
     userId: string,
