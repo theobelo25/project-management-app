@@ -4,6 +4,9 @@ export * from "./auth";
 // COMMON
 export * from "./common";
 
+// PAGINATION
+export * from "./pagination";
+
 // PROJECTS
 export * from "./project";
 

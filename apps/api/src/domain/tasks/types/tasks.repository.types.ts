@@ -5,7 +5,7 @@ import {
   TaskStatus,
   User,
 } from '@repo/database';
-import { PaginationQuery, PaginationResult } from '@api/common';
+import { PaginationQuery, PaginationResult } from '@repo/types';
 
 export type TaskAssigneeWithUser = TaskAssignee & {
   user: User;

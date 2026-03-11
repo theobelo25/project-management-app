@@ -10,14 +10,16 @@ import {
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { CurrentUser, JwtAuthGuard } from '@api/common';
 import {
-  CurrentUser,
-  JwtAuthGuard,
-  PaginationQueryDto,
+  AuthUser,
+  TaskView,
   PaginationResult,
-} from '@api/common';
-import { AuthUser, TaskView } from '@repo/types';
-import { TaskAssignee } from 'packages/database/dist/src';
+  TaskAssignmentView,
+} from '@repo/types';
+import { TaskIdParamDto } from './dto/task-id-param.dto';
+import { TaskAssigneeParamsDto } from './dto/task-assignee-params.dto';
+import { FindTasksQueryDto } from './dto/find-tasks-query.dto';
 
 @Controller('tasks')
 @UseGuards(JwtAuthGuard)
@@ -33,39 +35,31 @@ export class TasksController {
   }
 
   @Get(':taskId')
-  async findById(@Param('taskId') taskId: string): Promise<TaskView> {
-    return this.tasksService.findById(taskId);
+  async findById(@Param() params: TaskIdParamDto): Promise<TaskView> {
+    return this.tasksService.findById(params.taskId);
   }
 
   @Get()
   async findMany(
-    @Query() query: PaginationQueryDto,
-    @Query('projectId') projectId: string,
+    @Query() query: FindTasksQueryDto,
   ): Promise<PaginationResult<TaskView>> {
-    return this.tasksService.findMany({
-      projectId,
-      ...query,
-    });
+    return this.tasksService.findMany(query);
   }
 
   @Delete('id')
-  async delete(@Param() taskId: string) {
-    await this.tasksService.delete(taskId);
+  async delete(@Param() params: TaskIdParamDto): Promise<void> {
+    await this.tasksService.delete(params.taskId);
   }
 
   @Post(':taskId/assignees/:userId')
   async assignUser(
-    @Param('taskId') taskId: string,
-    @Param('userId') userId: string,
-  ): Promise<TaskAssignee> {
-    return this.tasksService.assignUser(taskId, userId);
+    @Param() params: TaskAssigneeParamsDto,
+  ): Promise<TaskAssignmentView> {
+    return this.tasksService.assignUser(params.taskId, params.userId);
   }
 
   @Delete(':taskId/assignees/:userId')
-  async unassignUser(
-    @Param('taskId') taskId: string,
-    @Param('userId') userId: string,
-  ): Promise<void> {
-    await this.tasksService.unassignUser(taskId, userId);
+  async unassignUser(@Param() params: TaskAssigneeParamsDto): Promise<void> {
+    await this.tasksService.unassignUser(params.taskId, params.userId);
   }
 }
