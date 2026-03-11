@@ -1,5 +1,6 @@
 import { ProjectMemberView, ProjectMembersView } from '@repo/types';
 import { ProjectMemberWithUser } from '../types/projects.repository.types';
+import { toIsoString } from '@api/common/mappers/mapper.utils';
 
 export function toProjectMemberView(
   member: ProjectMemberWithUser,
@@ -7,7 +8,7 @@ export function toProjectMemberView(
   return {
     userId: member.userId,
     role: member.role,
-    joinedAt: member.createdAt.toISOString(),
+    joinedAt: toIsoString(member.createdAt),
   };
 }
 

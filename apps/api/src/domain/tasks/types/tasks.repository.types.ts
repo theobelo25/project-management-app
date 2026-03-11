@@ -5,6 +5,7 @@ import {
   TaskStatus,
   User,
 } from '@repo/database';
+import { PaginationQuery, PaginationResult } from '@api/common';
 
 export type TaskAssigneeWithUser = TaskAssignee & {
   user: User;
@@ -41,11 +42,6 @@ export type FindTasksInput = {
   priority?: TaskPriority;
   assigneeId?: string;
   search?: string;
-  limit: number;
-  cursor?: string;
-};
+} & PaginationQuery;
 
-export type PaginatedTasksResult = {
-  items: TaskWithAssignees[];
-  nextCursor: string | null;
-};
+export type PaginatedTasksResult = PaginationResult<TaskWithAssignees>;

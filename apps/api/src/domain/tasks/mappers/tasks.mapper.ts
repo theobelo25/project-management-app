@@ -1,3 +1,7 @@
+import {
+  toIsoString,
+  toIsoStringOrNull,
+} from '@api/common/mappers/mapper.utils';
 import { TaskWithAssignees } from '../types/tasks.repository.types';
 import { TaskView } from '@repo/types';
 
@@ -9,14 +13,14 @@ export function toTaskView(task: TaskWithAssignees): TaskView {
     description: task.description,
     status: task.status,
     priority: task.priority,
-    dueDate: task.dueDate ? task.dueDate.toISOString() : null,
+    dueDate: toIsoStringOrNull(task.dueDate),
     position: task.position,
-    createdAt: task.createdAt.toISOString(),
-    updatedAt: task.updatedAt.toISOString(),
+    createdAt: toIsoString(task.createdAt),
+    updatedAt: toIsoString(task.updatedAt),
     createdById: task.createdById,
     assignees: task.assignees.map((assignee) => ({
       userId: assignee.userId,
-      assignedAt: assignee.assignedAt.toISOString(),
+      assignedAt: toIsoString(assignee.assignedAt),
       user: {
         id: assignee.user.id,
         name: assignee.user.name,

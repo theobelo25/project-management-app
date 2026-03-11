@@ -3,6 +3,10 @@ import {
   ProjectWithRole,
   PaginatedProjectsResult,
 } from '../types/projects.repository.types';
+import {
+  toIsoString,
+  toIsoStringOrNull,
+} from '@api/common/mappers/mapper.utils';
 
 export function toProjectView(project: ProjectWithRole): ProjectView {
   return {
@@ -10,9 +14,9 @@ export function toProjectView(project: ProjectWithRole): ProjectView {
     name: project.name,
     description: project.description ?? null,
     ownerId: project.ownerId,
-    archivedAt: project.archivedAt?.toISOString() ?? null,
-    createdAt: project.createdAt.toISOString(),
-    updatedAt: project.updatedAt.toISOString(),
+    archivedAt: toIsoStringOrNull(project.archivedAt),
+    createdAt: toIsoString(project.createdAt),
+    updatedAt: toIsoString(project.updatedAt),
     currentUserRole: project.currentUserRole,
   };
 }

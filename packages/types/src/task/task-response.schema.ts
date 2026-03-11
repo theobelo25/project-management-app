@@ -12,6 +12,12 @@ export const TaskAssigneeViewSchema = z.object({
   }),
 });
 
+export const TaskAssignmentViewSchema = z.object({
+  taskId: z.string().uuid(),
+  userId: z.string().uuid(),
+  assignedAt: z.string().datetime(),
+});
+
 export const TaskViewSchema = z.object({
   id: z.string(),
   projectId: z.string(),
@@ -36,4 +42,6 @@ export const PaginatedTasksViewSchema = z.object({
 });
 
 export type TaskView = z.infer<typeof TaskViewSchema>;
+export type TaskAssigneeView = z.infer<typeof TaskAssigneeViewSchema>;
+export type TaskAssignmentView = z.infer<typeof TaskAssignmentViewSchema>;
 export type PaginatedTasksView = z.infer<typeof PaginatedTasksViewSchema>;
