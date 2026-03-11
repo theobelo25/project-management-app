@@ -7,7 +7,8 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './domain/auth/auth.module';
 import { validateEnv, AppConfigModule } from './config';
 import { LoggerModule } from './logger/logger.module';
-import { ProjectsModel } from './domain/projects/projects.module';
+import { ProjectsModule } from './domain/projects/projects.module';
+import { TasksModule } from './domain/tasks/tasks.module';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { ProjectsModel } from './domain/projects/projects.module';
     UsersModule,
     AuthModule,
     LoggerModule,
-    ProjectsModel,
+    ProjectsModule,
+    TasksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -6,7 +6,7 @@ import type {
   UpdateProjectDto,
 } from '@repo/types';
 import { ProjectsService } from './projects.service';
-import { ProjectAccessService } from './access/project-access.service';
+import { ProjectAccessService } from './policies/project-access.service';
 import { ProjectsRepository } from './repositories/projects.repository';
 import {
   CreateProjectWithOwnerInput,

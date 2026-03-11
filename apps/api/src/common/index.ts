@@ -7,8 +7,6 @@ export * from './guards/jwt-auth.guard';
 export * from './guards/refresh.guard';
 
 // PAGINATION
-export * from './pagination/pagination.schema';
-export * from './pagination/pagination.types';
 export * from './pagination/pagination.util';
 
 // PIPES

@@ -2,8 +2,8 @@ import { ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { UsersService } from './users.service';
-import { USERS_REPOSITORY } from './types/users.tokens';
 import { PinoLogger } from 'nestjs-pino';
+import { UsersRepository } from './repositories/users.repository';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -74,7 +74,7 @@ describe('UsersService', () => {
       providers: [
         UsersService,
         {
-          provide: USERS_REPOSITORY,
+          provide: UsersRepository,
           useValue: usersRepository,
         },
         {

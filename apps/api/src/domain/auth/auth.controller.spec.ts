@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+import { COOKIE } from '@repo/types';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -159,9 +160,10 @@ describe('AuthController', () => {
   describe('logout', () => {
     it('logs out when refresh token exists, clears cookies, and returns success', async () => {
       authService.logout.mockResolvedValue(undefined);
-
-      const result = await controller.logout('raw-refresh-token', response);
-
+      const req = {
+        cookies: { [COOKIE.REFRESH]: 'raw-refresh-token' },
+      } as unknown as Request;
+      const result = await controller.logout(req, response);
       expect(authService.logout).toHaveBeenCalledWith('raw-refresh-token');
       expect(cookiesService.clearAccessCookie).toHaveBeenCalledWith(response);
       expect(cookiesService.clearRefreshCookie).toHaveBeenCalledWith(response);
@@ -169,8 +171,8 @@ describe('AuthController', () => {
     });
 
     it('does not call authService.logout when refresh token is missing', async () => {
-      const result = await controller.logout('' as string, response);
-
+      const req = { cookies: {} } as Request;
+      const result = await controller.logout(req, response);
       expect(authService.logout).not.toHaveBeenCalled();
       expect(cookiesService.clearAccessCookie).toHaveBeenCalledWith(response);
       expect(cookiesService.clearRefreshCookie).toHaveBeenCalledWith(response);
@@ -178,8 +180,8 @@ describe('AuthController', () => {
     });
 
     it('still clears cookies when refresh token is undefined', async () => {
-      const result = await controller.logout(undefined as never, response);
-
+      const req = { cookies: {} } as Request;
+      const result = await controller.logout(req, response);
       expect(authService.logout).not.toHaveBeenCalled();
       expect(cookiesService.clearAccessCookie).toHaveBeenCalledWith(response);
       expect(cookiesService.clearRefreshCookie).toHaveBeenCalledWith(response);

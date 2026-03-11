@@ -2,7 +2,7 @@ import {
   PaginationParams,
   PaginationQuery,
   PaginationResult,
-} from './pagination.types';
+} from '@repo/types';
 
 export function getPaginationParams(query: PaginationQuery): PaginationParams {
   const page = query.page;

@@ -21,14 +21,12 @@ import { AccessTokensService } from './accessTokens/access-tokens.service';
 import { RefreshTokensService } from './refreshTokens/refresh-tokens.service';
 import { Db } from '@api/prisma';
 import { toUserView } from '../users/mappers/user.mapper';
-import { USERS_REPOSITORY } from '../users/types/users.tokens';
 import { UsersRepository } from '../users/repositories/users.repository';
 import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @Inject(USERS_REPOSITORY)
     private readonly usersRepository: UsersRepository,
     @Inject(HASHING_SERVICE) private readonly hashingService: HashingService,
     private readonly accessTokensService: AccessTokensService,

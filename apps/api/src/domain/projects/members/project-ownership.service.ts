@@ -4,10 +4,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PROJECTS_REPOSITORY } from '../types/projects.tokens';
 import { ProjectsRepository } from '../repositories/projects.repository';
 import { ProjectView, TransferProjectOwnershipDto } from '@repo/types';
-import { ProjectAccessService } from '../access/project-access.service';
+import { ProjectAccessService } from '../policies/project-access.service';
 import { UNIT_OF_WORK } from '@api/prisma';
 import { UnitOfWork } from '@api/prisma/uow/unit-of-work.interface';
 import { ProjectRole } from '@repo/database';
@@ -17,7 +16,6 @@ import { PinoLogger } from 'nestjs-pino';
 @Injectable()
 export class ProjectOwnershipService {
   constructor(
-    @Inject(PROJECTS_REPOSITORY)
     private readonly projectsRepository: ProjectsRepository,
     private readonly projectAccessService: ProjectAccessService,
     @Inject(UNIT_OF_WORK)

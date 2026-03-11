@@ -1,7 +1,7 @@
 import { Reflector } from '@nestjs/core';
 import { ProjectRole } from '@repo/database';
 import { ProjectRoleGuard } from './project-role.guard';
-import { ProjectAccessService } from '../access/project-access.service';
+import { ProjectAccessService } from '../policies/project-access.service';
 describe('ProjectRoleGuard', () => {
   let guard: ProjectRoleGuard;
   const reflector = {

@@ -6,9 +6,9 @@ export const ProjectViewSchema = z.object({
   name: z.string(),
   description: z.string().nullable(),
   ownerId: z.string(),
-  archivedAt: z.string().datetime().nullable(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  archivedAt: z.iso.datetime().nullable(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
   currentUserRole: ProjectRoleSchema.optional(),
 });
 

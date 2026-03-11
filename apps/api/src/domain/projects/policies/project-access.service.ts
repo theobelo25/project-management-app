@@ -4,7 +4,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PROJECTS_REPOSITORY } from '../types/projects.tokens';
 import { ProjectsRepository } from '../repositories/projects.repository';
 import { ProjectRole } from '@repo/database';
 import { Db } from '@api/prisma';
@@ -12,10 +11,7 @@ import { ProjectWithRole } from '../types/projects.repository.types';
 
 @Injectable()
 export class ProjectAccessService {
-  constructor(
-    @Inject(PROJECTS_REPOSITORY)
-    private readonly projectsRepository: ProjectsRepository,
-  ) {}
+  constructor(private readonly projectsRepository: ProjectsRepository) {}
 
   private roleRank(role: ProjectRole): number {
     switch (role) {
