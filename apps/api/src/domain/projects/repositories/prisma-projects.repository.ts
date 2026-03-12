@@ -6,8 +6,7 @@ import {
   ProjectMember,
   ProjectRole,
 } from '@repo/database';
-import { PRISMA } from '@api/prisma';
-import { Db } from '@api/prisma';
+import { PRISMA, Db } from '@api/prisma';
 import {
   AddProjectMemberInput,
   CreateProjectWithOwnerInput,
@@ -99,7 +98,9 @@ export class PrismaProjectsRepository extends ProjectsRepository {
     ]);
 
     return {
-      items: items.map((project) => toProjectWithRole(project, input.userId)),
+      items: items.map((project: Project) =>
+        toProjectWithRole(project, input.userId),
+      ),
       total,
       page: input.page,
       pageSize: input.pageSize,
@@ -166,19 +167,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
 
     if (!project) return null;
 
-    return {
-      id: project.id,
-      name: project.name,
-      description: project.description,
-      ownerId: project.ownerId,
-      archivedAt: project.archivedAt,
-      createdAt: project.createdAt,
-      updatedAt: project.updatedAt,
-      currentUserRole:
-        project.ownerId === userId
-          ? ProjectRole.OWNER
-          : (project.members[0]?.role ?? null),
-    };
+    return toProjectWithRole(project, userId);
   }
 
   async findMembership(

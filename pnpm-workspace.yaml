@@ -5,6 +5,9 @@ packages:
 onlyBuiltDependencies:
   - '@nestjs/core'
   - '@prisma/engines'
+  - argon2
   - better-sqlite3
+  - msw
   - prisma
+  - sharp
   - unrs-resolver

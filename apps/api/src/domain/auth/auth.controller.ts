@@ -1,5 +1,13 @@
-import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
-import { CurrentRefreshToken } from '@api/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import { CurrentRefreshToken, CurrentUser, JwtAuthGuard } from '@api/common';
 import {
   SignupRequestDto,
   UserView,
@@ -91,5 +99,11 @@ export class AuthController {
     this.cookieService.clearRefreshCookie(response);
 
     return { success: true };
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async me(@CurrentUser() user: UserView): Promise<UserView> {
+    return user;
   }
 }

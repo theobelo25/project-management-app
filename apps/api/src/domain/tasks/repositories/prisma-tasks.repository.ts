@@ -14,6 +14,21 @@ import { Inject, Injectable } from '@nestjs/common';
 import { buildPaginationResult, getPaginationParams } from '@api/common';
 import { TaskAccessContext } from '../types/tasks.repository.types';
 
+type FindByIdWithAccessContextPayload = Prisma.TaskGetPayload<{
+  select: {
+    id: true;
+    createdById: true;
+    projectId: true;
+    assignees: { select: { userId: true } };
+    project: {
+      select: {
+        ownerId: true;
+        members: { select: { role: true }; take: 1 };
+      };
+    };
+  };
+}>;
+
 @Injectable()
 export class PrismaTasksRepository extends TasksRepository {
   constructor(@Inject(PRISMA) private readonly prisma: PrismaClient) {
@@ -157,7 +172,7 @@ export class PrismaTasksRepository extends TasksRepository {
           },
         },
       })
-      .then((task) => {
+      .then((task: FindByIdWithAccessContextPayload | null) => {
         if (!task) return null;
 
         return {

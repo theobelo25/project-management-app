@@ -6,8 +6,9 @@ import {
   TaskWithAssignees,
   CreateTaskInput,
   UpdateTaskInput,
+  TaskAssigneeWithUser,
 } from '../types/tasks.repository.types';
-import { TaskView } from '@repo/types';
+import { TaskView, TaskAssigneeView } from '@repo/types';
 import { CreateTaskDto } from '../dto/create-task.dto';
 import { UpdateTaskDto } from '../dto/update-task.dto';
 
@@ -24,15 +25,17 @@ export function toTaskView(task: TaskWithAssignees): TaskView {
     createdAt: toIsoString(task.createdAt),
     updatedAt: toIsoString(task.updatedAt),
     createdById: task.createdById,
-    assignees: task.assignees.map((assignee) => ({
-      userId: assignee.userId,
-      assignedAt: toIsoString(assignee.assignedAt),
-      user: {
-        id: assignee.user.id,
-        name: assignee.user.name,
-        email: assignee.user.email,
-      },
-    })),
+    assignees: task.assignees.map(
+      (assignee: TaskAssigneeWithUser): TaskAssigneeView => ({
+        userId: assignee.userId,
+        assignedAt: toIsoString(assignee.assignedAt),
+        user: {
+          id: assignee.user.id,
+          name: assignee.user.name,
+          email: assignee.user.email,
+        },
+      }),
+    ),
   };
 }
 
