@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AuthRepository } from './auth.repository';
 import { Db, PRISMA, PrismaClient } from '@api/prisma';
+import { RefreshToken } from '@repo/database';
 import {
   ConsumeAndReplaceRefreshTokenInput,
   CreateRefreshTokenInput,
@@ -46,7 +47,7 @@ export class PrismaAuthRepository extends AuthRepository {
       },
     });
 
-    return tokens.map((token) => this.toDomain(token));
+    return tokens.map((token: RefreshToken) => this.toDomain(token));
   }
 
   async findRefreshTokenById(
@@ -133,17 +134,7 @@ export class PrismaAuthRepository extends AuthRepository {
     return result.count;
   }
 
-  private toDomain(token: {
-    id: string;
-    userId: string;
-    tokenHash: string;
-    tokenPrefix: string;
-    expiresAt: Date;
-    createdAt: Date;
-    updatedAt: Date;
-    revokedAt: Date | null;
-    replacedByTokenId?: string | null;
-  }): RefreshTokenRecord {
+  private toDomain(token: RefreshToken): RefreshTokenRecord {
     return {
       id: token.id,
       userId: token.userId,

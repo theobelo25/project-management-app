@@ -21,7 +21,7 @@ export const cookieConfig = registerAs('cookie', () => {
       name: COOKIE.REFRESH,
       options: {
         ...baseOptions,
-        path: '/auth/refresh',
+        path: '/api/auth/refresh',
       } satisfies CookieOptions,
     },
   } as const;

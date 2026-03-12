@@ -58,7 +58,7 @@ export class PrismaUsersRepository implements UsersRepository {
 
     const users = await prisma.user.findMany();
 
-    return users.map((u) => toUserView(u));
+    return users.map((user: PrivateUser) => toUserView(user));
   }
 
   async create(dto: CreateUserDto, tx?: Db): Promise<UserView> {
