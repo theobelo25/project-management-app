@@ -6,6 +6,10 @@ import {
   PaginatedProjectsListView,
   CreateProjectDto,
   ProjectView,
+  TaskView,
+  CreateTaskDto,
+  FindTasksQuery,
+  PaginationResult,
 } from "@repo/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -174,6 +178,54 @@ export async function fetchProject(id: string): Promise<ProjectView> {
   if (!res.ok) {
     if (res.status === 404) throw new Error("Project not found");
     throw new Error("Failed to fetch project");
+  }
+  return res.json();
+}
+
+export async function createTask(
+  projectId: string,
+  dto: CreateTaskDto,
+): Promise<TaskView> {
+  const res = await fetchWithAuth(`${API_BASE}/api/tasks`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...dto, projectId }),
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to create task");
+  }
+  return res.json();
+}
+
+export async function fetchTasks(
+  query: FindTasksQuery,
+): Promise<PaginationResult<TaskView>> {
+  const params = new URLSearchParams();
+  params.set("projectId", query.projectId);
+  params.set("page", String(query.page ?? 1));
+  params.set("limit", String(query.limit ?? 20));
+  if (query.status) params.set("status", query.status);
+  if (query.assigneeId) params.set("assigneeId", query.assigneeId);
+  if (query.search?.trim()) params.set("search", query.search.trim());
+
+  const res = await fetchWithAuth(
+    `${API_BASE}/api/tasks?${params.toString()}`,
+    { credentials: "include" },
+  );
+
+  if (!res.ok) throw new Error("Failed to fetch tasks");
+  return res.json();
+}
+
+export async function fetchTask(taskId: string): Promise<TaskView> {
+  const res = await fetchWithAuth(`${API_BASE}/api/tasks/${taskId}`, {
+    credentials: "include",
+  });
+  if (!res.ok) {
+    if (res.status === 404) throw new Error("Task not found");
+    throw new Error("Failed to fetch task.");
   }
   return res.json();
 }

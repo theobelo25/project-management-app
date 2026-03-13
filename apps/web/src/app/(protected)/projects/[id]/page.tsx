@@ -23,6 +23,7 @@ import {
 import React from "react";
 import { useProjectQuery } from "@web/lib/api/queries";
 import type { ProjectRole } from "@repo/types";
+import { CreateTaskDialog } from "@web/components/tasks/create-task-dialog";
 
 type ProjectMember = {
   id: string;
@@ -169,12 +170,7 @@ export default function ProjectDetailPage({
               </Link>
             </Button>
 
-            <Button asChild>
-              <Link href={`/projects/${project.id}/tasks/new`}>
-                <Plus className="mr-2 h-4 w-4" />
-                New Task
-              </Link>
-            </Button>
+            <CreateTaskDialog projectId={project.id} />
           </div>
         </div>
       </div>
@@ -344,12 +340,7 @@ export default function ProjectDetailPage({
               </div>
 
               <div className="pt-2">
-                <Button asChild className="w-full">
-                  <Link href={`/projects/${project.id}/tasks/new`}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create Task
-                  </Link>
-                </Button>
+                <CreateTaskDialog projectId={project.id} />
               </div>
             </CardContent>
           </Card>
