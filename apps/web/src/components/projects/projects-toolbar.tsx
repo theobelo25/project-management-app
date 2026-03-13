@@ -55,7 +55,7 @@ export function ProjectsToolbar({
           value={filter}
           onValueChange={(value) => onFilterChange(value as ProjectsFilter)}
         >
-          <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectTrigger className="w-full sm:w-45">
             <SelectValue placeholder="All projects" />
           </SelectTrigger>
           <SelectContent>
@@ -72,7 +72,7 @@ export function ProjectsToolbar({
           value={sort}
           onValueChange={(value) => onSortChange(value as ProjectsSort)}
         >
-          <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectTrigger className="w-full sm:w-45">
             <SelectValue placeholder="Recently updated" />
           </SelectTrigger>
           <SelectContent>

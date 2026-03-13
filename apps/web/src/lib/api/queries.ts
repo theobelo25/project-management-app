@@ -1,6 +1,12 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
-import { fetchMe, fetchProject, fetchProjects } from "./client";
-import { GetProjectsQueryDto } from "packages/types/dist";
+import {
+  fetchMe,
+  fetchProject,
+  fetchProjects,
+  fetchTask,
+  fetchTasks,
+} from "./client";
+import { FindTasksQuery, GetProjectsQueryDto } from "packages/types/dist";
 
 export const ME_QUERY_KEY = ["me"] as const;
 
@@ -25,12 +31,44 @@ export function useProjectsQuery(query: GetProjectsQueryDto) {
 }
 
 export const PROJECT_QUERY_KEY = (id: string) => ["projects", id] as const;
+export const PROJECT_TASKS_QUERY_KEY = (projectId: string) =>
+  ["projects", projectId, "tasks"] as const;
 
 export function useProjectQuery(projectId: string | null) {
   return useQuery({
     queryKey: [...PROJECTS_QUERY_KEY, projectId],
     queryFn: () => fetchProject(projectId!),
     enabled: !!projectId,
+    staleTime: 30 * 1000,
+  });
+}
+
+export const TASK_QUERY_KEY = (taskId: string) => ["tasks", taskId] as const;
+
+export function useProjectTasksQuery(
+  projectId: string | null,
+  query: Omit<FindTasksQuery, "projectId"> & { projectId?: string },
+) {
+  const effectiveQuery = {
+    ...query,
+    projectId: projectId ?? "",
+    page: query.page ?? 1,
+    limit: query.limit ?? 10,
+  };
+
+  return useQuery({
+    queryKey: [...PROJECT_TASKS_QUERY_KEY(projectId ?? ""), effectiveQuery],
+    queryFn: () => fetchTasks(effectiveQuery),
+    enabled: !!projectId,
+    staleTime: 30 * 1000,
+  });
+}
+
+export function useTaskQuery(taskId: string | null) {
+  return useQuery({
+    queryKey: TASK_QUERY_KEY(taskId ?? ""),
+    queryFn: () => fetchTask(taskId!),
+    enabled: !!taskId,
     staleTime: 30 * 1000,
   });
 }

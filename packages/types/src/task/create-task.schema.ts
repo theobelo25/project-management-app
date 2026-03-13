@@ -19,3 +19,5 @@ export const CreateTaskSchema = z.object({
 
   assigneeIds: z.array(z.uuid()).optional(),
 });
+
+export type CreateTaskDto = z.infer<typeof CreateTaskSchema>;
