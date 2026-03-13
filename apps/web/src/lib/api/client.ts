@@ -4,6 +4,8 @@ import {
   UserView,
   GetProjectsQueryDto,
   PaginatedProjectsListView,
+  CreateProjectDto,
+  ProjectView,
 } from "@repo/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -146,5 +148,32 @@ export async function fetchProjects(
     { credentials: "include" },
   );
   if (!res.ok) throw new Error("Failed to fetch projects");
+  return res.json();
+}
+
+export async function createProject(
+  dto: CreateProjectDto,
+): Promise<ProjectView> {
+  const res = await fetchWithAuth(`${API_BASE}/api/projects`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dto),
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to create project");
+  }
+  return res.json();
+}
+
+export async function fetchProject(id: string): Promise<ProjectView> {
+  const res = await fetchWithAuth(`${API_BASE}/api/projects/${id}`, {
+    credentials: "include",
+  });
+  if (!res.ok) {
+    if (res.status === 404) throw new Error("Project not found");
+    throw new Error("Failed to fetch project");
+  }
   return res.json();
 }

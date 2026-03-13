@@ -5,12 +5,14 @@ import {
   GetProjectsQueryDto,
   PaginatedProjectsListView,
   PaginatedProjectsView,
+  ProjectDetailView,
   ProjectView,
   UpdateProjectDto,
 } from '@repo/types';
 import {
   toPaginatedProjectListView,
   toPaginatedProjectsView,
+  toProjectDetailView,
   toProjectView,
 } from './mappers/project.mapper';
 import { ProjectAccessService } from './policies/project-access.service';
@@ -154,5 +156,23 @@ export class ProjectsService {
     );
 
     return toProjectView(unarchivedProject);
+  }
+
+  async findDetailById(
+    projectId: string,
+    userId: string,
+  ): Promise<ProjectDetailView> {
+    const project = await this.projectAccessService.requireMember(
+      projectId,
+      userId,
+    );
+    const [countsMap, members, recentTasks] = await Promise.all([
+      this.taskRepository.getTaskCountsByProjectIds([projectId]),
+      this.projectsRepository.findMembersWithUserByProjectIds([projectId]),
+      this.taskRepository.findRecentByProjectId(projectId, 10),
+    ]);
+    const counts = countsMap.get(projectId) ?? { total: 0, completed: 0 };
+    const membersList = members.get(projectId) ?? [];
+    return toProjectDetailView(project, counts, membersList, recentTasks);
   }
 }

@@ -12,6 +12,7 @@ import {
 import { useMemo, useState } from "react";
 import { ProjectsPagination } from "@web/components/projects/projects-pagination";
 import { useProjectsQuery } from "@web/lib/api/queries";
+import { CreateProjectDialog } from "@web/components/projects/create-project-dialog";
 
 const PAGE_SIZE = 20;
 
@@ -65,7 +66,7 @@ export default function ProjectsPage() {
           </p>
         </div>
 
-        <Button>Create Project</Button>
+        <CreateProjectDialog />
       </div>
 
       <ProjectsToolbar
@@ -82,9 +83,9 @@ export default function ProjectsPage() {
 
       <ProjectsPagination
         page={page}
-        totalPages={8}
-        totalCount={64}
-        pageSize={8}
+        totalPages={data?.totalPages ?? 1}
+        totalCount={data?.total ?? 0}
+        pageSize={PAGE_SIZE}
         onPageChange={setPage}
       />
     </div>

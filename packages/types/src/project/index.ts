@@ -10,3 +10,4 @@ export * from "./update-project-member-role.schema";
 export * from "./project-member-param.schema";
 export * from "./transfer-project-ownership.schema";
 export * from "./project-list-response.schema";
+export * from "./project-detail-response.schema";
