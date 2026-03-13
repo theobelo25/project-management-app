@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 import { logout } from "@web/lib/api/client";
 import { ME_QUERY_KEY, useMeQuery } from "@web/lib/api/queries";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 const authItems = [
   { href: "/signin", label: "Sign in", primary: false },
@@ -20,12 +21,14 @@ interface SecondaryNavProps {
 export function SecondaryNav({ variant = "bar" }: SecondaryNavProps) {
   const { data: user, isPending } = useMeQuery();
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const isAuthenticated = !!user;
 
   const handleLogoutClick = () => {
     logout();
     queryClient.setQueryData(ME_QUERY_KEY, null);
+    router.push("/");
   };
 
   if (variant === "drawer") {

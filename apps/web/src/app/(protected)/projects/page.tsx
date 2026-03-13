@@ -1,20 +1,24 @@
-import { Button } from "@web/components/ui/button";
-import { Input } from "@web/components/ui/input";
+"use client";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@web/components/ui/select";
-import { ProjectCard } from "./project-card";
+  ProjectsList,
+  type ProjectListItem,
+} from "@web/components/projects/projects-list";
+import { Button } from "@web/components/ui/button";
+import { ProjectCard } from "../../../components/projects/project-card";
+import {
+  ProjectsToolbar,
+  type ProjectsFilter,
+  type ProjectsSort,
+} from "@web/components/projects/projects-toolbar";
+import { useState } from "react";
+import { ProjectsPagination } from "@web/components/projects/projects-pagination";
 
-const projects = [
+const projects: ProjectListItem[] = [
   {
     id: "1",
     name: "Project Management App",
     description: "A collaborative project and task management platform.",
-    currentUserRole: "OWNER" as const,
+    currentUserRole: "OWNER",
     updatedAt: new Date(),
     totalTasks: 14,
     completedTasks: 5,
@@ -23,13 +27,21 @@ const projects = [
       { id: "1", name: "Theo Belo" },
       { id: "2", name: "Kenzie Malone" },
       { id: "3", name: "Joel Smith" },
-      { id: "4", name: "Alex Doe" },
     ],
   },
 ];
 
 export default function ProjectsPage() {
-  const hasProjects = projects.length > 0;
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<ProjectsFilter>("all");
+  const [sort, setSort] = useState<ProjectsSort>("updated-desc");
+  const [page, setPage] = useState(1);
+
+  function handleClear() {
+    setSearch("");
+    setFilter("all");
+    setSort("updated-desc");
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 md:px-6">
@@ -45,71 +57,25 @@ export default function ProjectsPage() {
         <Button>Create Project</Button>
       </div>
 
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-1 flex-col gap-3 sm:flex-row">
-          <Input placeholder="Search projects..." className="sm:max-w-sm" />
+      <ProjectsToolbar
+        search={search}
+        filter={filter}
+        sort={sort}
+        onSearchChange={setSearch}
+        onFilterChange={setFilter}
+        onSortChange={setSort}
+        onClear={handleClear}
+      />
 
-          <Select>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="All projects" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All projects</SelectItem>
-              <SelectItem value="owned">Owned by me</SelectItem>
-              <SelectItem value="member">Member of</SelectItem>
-              <SelectItem value="archived">Archived</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      <ProjectsList projects={projects} />
 
-        <Select>
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Recently updated" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="updated-desc">Recently updated</SelectItem>
-            <SelectItem value="created-desc">Recently created</SelectItem>
-            <SelectItem value="name-asc">Name</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {hasProjects ? (
-        <>
-          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {projects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
-
-          <div className="flex items-center justify-between border-t pt-6">
-            <p className="text-sm text-muted-foreground">
-              Showing 1 of 1 projects
-            </p>
-
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" disabled>
-                Previous
-              </Button>
-              <Button variant="outline" size="sm" disabled>
-                Next
-              </Button>
-            </div>
-          </div>
-        </>
-      ) : (
-        <div className="flex min-h-[320px] flex-col items-center justify-center rounded-xl border border-dashed bg-muted/20 px-6 text-center">
-          <div className="space-y-2">
-            <h2 className="text-lg font-semibold">No projects yet</h2>
-            <p className="max-w-md text-sm text-muted-foreground">
-              Create your first project to start organizing tasks and
-              collaborating with your team.
-            </p>
-          </div>
-
-          <Button className="mt-4">Create Project</Button>
-        </div>
-      )}
+      <ProjectsPagination
+        page={page}
+        totalPages={8}
+        totalCount={64}
+        pageSize={8}
+        onPageChange={setPage}
+      />
     </div>
   );
 }
