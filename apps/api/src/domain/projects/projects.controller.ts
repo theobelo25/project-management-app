@@ -66,7 +66,7 @@ export class ProjectsController {
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
   ): Promise<ProjectView> {
-    return this.projectsService.findById(params.id, user.id);
+    return this.projectsService.findDetailById(params.id, user.id);
   }
 
   @Patch(':id')

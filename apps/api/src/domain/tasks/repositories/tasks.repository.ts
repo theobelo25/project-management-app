@@ -43,4 +43,10 @@ export abstract class TasksRepository {
     projectIds: string[],
     db?: Db,
   ): Promise<Map<string, { total: number; completed: number }>>;
+
+  abstract findRecentByProjectId(
+    projectId: string,
+    limit: number,
+    db?: Db,
+  ): Promise<TaskWithAssignees[]>;
 }

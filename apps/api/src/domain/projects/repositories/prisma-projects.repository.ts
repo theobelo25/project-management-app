@@ -77,10 +77,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
     if (input.filter === 'archived') {
       (baseWhere as Prisma.ProjectWhereInput).archivedAt = { not: null };
     } else if (!input.includeArchived) {
-      (baseWhere as Prisma.ProjectWhereInput).AND = [
-        { members: { some: { userId: input.userId } } },
-        { ownerId: { not: input.userId } },
-      ];
+      (baseWhere as Prisma.ProjectWhereInput).archivedAt = null;
     }
 
     if (input.filter === 'owned') {

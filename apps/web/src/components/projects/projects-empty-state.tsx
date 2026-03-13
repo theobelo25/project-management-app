@@ -2,6 +2,7 @@ import Link from "next/link";
 import { FolderKanban } from "lucide-react";
 
 import { Button } from "@web/components/ui/button";
+import { CreateProjectDialog } from "./create-project-dialog";
 
 type ProjectsEmptyStateProps = {
   title?: string;
@@ -17,7 +18,7 @@ export function ProjectsEmptyState({
   createLabel = "Create Project",
 }: ProjectsEmptyStateProps) {
   return (
-    <div className="flex min-h-[320px] flex-col items-center justify-center rounded-xl border border-dashed bg-muted/20 px-6 text-center">
+    <div className="flex min-h-80 flex-col items-center justify-center rounded-xl border border-dashed bg-muted/20 px-6 text-center">
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-background border">
         <FolderKanban className="h-6 w-6 text-muted-foreground" />
       </div>
@@ -27,9 +28,7 @@ export function ProjectsEmptyState({
         <p className="max-w-md text-sm text-muted-foreground">{description}</p>
       </div>
 
-      <Button asChild className="mt-6">
-        <Link href={createHref}>{createLabel}</Link>
-      </Button>
+      <CreateProjectDialog />
     </div>
   );
 }

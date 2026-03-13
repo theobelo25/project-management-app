@@ -250,4 +250,18 @@ export class PrismaTasksRepository extends TasksRepository {
     }
     return map;
   }
+
+  async findRecentByProjectId(
+    projectId: string,
+    limit: number,
+    db?: Db,
+  ): Promise<TaskWithAssignees[]> {
+    const prisma = db ?? this.prisma;
+    return prisma.task.findMany({
+      where: { projectId },
+      include: taskWithAssigneesInclude,
+      orderBy: { updatedAt: 'desc' },
+      take: limit,
+    });
+  }
 }

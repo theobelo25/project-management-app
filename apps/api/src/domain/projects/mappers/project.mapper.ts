@@ -78,3 +78,35 @@ export function toPaginatedProjectListView(
     totalPages: Math.ceil(result.total / result.pageSize),
   };
 }
+
+// Add to imports from '@repo/types':
+import { ProjectDetailView, ProjectRecentTask } from '@repo/types';
+
+// Add mapper (adjust TaskWithAssignees import if your task type lives elsewhere):
+import { TaskWithAssignees } from '../../tasks/types/tasks.repository.types';
+
+export function toProjectDetailView(
+  project: ProjectWithRole,
+  counts: { total: number; completed: number },
+  members: ProjectListMemberWithUser[],
+  recentTasks: TaskWithAssignees[],
+): ProjectDetailView {
+  const base = toProjectView(project);
+  const openTasks = counts.total - counts.completed;
+  return {
+    ...base,
+    totalTasks: counts.total,
+    completedTasks: counts.completed,
+    openTasks,
+    members: members.map((m) => ({
+      id: m.userId,
+      name: m.name,
+      image: m.image ?? null,
+    })),
+    recentTasks: recentTasks.map((t) => ({
+      id: t.id,
+      title: t.title,
+      status: t.status,
+    })),
+  };
+}
