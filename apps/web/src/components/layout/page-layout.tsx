@@ -4,6 +4,7 @@ interface PageLayoutProps {
   children: ReactNode;
   /** Optional: use "narrow" for reading-focused content (e.g. articles), "wide" for dashboards */
   variant?: "default" | "narrow" | "wide";
+  centerVertical?: boolean;
 }
 
 const maxWidthByVariant = {
@@ -12,12 +13,17 @@ const maxWidthByVariant = {
   wide: "max-w-[1600px]", // custom – dense dashboards
 } as const;
 
-export function PageLayout({ children, variant = "default" }: PageLayoutProps) {
+export function PageLayout({
+  children,
+  variant = "default",
+  centerVertical = false,
+}: PageLayoutProps) {
   return (
     <div
       className={[
         "mx-auto w-full min-w-0",
         "px-4 sm:px-6 lg:px-8", // responsive horizontal padding
+        centerVertical ? "flex flex-col justify-center flex-1" : "",
         maxWidthByVariant[variant],
       ].join(" ")}
     >

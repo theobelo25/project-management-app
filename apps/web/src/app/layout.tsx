@@ -44,7 +44,7 @@ export default function RootLayout({
       >
         <AppProvider>
           <AppHeader />
-          <main className="flex-1">{children}</main>
+          <main className="flex flex-1">{children}</main>
           <AppFooter />
         </AppProvider>
       </body>

@@ -11,7 +11,7 @@ import { Menu } from "lucide-react";
 import { SecondaryNav } from "./secondary-nav";
 
 const navItems = [
-  { href: "/", label: "Home" },
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/projects", label: "Projects" },
   { href: "/board", label: "Board" },
 ] as const;
@@ -46,7 +46,7 @@ export function MainNav() {
             <Menu className="size-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-[280px]">
+        <SheetContent side="left" className="w-70">
           <SheetHeader>
             <SheetTitle>Menu</SheetTitle>
           </SheetHeader>

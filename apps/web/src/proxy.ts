@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const ACCESS_COOKIE_NAME = COOKIE.AUTHENTICATION;
 
-const PROTECTED_PATHS = ["/projects", "/board"] as const;
+const PROTECTED_PATHS = ["/projects", "/board", "/dashboard"] as const;
 const AUTH_PATHS = ["/signin", "/signup"] as const;
 
 function isProtectedPath(pathname: string) {
