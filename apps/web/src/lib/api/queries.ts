@@ -2,6 +2,7 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import {
   fetchMe,
   fetchProject,
+  fetchProjectMembers,
   fetchProjects,
   fetchTask,
   fetchTasks,
@@ -69,6 +70,18 @@ export function useTaskQuery(taskId: string | null) {
     queryKey: TASK_QUERY_KEY(taskId ?? ""),
     queryFn: () => fetchTask(taskId!),
     enabled: !!taskId,
+    staleTime: 30 * 1000,
+  });
+}
+
+export const PROJECT_MEMBERS_QUERY_KEY = (projectId: string) =>
+  ["projects", projectId, "members"] as const;
+
+export function useProjectMembersQuery(projectId: string | null) {
+  return useQuery({
+    queryKey: PROJECT_MEMBERS_QUERY_KEY(projectId ?? ""),
+    queryFn: () => fetchProjectMembers(projectId!),
+    enabled: !!projectId,
     staleTime: 30 * 1000,
   });
 }

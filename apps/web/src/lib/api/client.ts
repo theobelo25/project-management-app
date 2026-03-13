@@ -10,6 +10,12 @@ import {
   CreateTaskDto,
   FindTasksQuery,
   PaginationResult,
+  ProjectDetailView,
+  UpdateProjectDto,
+  ProjectMembersView,
+  AddProjectMemberDto,
+  ProjectMemberView,
+  UpdateProjectMemberRoleDto,
 } from "@repo/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -171,7 +177,7 @@ export async function createProject(
   return res.json();
 }
 
-export async function fetchProject(id: string): Promise<ProjectView> {
+export async function fetchProject(id: string): Promise<ProjectDetailView> {
   const res = await fetchWithAuth(`${API_BASE}/api/projects/${id}`, {
     credentials: "include",
   });
@@ -228,4 +234,111 @@ export async function fetchTask(taskId: string): Promise<TaskView> {
     throw new Error("Failed to fetch task.");
   }
   return res.json();
+}
+
+export async function updateProject(
+  id: string,
+  dto: UpdateProjectDto,
+): Promise<ProjectView> {
+  const res = await fetchWithAuth(`${API_BASE}/api/projects/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dto),
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to update project");
+  }
+  return res.json();
+}
+
+export async function archiveProject(id: string): Promise<ProjectView> {
+  const res = await fetchWithAuth(`${API_BASE}/api/projects/${id}/archive`, {
+    method: "PATCH",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to archive project");
+  }
+  return res.json();
+}
+
+export async function unarchiveProject(id: string): Promise<ProjectView> {
+  const res = await fetchWithAuth(`${API_BASE}/api/projects/${id}/unarchive`, {
+    method: "PATCH",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to unarchive project");
+  }
+  return res.json();
+}
+
+export async function fetchProjectMembers(
+  projectId: string,
+): Promise<ProjectMembersView> {
+  const res = await fetchWithAuth(
+    `${API_BASE}/api/projects/${projectId}/members`,
+    { credentials: "include" },
+  );
+  if (!res.ok) throw new Error("Failed to fetch project members");
+  return res.json();
+}
+
+export async function addProjectMember(
+  projectId: string,
+  dto: AddProjectMemberDto,
+): Promise<ProjectMemberView> {
+  const res = await fetchWithAuth(
+    `${API_BASE}/api/projects/${projectId}/members`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto),
+      credentials: "include",
+    },
+  );
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to add member");
+  }
+  return res.json();
+}
+
+export async function updateProjectMemberRole(
+  projectId: string,
+  userId: string,
+  dto: UpdateProjectMemberRoleDto,
+): Promise<ProjectMemberView> {
+  const res = await fetchWithAuth(
+    `${API_BASE}/api/projects/${projectId}/members/${userId}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto),
+      credentials: "include",
+    },
+  );
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to update role");
+  }
+  return res.json();
+}
+
+export async function removeProjectMember(
+  projectId: string,
+  userId: string,
+): Promise<void> {
+  const res = await fetchWithAuth(
+    `${API_BASE}/api/projects/${projectId}/members/${userId}`,
+    { method: "DELETE", credentials: "include" },
+  );
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to remove member");
+  }
 }
