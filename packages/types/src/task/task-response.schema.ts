@@ -7,8 +7,8 @@ export const TaskAssigneeViewSchema = z.object({
   assignedAt: z.string().datetime(),
   user: z.object({
     id: z.string(),
-    name: z.string().nullable(),
-    email: z.string().email(),
+    name: z.string(),
+    email: z.email(),
   }),
 });
 

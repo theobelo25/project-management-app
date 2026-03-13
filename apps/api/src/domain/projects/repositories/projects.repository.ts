@@ -5,6 +5,7 @@ import {
   CreateProjectWithOwnerInput,
   FindManyForUserInput,
   PaginatedProjectsResult,
+  ProjectListMemberWithUser,
   ProjectMemberWithUser,
   ProjectWithRole,
   UpdateProjectInput,
@@ -89,4 +90,9 @@ export abstract class ProjectsRepository {
   ): Promise<ProjectWithRole>;
 
   abstract delete(id: string, db?: Db): Promise<Project>;
+
+  abstract findMembersWithUserByProjectIds(
+    projectIds: string[],
+    db?: Db,
+  ): Promise<Map<string, ProjectListMemberWithUser[]>>;
 }

@@ -1,7 +1,7 @@
 export interface PrivateUser {
   id: string;
   email: string;
-  name: string | null;
+  name: string;
   passwordHash: string;
   createdAt: Date;
   updatedAt: Date;
@@ -10,7 +10,7 @@ export interface PrivateUser {
 export interface UserView {
   id: string;
   email: string;
-  name: string | null;
+  name: string;
   createdAt: Date;
   updatedAt: Date;
 }

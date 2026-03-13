@@ -7,6 +7,9 @@ import { PrismaProjectsRepository } from './repositories/prisma-projects.reposit
 import { ProjectsController } from './projects.controller';
 import { ProjectRoleGuard } from './guards/project-role.guard';
 import { ProjectsRepository } from './repositories/projects.repository';
+import { TasksModule } from '../tasks/tasks.module';
+import { TasksRepository } from '../tasks/repositories/tasks.repository';
+import { PrismaTasksRepository } from '../tasks/repositories/prisma-tasks.repository';
 
 @Module({
   controllers: [ProjectsController],
@@ -19,6 +22,10 @@ import { ProjectsRepository } from './repositories/projects.repository';
     {
       provide: ProjectsRepository,
       useClass: PrismaProjectsRepository,
+    },
+    {
+      provide: TasksRepository,
+      useClass: PrismaTasksRepository,
     },
   ],
   exports: [
