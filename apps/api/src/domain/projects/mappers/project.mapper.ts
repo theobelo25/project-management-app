@@ -1,7 +1,13 @@
-import { PaginatedProjectsView, ProjectView } from '@repo/types';
+import {
+  PaginatedProjectsListView,
+  PaginatedProjectsView,
+  ProjectListItemView,
+  ProjectView,
+} from '@repo/types';
 import {
   ProjectWithRole,
   PaginatedProjectsResult,
+  ProjectListMemberWithUser,
 } from '../types/projects.repository.types';
 import {
   toIsoString,
@@ -26,6 +32,46 @@ export function toPaginatedProjectsView(
 ): PaginatedProjectsView {
   return {
     items: result.items.map(toProjectView),
+    page: result.page,
+    pageSize: result.pageSize,
+    total: result.total,
+    totalPages: Math.ceil(result.total / result.pageSize),
+  };
+}
+
+export function toProjectListItemView(
+  project: ProjectWithRole,
+  counts: { total: number; completed: number },
+  members: ProjectListMemberWithUser[],
+): ProjectListItemView {
+  const base = toProjectView(project);
+  const openTasks = counts.total - counts.completed;
+  return {
+    ...base,
+    totalTasks: counts.total,
+    completedTasks: counts.completed,
+    openTasks,
+    members: members.map((m) => ({
+      id: m.userId,
+      name: m.name,
+      image: m.image ?? null,
+    })),
+  };
+}
+
+export function toPaginatedProjectListView(
+  result: PaginatedProjectsResult,
+  taskCountsMap: Map<string, { total: number; completed: number }>,
+  membersMap: Map<string, ProjectListMemberWithUser[]>,
+): PaginatedProjectsListView {
+  return {
+    items: result.items.map((project) =>
+      toProjectListItemView(
+        project,
+        taskCountsMap.get(project.id) ?? { total: 0, completed: 0 },
+        membersMap.get(project.id) ?? [],
+      ),
+    ),
     page: result.page,
     pageSize: result.pageSize,
     total: result.total,

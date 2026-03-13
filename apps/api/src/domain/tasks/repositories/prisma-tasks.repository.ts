@@ -1,5 +1,5 @@
 import { Db, PRISMA } from '@api/prisma';
-import { Prisma, PrismaClient } from '@repo/database';
+import { Prisma, PrismaClient, TaskStatus } from '@repo/database';
 import {
   CreateTaskInput,
   TaskWithAssignees,
@@ -225,5 +225,29 @@ export class PrismaTasksRepository extends TasksRepository {
     await prisma.taskAssignee.deleteMany({
       where: { taskId, userId },
     });
+  }
+
+  async getTaskCountsByProjectIds(
+    projectIds: string[],
+    db: Db,
+  ): Promise<Map<string, { total: number; completed: number }>> {
+    const prisma = db ?? this.prisma;
+    if (projectIds.length === 0) return new Map();
+
+    const rows = await prisma.task.findMany({
+      where: { projectId: { in: projectIds } },
+      select: { projectId: true, status: true },
+    });
+
+    const map = new Map<string, { total: number; completed: number }>();
+    for (const id of projectIds) {
+      map.set(id, { total: 0, completed: 0 });
+    }
+    for (const row of rows) {
+      const cur = map.get(row.projectId)!;
+      cur.total += 1;
+      if (row.status === TaskStatus.DONE) cur.completed += 1;
+    }
+    return map;
   }
 }

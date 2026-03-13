@@ -3,11 +3,13 @@ import { CreateProjectWithOwnerInput } from './types/projects.repository.types';
 import {
   CreateProjectDto,
   GetProjectsQueryDto,
+  PaginatedProjectsListView,
   PaginatedProjectsView,
   ProjectView,
   UpdateProjectDto,
 } from '@repo/types';
 import {
+  toPaginatedProjectListView,
   toPaginatedProjectsView,
   toProjectView,
 } from './mappers/project.mapper';
@@ -15,6 +17,7 @@ import { ProjectAccessService } from './policies/project-access.service';
 import { ProjectRole } from '@repo/database';
 import { ProjectsRepository } from './repositories/projects.repository';
 import { PinoLogger } from 'nestjs-pino';
+import { TasksRepository } from '../tasks/repositories/tasks.repository';
 
 @Injectable()
 export class ProjectsService {
@@ -22,6 +25,7 @@ export class ProjectsService {
     private readonly projectsRepository: ProjectsRepository,
     private readonly projectAccessService: ProjectAccessService,
     private readonly logger: PinoLogger,
+    private readonly taskRepository: TasksRepository,
   ) {
     this.logger.setContext(ProjectsService.name);
   }
@@ -46,15 +50,24 @@ export class ProjectsService {
   async findManyForUser(
     userId: string,
     query: GetProjectsQueryDto,
-  ): Promise<PaginatedProjectsView> {
+  ): Promise<PaginatedProjectsListView> {
     const result = await this.projectsRepository.findManyForUser({
       userId,
       page: query.page,
       pageSize: query.pageSize,
       includeArchived: query.includeArchived,
+      search: query.search,
+      filter: query.filter,
+      sort: query.sort,
     });
 
-    return toPaginatedProjectsView(result);
+    const projectIds = result.items.map((p) => p.id);
+    const taskCountsMap =
+      await this.taskRepository.getTaskCountsByProjectIds(projectIds);
+    const membersMap =
+      await this.projectsRepository.findMembersWithUserByProjectIds(projectIds);
+
+    return toPaginatedProjectListView(result, taskCountsMap, membersMap);
   }
 
   async findById(projectId: string, userId: string): Promise<ProjectView> {

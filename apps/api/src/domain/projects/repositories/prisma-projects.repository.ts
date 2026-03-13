@@ -12,6 +12,7 @@ import {
   CreateProjectWithOwnerInput,
   FindManyForUserInput,
   PaginatedProjectsResult,
+  ProjectListMemberWithUser,
   ProjectMemberWithUser,
   ProjectWithRole,
   UpdateProjectInput,
@@ -66,26 +67,57 @@ export class PrismaProjectsRepository extends ProjectsRepository {
     const prisma = db ?? this.prisma;
     const skip = (input.page - 1) * input.pageSize;
 
-    const where: Prisma.ProjectWhereInput = {
-      ...(input.includeArchived ? {} : { archivedAt: null }),
+    const baseWhere: Prisma.ProjectWhereInput = {
       OR: [
         { ownerId: input.userId },
-        {
-          members: {
-            some: {
-              userId: input.userId,
-            },
-          },
-        },
+        { members: { some: { userId: input.userId } } },
       ],
     };
 
+    if (input.filter === 'archived') {
+      (baseWhere as Prisma.ProjectWhereInput).archivedAt = { not: null };
+    } else if (!input.includeArchived) {
+      (baseWhere as Prisma.ProjectWhereInput).AND = [
+        { members: { some: { userId: input.userId } } },
+        { ownerId: { not: input.userId } },
+      ];
+    }
+
+    if (input.filter === 'owned') {
+      (baseWhere as Prisma.ProjectWhereInput).ownerId = input.userId;
+    } else if (input.filter === 'member') {
+      (baseWhere as Prisma.ProjectWhereInput).AND = [
+        { members: { some: { userId: input.userId } } },
+        { ownerId: { not: input.userId } },
+      ];
+      (baseWhere as Prisma.ProjectWhereInput).archivedAt = null;
+    }
+
+    if (input.search && input.search.length > 0) {
+      const searchCondition: Prisma.ProjectWhereInput = {
+        OR: [
+          { name: { contains: input.search, mode: 'insensitive' } },
+          { description: { contains: input.search, mode: 'insensitive' } },
+        ],
+      };
+      baseWhere.AND = Array.isArray(baseWhere.AND)
+        ? [...baseWhere.AND, searchCondition]
+        : [searchCondition];
+    }
+
+    const orderBy: Prisma.ProjectOrderByWithRelationInput =
+      input.sort === 'name-asc'
+        ? { name: 'asc' }
+        : input.sort === 'created-desc'
+          ? { createdAt: 'desc' }
+          : { updatedAt: 'desc' };
+
     const [items, total] = await Promise.all([
       prisma.project.findMany({
-        where,
+        where: baseWhere,
         skip,
         take: input.pageSize,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         include: {
           members: {
             where: { userId: input.userId },
@@ -94,7 +126,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
           },
         },
       }),
-      prisma.project.count({ where }),
+      prisma.project.count({ where: baseWhere }),
     ]);
 
     return {
@@ -360,5 +392,36 @@ export class PrismaProjectsRepository extends ProjectsRepository {
     return prisma.project.delete({
       where: { id },
     });
+  }
+
+  async findMembersWithUserByProjectIds(
+    projectIds: string[],
+    db?: Db,
+  ): Promise<Map<string, ProjectListMemberWithUser[]>> {
+    const prisma = db ?? this.prisma;
+    if (projectIds.length === 0) return new Map();
+
+    const members = await prisma.projectMember.findMany({
+      where: { projectId: { in: projectIds } },
+      orderBy: [{ projectId: 'asc' }, { createdAt: 'asc' }],
+      select: {
+        projectId: true,
+        userId: true,
+        user: {
+          select: { id: true, name: true },
+        },
+      },
+    });
+
+    const map = new Map<string, ProjectListMemberWithUser[]>();
+    for (const m of members) {
+      const list = map.get(m.projectId) ?? [];
+      list.push({
+        userId: m.userId,
+        name: m.user.name,
+      });
+      map.set(m.projectId, list);
+    }
+    return map;
   }
 }

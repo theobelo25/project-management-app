@@ -14,6 +14,7 @@ import {
 import { ProjectsService } from './projects.service';
 import {
   AuthUser,
+  PaginatedProjectsListView,
   PaginatedProjectsView,
   ProjectMembersView,
   ProjectMemberView,
@@ -56,7 +57,7 @@ export class ProjectsController {
   async findMany(
     @CurrentUser() user: AuthUser,
     @Query() query: GetProjectsQueryDto,
-  ): Promise<PaginatedProjectsView> {
+  ): Promise<PaginatedProjectsListView> {
     return this.projectsService.findManyForUser(user.id, query);
   }
 

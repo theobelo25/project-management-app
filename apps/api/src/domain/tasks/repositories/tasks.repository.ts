@@ -38,4 +38,9 @@ export abstract class TasksRepository {
   ): Promise<TaskAssignee>;
 
   abstract unassignUser(taskId: string, userId: string, db?: Db): Promise<void>;
+
+  abstract getTaskCountsByProjectIds(
+    projectIds: string[],
+    db?: Db,
+  ): Promise<Map<string, { total: number; completed: number }>>;
 }

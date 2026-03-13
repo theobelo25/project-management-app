@@ -17,6 +17,6 @@ import { ProjectsModule } from '../projects/projects.module';
       useClass: PrismaTasksRepository,
     },
   ],
-  exports: [TasksService],
+  exports: [TasksService, TasksRepository],
 })
 export class TasksModule {}

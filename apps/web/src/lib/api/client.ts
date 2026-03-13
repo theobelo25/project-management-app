@@ -1,4 +1,10 @@
-import { SignupRequestDto, LoginRequestDto, UserView } from "@repo/types";
+import {
+  SignupRequestDto,
+  LoginRequestDto,
+  UserView,
+  GetProjectsQueryDto,
+  PaginatedProjectsListView,
+} from "@repo/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
@@ -120,5 +126,25 @@ export async function fetchMe(): Promise<UserView | null> {
   if (res.status === 401) return null;
   if (!res.ok) throw new Error("Failed to fetch user");
 
+  return res.json();
+}
+
+export async function fetchProjects(
+  query: GetProjectsQueryDto,
+): Promise<PaginatedProjectsListView> {
+  const params = new URLSearchParams();
+  params.set("page", String(query.page));
+  params.set("pageSize", String(query.pageSize));
+  if (query.includeArchived !== undefined)
+    params.set("includeArchived", String(query.includeArchived));
+  if (query.search) params.set("search", query.search);
+  if (query.filter) params.set("filter", query.filter);
+  if (query.sort) params.set("sort", query.sort);
+
+  const res = await fetchWithAuth(
+    `${API_BASE}/api/projects?${params.toString()}`,
+    { credentials: "include" },
+  );
+  if (!res.ok) throw new Error("Failed to fetch projects");
   return res.json();
 }
