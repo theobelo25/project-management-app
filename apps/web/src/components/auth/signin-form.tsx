@@ -15,12 +15,13 @@ import { Label } from "@web/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ME_QUERY_KEY } from "@web/lib/api/queries";
+import { toast } from "sonner";
 
-type SignUpFormProps = {
+type SignInFormProps = {
   isLoading?: boolean;
 };
 
-export default function SignInForm({ isLoading = false }: SignUpFormProps) {
+export default function SignInForm({ isLoading = false }: SignInFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -31,16 +32,16 @@ export default function SignInForm({ isLoading = false }: SignUpFormProps) {
     mutationFn: signin,
     onSuccess: (data) => {
       queryClient.setQueryData(ME_QUERY_KEY, data);
+      toast.success("Signin successful!");
       router.push(callbackUrl);
     },
     onError: (error: Error) => {
-      console.error(error);
+      toast.error(error.message || "Signin failed.");
     },
   });
 
   const onSubmit = (values: LoginRequestDto) => {
     signinMutation.mutate(values);
-    console.log(values);
   };
 
   const {
@@ -81,7 +82,7 @@ export default function SignInForm({ isLoading = false }: SignUpFormProps) {
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
-            autoComplete="new-password"
+            autoComplete="current-password"
             placeholder="Enter your password"
             className="pr-10"
             aria-invalid={!!errors.password}

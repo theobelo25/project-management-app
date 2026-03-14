@@ -1,4 +1,4 @@
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchMe,
   fetchProject,
@@ -72,20 +72,6 @@ export function useTaskQuery(taskId: string | null) {
     queryFn: () => fetchTask(taskId!),
     enabled: !!taskId,
     staleTime: 30 * 1000,
-  });
-}
-
-export function useDeleteTaskMutation(projectId: string | undefined) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (taskId: string) => deleteTask(taskId),
-    onSuccess: async () => {
-      if (projectId) {
-        await queryClient.refetchQueries({
-          queryKey: PROJECT_TASKS_QUERY_KEY(projectId),
-        });
-      }
-    },
   });
 }
 

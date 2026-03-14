@@ -1,10 +1,15 @@
 import { COOKIE } from "@repo/types";
 import { NextRequest, NextResponse } from "next/server";
+import { ROUTES } from "@web/lib/routes";
 
 const ACCESS_COOKIE_NAME = COOKIE.AUTHENTICATION;
 
-const PROTECTED_PATHS = ["/projects", "/board", "/dashboard"] as const;
-const AUTH_PATHS = ["/signin", "/signup"] as const;
+const PROTECTED_PATHS = [
+  ROUTES.projects,
+  ROUTES.board,
+  ROUTES.dashboard,
+] as const;
+const AUTH_PATHS = [ROUTES.signin, ROUTES.signup] as const;
 
 function isProtectedPath(pathname: string) {
   return PROTECTED_PATHS.some(
@@ -23,13 +28,13 @@ export function proxy(request: NextRequest) {
   const hasAuthCookie = request.cookies.has(ACCESS_COOKIE_NAME);
 
   if (isProtectedPath(pathname) && !hasAuthCookie) {
-    const signInUrl = new URL("/signin", request.url);
+    const signInUrl = new URL(ROUTES.signin, request.url);
     signInUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(signInUrl);
   }
 
   if (isAuthPath(pathname) && hasAuthCookie) {
-    return NextResponse.redirect(new URL("/projects", request.url));
+    return NextResponse.redirect(new URL(ROUTES.projects, request.url));
   }
 
   return NextResponse.next();

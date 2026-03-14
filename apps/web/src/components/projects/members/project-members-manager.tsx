@@ -17,6 +17,7 @@ import type {
   ProjectMember,
   ProjectRole,
 } from "@web/components/projects/members/types";
+import { toast } from "sonner";
 
 type ProjectMembersManagerProps = {
   projectId: string;
@@ -55,9 +56,10 @@ export function ProjectMembersManager({
       await queryClient.refetchQueries({
         queryKey: PROJECT_QUERY_KEY(projectId),
       });
+      toast.success("Role updated successfully!");
     },
     onError: (error: Error) => {
-      console.error(error);
+      toast.error(error.message || "Failed to update role.");
       setOptimisticMembers(members);
     },
   });
@@ -71,9 +73,10 @@ export function ProjectMembersManager({
       await queryClient.refetchQueries({
         queryKey: PROJECT_QUERY_KEY(projectId),
       });
+      toast.success("Member removed successfully!");
     },
     onError: (error: Error) => {
-      console.error(error);
+      toast.error(error.message || "Failed to remove member");
       setOptimisticMembers(members);
     },
   });
