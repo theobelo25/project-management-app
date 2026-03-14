@@ -1,0 +1,66 @@
+import { Button } from "@web/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@web/components/ui/card";
+import Link from "next/link";
+import { ProjectDetailMember, ProjectDetailView } from "@repo/types";
+
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+export interface ProjectMembersCardProps {
+  project: Pick<ProjectDetailView, "id">;
+  members: ProjectDetailMember[];
+}
+
+export function ProjectMembersCard({
+  project,
+  members,
+}: ProjectMembersCardProps) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-start justify-between gap-4">
+        <div>
+          <CardTitle>Members</CardTitle>
+          <CardDescription>
+            People collaborating on this project.
+          </CardDescription>
+        </div>
+
+        <Button asChild variant="outline" size="sm">
+          <Link href={`/projects/${project.id}/members`}>Manage</Link>
+        </Button>
+      </CardHeader>
+
+      <CardContent className="space-y-3">
+        {members.map((member) => (
+          <div
+            key={member.id}
+            className="flex items-center gap-3 rounded-lg border p-3"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border bg-muted text-xs font-medium text-muted-foreground">
+              {getInitials(member.name)}
+            </div>
+
+            <div className="min-w-0">
+              <p className="truncate font-medium">{member.name}</p>
+              <p className="truncate text-sm text-muted-foreground">
+                {member.email ?? ""}
+              </p>
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
