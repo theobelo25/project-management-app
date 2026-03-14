@@ -72,7 +72,7 @@ export function TasksToolbar({
           value={status}
           onValueChange={(value) => onStatusChange(value as TasksFilterStatus)}
         >
-          <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectTrigger className="w-full sm:w-45">
             <SelectValue placeholder="All statuses" />
           </SelectTrigger>
           <SelectContent>
@@ -84,7 +84,7 @@ export function TasksToolbar({
         </Select>
 
         <Select value={assigneeId} onValueChange={onAssigneeChange}>
-          <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectTrigger className="w-full sm:w-45">
             <SelectValue placeholder="All assignees" />
           </SelectTrigger>
           <SelectContent>
@@ -103,7 +103,7 @@ export function TasksToolbar({
           value={sort}
           onValueChange={(value) => onSortChange(value as TasksSort)}
         >
-          <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectTrigger className="w-full sm:w-45">
             <SelectValue placeholder="Recently updated" />
           </SelectTrigger>
           <SelectContent>
