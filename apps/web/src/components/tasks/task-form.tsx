@@ -1,14 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-import { createTask } from "@web/lib/api/client";
-import {
-  PROJECT_QUERY_KEY,
-  PROJECT_TASKS_QUERY_KEY,
-} from "@web/lib/api/queries";
 
 import {
   CreateTaskSchema,
@@ -24,39 +18,21 @@ import { Textarea } from "@web/components/ui/textarea";
 type TaskFormProps = {
   projectId: string;
   isLoading?: boolean;
+  onSubmit: (values: CreateTaskDto) => void | Promise<void>;
   onSuccess?: (task: TaskView) => void;
   submitLabel?: string;
+  defaultValues?: Partial<CreateTaskDto>;
+  errorMessage?: string | null;
 };
 
 export function TaskForm({
   projectId,
   isLoading = false,
-  onSuccess,
+  onSubmit,
   submitLabel = "Create Task",
+  defaultValues,
+  errorMessage,
 }: TaskFormProps) {
-  const queryClient = useQueryClient();
-
-  const createTaskMutation = useMutation({
-    mutationFn: (values: CreateTaskDto) => createTask(projectId, values),
-    onSuccess: (task) => {
-      queryClient.invalidateQueries({
-        queryKey: PROJECT_TASKS_QUERY_KEY(projectId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: PROJECT_QUERY_KEY(projectId),
-      });
-
-      onSuccess?.(task);
-    },
-    onError: (error: Error) => {
-      console.error(error);
-    },
-  });
-
-  const onSubmit = (values: CreateTaskDto) => {
-    createTaskMutation.mutate(values);
-  };
-
   const {
     register,
     handleSubmit,
@@ -66,27 +42,24 @@ export function TaskForm({
     resolver: standardSchemaResolver(CreateTaskSchema),
     defaultValues: {
       projectId,
-      title: "",
-      description: "",
+      title: defaultValues?.title ?? "",
+      description: defaultValues?.description ?? "",
     },
     mode: "onBlur",
   });
 
-  const submitting = isSubmitting || isLoading || createTaskMutation.isPending;
+  useEffect(() => {
+    reset({
+      projectId,
+      title: defaultValues?.title ?? "",
+      description: defaultValues?.description ?? "",
+    });
+  }, [defaultValues, projectId, reset]);
+
+  const submitting = isSubmitting || isLoading;
 
   return (
-    <form
-      onSubmit={handleSubmit((values) => {
-        onSubmit(values);
-        reset({
-          projectId,
-          title: "",
-          description: "",
-        });
-      })}
-      noValidate
-      className="space-y-6"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="title">Task title</Label>
         <Input
@@ -117,14 +90,12 @@ export function TaskForm({
         )}
       </div>
 
-      {createTaskMutation.error && (
-        <p className="text-sm text-destructive">
-          {createTaskMutation.error.message || "Failed to create task."}
-        </p>
-      )}
+      {errorMessage ? (
+        <p className="text-sm text-destructive">{errorMessage}</p>
+      ) : null}
 
       <Button type="submit" className="w-full" disabled={submitting}>
-        {submitting ? "Creating Task..." : submitLabel}
+        {submitting ? `${submitLabel}...` : submitLabel}
       </Button>
     </form>
   );

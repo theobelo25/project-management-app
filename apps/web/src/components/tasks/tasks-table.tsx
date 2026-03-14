@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MoreHorizontal } from "lucide-react";
+import { TaskRowActions } from "@web/components/tasks/task-row-actions";
 
 import type { TaskListItem, TaskStatus } from "@web/components/tasks/types";
 
@@ -16,6 +16,7 @@ import { TasksEmptyState } from "@web/components/tasks/tasks-empty-state";
 type TasksTableProps = {
   projectId: string;
   tasks: TaskListItem[];
+  onDelete?: (taskId: string) => void;
   emptyTitle?: string;
   emptyDescription?: string;
 };
@@ -58,6 +59,7 @@ function formatUpdatedAt(date: string | Date) {
 export function TasksTable({
   projectId,
   tasks,
+  onDelete,
   emptyTitle = "No tasks yet",
   emptyDescription = "Create your first task to start tracking work in this project.",
 }: TasksTableProps) {
@@ -118,9 +120,16 @@ export function TasksTable({
                 </div>
 
                 <div className="flex justify-end">
-                  <Button type="button" variant="ghost" size="icon">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
+                  <TaskRowActions
+                    projectId={projectId}
+                    taskId={task.id}
+                    task={{
+                      id: task.id,
+                      title: task.title,
+                      description: task.description,
+                    }}
+                    onDelete={onDelete}
+                  />
                 </div>
               </div>
             ))}
@@ -145,9 +154,16 @@ export function TasksTable({
                   </Link>
                 </div>
 
-                <Button type="button" variant="ghost" size="icon">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
+                <TaskRowActions
+                  projectId={projectId}
+                  taskId={task.id}
+                  task={{
+                    id: task.id,
+                    title: task.title,
+                    description: task.description,
+                  }}
+                  onDelete={onDelete}
+                />
               </div>
 
               <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">

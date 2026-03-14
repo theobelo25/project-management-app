@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import {
-  changeProjectMemberRole,
+  updateProjectMemberRole,
   removeProjectMember,
 } from "@web/lib/api/client";
-import { PROJECT_MEMBERS_QUERY_KEY } from "@web/lib/api/queries";
-
+import {
+  PROJECT_MEMBERS_QUERY_KEY,
+  PROJECT_QUERY_KEY,
+} from "@web/lib/api/queries";
 import { InviteMemberDialog } from "@web/components/projects/members/invite-member-dialog";
 import { ProjectMembersTable } from "@web/components/projects/members/project-members-table";
 import type {
@@ -45,10 +47,13 @@ export function ProjectMembersManager({
     }: {
       memberId: string;
       role: Exclude<ProjectRole, "OWNER">;
-    }) => changeProjectMemberRole(projectId, memberId, role),
+    }) => updateProjectMemberRole(projectId, memberId, { role }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
+      await queryClient.refetchQueries({
         queryKey: PROJECT_MEMBERS_QUERY_KEY(projectId),
+      });
+      await queryClient.refetchQueries({
+        queryKey: PROJECT_QUERY_KEY(projectId),
       });
     },
     onError: (error: Error) => {
@@ -60,8 +65,11 @@ export function ProjectMembersManager({
   const removeMemberMutation = useMutation({
     mutationFn: (memberId: string) => removeProjectMember(projectId, memberId),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
+      await queryClient.refetchQueries({
         queryKey: PROJECT_MEMBERS_QUERY_KEY(projectId),
+      });
+      await queryClient.refetchQueries({
+        queryKey: PROJECT_QUERY_KEY(projectId),
       });
     },
     onError: (error: Error) => {
@@ -91,6 +99,10 @@ export function ProjectMembersManager({
     removeMemberMutation.mutate(memberId);
   };
 
+  useEffect(() => {
+    setOptimisticMembers(members);
+  }, [members]);
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -99,7 +111,12 @@ export function ProjectMembersManager({
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
 
-        {canManageMembers ? <InviteMemberDialog projectId={projectId} /> : null}
+        {canManageMembers ? (
+          <InviteMemberDialog
+            projectId={projectId}
+            currentMemberIds={members.map((m) => m.id)}
+          />
+        ) : null}
       </div>
 
       <ProjectMembersTable

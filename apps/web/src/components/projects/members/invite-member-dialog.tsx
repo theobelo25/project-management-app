@@ -1,18 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserPlus } from "lucide-react";
 
-import { inviteProjectMember } from "@web/lib/api/client";
-import { PROJECT_MEMBERS_QUERY_KEY } from "@web/lib/api/queries";
-
+import { addProjectMember } from "@web/lib/api/client";
 import {
-  InviteProjectMemberSchema,
-  type InviteProjectMemberDto,
-} from "@repo/types";
+  PROJECT_MEMBERS_QUERY_KEY,
+  PROJECT_QUERY_KEY,
+} from "@web/lib/api/queries";
+import { AddProjectMemberSchema, type AddProjectMemberDto } from "@repo/types";
 
 import { Button } from "@web/components/ui/button";
 import {
@@ -23,7 +22,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@web/components/ui/dialog";
-import { Input } from "@web/components/ui/input";
 import { Label } from "@web/components/ui/label";
 import {
   Select,
@@ -33,25 +31,43 @@ import {
   SelectValue,
 } from "@web/components/ui/select";
 
+import {
+  UserSearchCombobox,
+  type UserSearchResult,
+} from "@web/components/projects/members/user-search-combobox";
+
 type InviteMemberDialogProps = {
   projectId: string;
+  currentMemberIds: string[];
 };
 
-export function InviteMemberDialog({ projectId }: InviteMemberDialogProps) {
+type AddMemberFormValues = {
+  userId: string;
+  role?: "ADMIN" | "MEMBER";
+};
+
+export function InviteMemberDialog({
+  projectId,
+  currentMemberIds,
+}: InviteMemberDialogProps) {
   const [open, setOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(
+    null,
+  );
+
   const queryClient = useQueryClient();
 
-  const inviteMemberMutation = useMutation({
-    mutationFn: (values: InviteProjectMemberDto) =>
-      inviteProjectMember(projectId, values),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
+  const addMemberMutation = useMutation({
+    mutationFn: (dto: AddProjectMemberDto) => addProjectMember(projectId, dto),
+    onSuccess: async () => {
+      await queryClient.refetchQueries({
         queryKey: PROJECT_MEMBERS_QUERY_KEY(projectId),
       });
-      reset({
-        email: "",
-        role: "MEMBER",
+      await queryClient.refetchQueries({
+        queryKey: PROJECT_QUERY_KEY(projectId),
       });
+      reset({ userId: "", role: "MEMBER" });
+      setSelectedUser(null);
       setOpen(false);
     },
     onError: (error: Error) => {
@@ -59,28 +75,29 @@ export function InviteMemberDialog({ projectId }: InviteMemberDialogProps) {
     },
   });
 
-  const onSubmit = (values: InviteProjectMemberDto) => {
-    inviteMemberMutation.mutate(values);
-  };
-
   const {
-    register,
     handleSubmit,
     setValue,
     watch,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<InviteProjectMemberDto>({
-    resolver: standardSchemaResolver(InviteProjectMemberSchema),
-    defaultValues: {
-      email: "",
-      role: "MEMBER",
-    },
+  } = useForm<AddMemberFormValues>({
+    resolver: standardSchemaResolver(AddProjectMemberSchema),
+    defaultValues: { userId: "", role: "MEMBER" },
     mode: "onBlur",
   });
 
   const role = watch("role");
-  const submitting = isSubmitting || inviteMemberMutation.isPending;
+  const userId = watch("userId");
+
+  const onSubmit: SubmitHandler<AddMemberFormValues> = (values) => {
+    addMemberMutation.mutate({
+      userId: values.userId,
+      role: values.role ?? "MEMBER",
+    });
+  };
+
+  const submitting = isSubmitting || addMemberMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -95,7 +112,7 @@ export function InviteMemberDialog({ projectId }: InviteMemberDialogProps) {
         <DialogHeader>
           <DialogTitle>Invite member</DialogTitle>
           <DialogDescription>
-            Add a teammate to this project and choose their access level.
+            Search for a user and choose their access level for this project.
           </DialogDescription>
         </DialogHeader>
 
@@ -105,17 +122,31 @@ export function InviteMemberDialog({ projectId }: InviteMemberDialogProps) {
           className="space-y-6"
         >
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              placeholder="teammate@example.com"
-              aria-invalid={!!errors.email}
-              {...register("email")}
+            <Label htmlFor="user-search">User</Label>
+
+            <UserSearchCombobox
+              value={userId}
+              onChange={(user) => {
+                setSelectedUser(user);
+                setValue("userId", user.id, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                });
+              }}
+              excludeUserIds={currentMemberIds}
+              disabled={submitting}
             />
-            {errors.email && (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
+
+            {selectedUser ? (
+              <p className="text-sm text-muted-foreground">
+                Selected: {selectedUser.name} ({selectedUser.email})
+              </p>
+            ) : null}
+
+            {errors.userId && (
+              <p className="text-sm text-destructive">
+                {errors.userId.message}
+              </p>
             )}
           </div>
 
@@ -124,7 +155,7 @@ export function InviteMemberDialog({ projectId }: InviteMemberDialogProps) {
             <Select
               value={role}
               onValueChange={(value) =>
-                setValue("role", value as InviteProjectMemberDto["role"], {
+                setValue("role", value as AddProjectMemberDto["role"], {
                   shouldValidate: true,
                   shouldDirty: true,
                 })
@@ -138,19 +169,24 @@ export function InviteMemberDialog({ projectId }: InviteMemberDialogProps) {
                 <SelectItem value="MEMBER">Member</SelectItem>
               </SelectContent>
             </Select>
+
             {errors.role && (
               <p className="text-sm text-destructive">{errors.role.message}</p>
             )}
           </div>
 
-          {inviteMemberMutation.error && (
+          {addMemberMutation.error && (
             <p className="text-sm text-destructive">
-              {inviteMemberMutation.error.message || "Failed to invite member."}
+              {addMemberMutation.error.message || "Failed to invite member."}
             </p>
           )}
 
-          <Button type="submit" className="w-full" disabled={submitting}>
-            {submitting ? "Sending Invite..." : "Send Invite"}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={submitting || !userId}
+          >
+            {submitting ? "Adding..." : "Add Member"}
           </Button>
         </form>
       </DialogContent>

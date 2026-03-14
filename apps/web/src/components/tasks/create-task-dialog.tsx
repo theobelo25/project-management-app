@@ -1,7 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
+
+import { createTask } from "@web/lib/api/client";
+import {
+  PROJECT_QUERY_KEY,
+  PROJECT_TASKS_QUERY_KEY,
+} from "@web/lib/api/queries";
+
+import type { CreateTaskDto, TaskView } from "@repo/types";
 
 import { Button } from "@web/components/ui/button";
 import {
@@ -21,6 +30,24 @@ type CreateTaskDialogProps = {
 
 export function CreateTaskDialog({ projectId }: CreateTaskDialogProps) {
   const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  const createTaskMutation = useMutation({
+    mutationFn: (values: CreateTaskDto) => createTask(projectId, values),
+    onSuccess: (task: TaskView) => {
+      queryClient.invalidateQueries({
+        queryKey: PROJECT_TASKS_QUERY_KEY(projectId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: PROJECT_QUERY_KEY(projectId),
+      });
+
+      setOpen(false);
+    },
+    onError: (error: Error) => {
+      console.error(error);
+    },
+  });
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -41,8 +68,11 @@ export function CreateTaskDialog({ projectId }: CreateTaskDialogProps) {
 
         <TaskForm
           projectId={projectId}
-          onSuccess={() => {
-            setOpen(false);
+          submitLabel="Create Task"
+          isLoading={createTaskMutation.isPending}
+          errorMessage={createTaskMutation.error?.message ?? null}
+          onSubmit={async (values) => {
+            await createTaskMutation.mutateAsync(values);
           }}
         />
       </DialogContent>

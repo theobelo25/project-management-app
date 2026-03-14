@@ -342,3 +342,45 @@ export async function removeProjectMember(
     throw new Error(error.message ?? "Failed to remove member");
   }
 }
+
+export async function fetchUsers(search?: string): Promise<UserView[]> {
+  const url = search?.trim()
+    ? `${API_BASE}/api/users?search=${encodeURIComponent(search.trim())}`
+    : `${API_BASE}/api/users`;
+  const res = await fetchWithAuth(url, { credentials: "include" });
+  if (!res.ok) throw new Error("Failed to fetch users");
+  return res.json();
+}
+
+export async function deleteTask(taskId: string): Promise<void> {
+  const res = await fetchWithAuth(`${API_BASE}/api/tasks/${taskId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to delete task");
+  }
+}
+
+export async function updateTask(
+  projectId: string,
+  taskId: string,
+  payload: CreateTaskDto,
+): Promise<TaskView> {
+  const response = await fetch(`/api/projects/${projectId}/tasks/${taskId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+    throw new Error(error?.message ?? "Failed to update task");
+  }
+
+  return response.json();
+}
