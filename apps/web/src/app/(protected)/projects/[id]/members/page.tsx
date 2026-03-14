@@ -31,10 +31,12 @@ export default async function ProjectMembersPage({ params }: PageProps) {
   }
 
   return (
-    <ProjectMembersPageContent
-      projectId={id}
-      initialProject={initialProject}
-      initialMembers={initialMembers}
-    />
+    <PageLayout>
+      <ProjectMembersPageContent
+        projectId={id}
+        initialProject={initialProject}
+        initialMembers={initialMembers}
+      />
+    </PageLayout>
   );
 }

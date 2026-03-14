@@ -23,7 +23,7 @@ import {
   DialogTrigger,
 } from "@web/components/ui/dialog";
 
-import { TaskForm } from "@web/components/tasks/task-form";
+import { TaskForm } from "@web/components/projects/tasks/task-form";
 import { toast } from "sonner";
 
 type EditTaskDialogProps = {

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { MoreHorizontal } from "lucide-react";
 
-import { EditTaskDialog } from "@web/components/tasks/edit-task-dialog";
+import { EditTaskDialog } from "@web/components/projects/tasks/edit-task-dialog";
 import { Button } from "@web/components/ui/button";
 import {
   DropdownMenu,

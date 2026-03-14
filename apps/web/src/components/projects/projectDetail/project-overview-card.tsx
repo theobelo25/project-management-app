@@ -1,4 +1,4 @@
-import { CreateTaskDialog } from "@web/components/tasks/create-task-dialog";
+import { CreateTaskDialog } from "@web/components/projects/tasks/create-task-dialog";
 import {
   Card,
   CardContent,

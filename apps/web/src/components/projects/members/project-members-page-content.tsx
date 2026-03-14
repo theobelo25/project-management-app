@@ -2,15 +2,14 @@
 
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { ProjectMembersManager } from "@web/components/projects/members/project-members-manager";
 import { Button } from "@web/components/ui/button";
 import { useProjectMembersQuery, useProjectQuery } from "@web/lib/api/queries";
-import type {
-  ProjectMember,
-  ProjectRole,
-} from "@web/components/projects/members/types";
+import {
+  type ProjectMember,
+  type ProjectRole,
+  ProjectMembersManager,
+} from "@web/components/projects/members";
 import type { ProjectDetailView, ProjectMembersView } from "@repo/types";
-import { PageLayout } from "@web/components/layout/page-layout";
 
 function mergeMembersWithRoles(
   projectMembers: { id: string; name: string; email?: string }[],
@@ -70,7 +69,7 @@ export function ProjectMembersPageContent({
     projectError?.message ?? membersError?.message ?? "Something went wrong";
 
   return (
-    <PageLayout>
+    <>
       <div className="flex flex-col gap-8 my-4">
         {!projectId ? (
           <div className="flex flex-col gap-4">
@@ -133,6 +132,6 @@ export function ProjectMembersPageContent({
           </>
         )}
       </div>
-    </PageLayout>
+    </>
   );
 }

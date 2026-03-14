@@ -1,7 +1,10 @@
 import Link from "next/link";
-import { TaskRowActions } from "@web/components/tasks/task-row-actions";
+import { TaskRowActions } from "@web/components/projects/tasks/task-row-actions";
 
-import type { TaskListItem, TaskStatus } from "@web/components/tasks/types";
+import type {
+  TaskListItem,
+  TaskStatus,
+} from "@web/components/projects/tasks/types";
 
 import { Badge } from "@web/components/ui/badge";
 import { Button } from "@web/components/ui/button";
@@ -11,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import { TasksEmptyState } from "@web/components/tasks/tasks-empty-state";
+import { TasksEmptyState } from "@web/components/projects/tasks/tasks-empty-state";
 
 type TasksTableProps = {
   projectId: string;

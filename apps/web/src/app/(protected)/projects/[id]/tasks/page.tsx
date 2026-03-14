@@ -1,30 +1,27 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowLeft } from "lucide-react";
 
-import { CreateTaskDialog } from "@web/components/tasks/create-task-dialog";
 import {
   TasksToolbar,
+  TasksTable,
+  taskViewToListItem,
+  TasksWelcome
   type TasksFilterStatus,
   type TasksSort,
-} from "@web/components/tasks/tasks-toolbar";
-import { TasksTable } from "@web/components/tasks/tasks-table";
-import type { TaskListItem } from "@web/components/tasks/types";
+} from "@web/components/projects/tasks";
 import { ProjectsPagination } from "@web/components/projects/projects-pagination";
 
-import { Button } from "@web/components/ui/button";
 import { useParams } from "next/navigation";
 import {
   PROJECT_TASKS_QUERY_KEY,
   useProjectQuery,
   useProjectTasksQuery,
 } from "@web/lib/api/queries";
-import { taskViewToListItem } from "@web/components/tasks/task-view-to-list-item";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteTask } from "@web/lib/api/client";
 import { toast } from "sonner";
+import { PageLayout } from "@web/components/layout/page-layout";
 
 const PAGE_SIZE = 10;
 
@@ -117,29 +114,8 @@ export default function ProjectTasksPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 md:px-6">
-      <div className="flex flex-col gap-4">
-        <div>
-          <Button asChild variant="ghost" size="sm" className="mb-2 -ml-2">
-            <Link href={`/projects/${project.id}`}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Project
-            </Link>
-          </Button>
-        </div>
-
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-semibold tracking-tight">Tasks</h1>
-            <p className="text-sm text-muted-foreground">
-              Manage all tasks in{" "}
-              <span className="font-medium">{project.name}</span>.
-            </p>
-          </div>
-
-          <CreateTaskDialog projectId={project.id} />
-        </div>
-      </div>
+    <PageLayout>
+      <TasksWelcome project={project} />
 
       <TasksToolbar
         search={search}
@@ -191,6 +167,6 @@ export default function ProjectTasksPage() {
           onPageChange={setPage}
         />
       ) : null}
-    </div>
+    </PageLayout>
   );
 }

@@ -1,4 +1,4 @@
-import { CreateTaskDialog } from "@web/components/tasks/create-task-dialog";
+import { CreateTaskDialog } from "@web/components/projects/tasks/create-task-dialog";
 import { Badge } from "@web/components/ui/badge";
 import { Button } from "@web/components/ui/button";
 import { ArrowLeft, Settings } from "lucide-react";
