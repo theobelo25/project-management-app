@@ -28,4 +28,6 @@ export abstract class UsersRepository {
     dto: UpdateUserInputDto,
     tx?: Db,
   ): Promise<UserView>;
+
+  abstract searchUsers(search: string, tx?: Db): Promise<UserView[]>;
 }

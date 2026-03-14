@@ -63,4 +63,11 @@ export class UsersService {
   async getAllUsers(): Promise<UserView[]> {
     return this.usersRepository.getAllUsers();
   }
+
+  async getUsers(search?: string, db?: Db): Promise<UserView[]> {
+    if (search?.trim()) {
+      return this.usersRepository.searchUsers(search.trim(), db);
+    }
+    return this.usersRepository.getAllUsers(db);
+  }
 }

@@ -80,4 +80,19 @@ export class PrismaUsersRepository implements UsersRepository {
 
     return toUserView(updatedUser);
   }
+
+  async searchUsers(search: string, tx?: Db): Promise<UserView[]> {
+    const prisma = tx ?? this.prisma;
+    const term = search.trim();
+    if (!term) return this.getAllUsers(tx);
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          { name: { contains: term, mode: 'insensitive' } },
+          { email: { contains: term, mode: 'insensitive' } },
+        ],
+      },
+    });
+    return users.map((user) => toUserView(user));
+  }
 }

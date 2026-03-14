@@ -21,6 +21,8 @@ import {
 } from "@web/components/ui/card";
 import { useParams } from "next/navigation";
 import { useTaskQuery } from "@web/lib/api/queries";
+import { useState } from "react";
+import { EditTaskDialog } from "@web/components/tasks/edit-task-dialog";
 
 function formatTaskStatus(status: string) {
   switch (status) {
@@ -74,6 +76,7 @@ export default function TaskDetailPage() {
     isError,
     error,
   } = useTaskQuery(taskId ?? null);
+  const [editOpen, setEditOpen] = useState(false);
 
   if (!taskId || !projectId) return null;
 
@@ -128,11 +131,13 @@ export default function TaskDetailPage() {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Button asChild variant="outline">
-              <Link href={`/projects/${projectId}/tasks/${task.id}/edit`}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit Task
-              </Link>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEditOpen(true)}
+            >
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit Task
             </Button>
           </div>
         </div>
@@ -258,11 +263,13 @@ export default function TaskDetailPage() {
             </CardHeader>
 
             <CardContent className="space-y-3">
-              <Button asChild className="w-full">
-                <Link href={`/projects/${projectId}/tasks/${task.id}/edit`}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Edit Task
-                </Link>
+              <Button
+                type="button"
+                className="w-full"
+                onClick={() => setEditOpen(true)}
+              >
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit Task
               </Button>
 
               <Button asChild variant="outline" className="w-full">
@@ -274,6 +281,16 @@ export default function TaskDetailPage() {
           </Card>
         </div>
       </section>
+      <EditTaskDialog
+        projectId={projectId}
+        task={{
+          id: task.id,
+          title: task.title,
+          description: task.description ?? null,
+        }}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+      />
     </div>
   );
 }

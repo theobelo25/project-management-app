@@ -2,9 +2,11 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import {
   fetchMe,
   fetchProject,
+  fetchProjectMembers,
   fetchProjects,
   fetchTask,
   fetchTasks,
+  fetchUsers,
 } from "./client";
 import { FindTasksQuery, GetProjectsQueryDto } from "packages/types/dist";
 
@@ -70,5 +72,46 @@ export function useTaskQuery(taskId: string | null) {
     queryFn: () => fetchTask(taskId!),
     enabled: !!taskId,
     staleTime: 30 * 1000,
+  });
+}
+
+export function useDeleteTaskMutation(projectId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (taskId: string) => deleteTask(taskId),
+    onSuccess: async () => {
+      if (projectId) {
+        await queryClient.refetchQueries({
+          queryKey: PROJECT_TASKS_QUERY_KEY(projectId),
+        });
+      }
+    },
+  });
+}
+
+export const PROJECT_MEMBERS_QUERY_KEY = (projectId: string) =>
+  ["projects", projectId, "members"] as const;
+
+export function useProjectMembersQuery(projectId: string | null) {
+  return useQuery({
+    queryKey: PROJECT_MEMBERS_QUERY_KEY(projectId ?? ""),
+    queryFn: () => fetchProjectMembers(projectId!),
+    enabled: !!projectId,
+    staleTime: 30 * 1000,
+  });
+}
+
+export const USERS_QUERY_KEY = (search?: string) =>
+  search?.trim()
+    ? (["users", "search", search.trim()] as const)
+    : (["users"] as const);
+
+export function useUsersSearchQuery(search: string) {
+  const enabled = search.trim().length >= 2;
+  return useQuery({
+    queryKey: USERS_QUERY_KEY(enabled ? search : undefined),
+    queryFn: () => fetchUsers(search),
+    enabled,
+    staleTime: 60 * 1000,
   });
 }
