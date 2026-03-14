@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@web/components/ui/card";
 import { PageLayout } from "@web/components/layout/page-layout";
+import { ROUTES } from "@web/lib/routes";
 
 export const metadata: Metadata = {
   title: "Home",
@@ -68,14 +69,14 @@ export default function LandingPage() {
 
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg" className="gap-2">
-                <Link href="/signup">
+                <Link href={ROUTES.signup}>
                   Start free
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
 
               <Button asChild size="lg" variant="outline">
-                <Link href="/signin">Go to dashboard</Link>
+                <Link href={ROUTES.signin}>Go to dashboard</Link>
               </Button>
             </div>
 
@@ -243,11 +244,11 @@ export default function LandingPage() {
 
             <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
               <Button asChild size="lg">
-                <Link href="/signup">Create an account</Link>
+                <Link href={ROUTES.signup}>Create an account</Link>
               </Button>
 
               <Button asChild size="lg" variant="outline">
-                <Link href="/signin">Sign in</Link>
+                <Link href={ROUTES.signin}>Sign in</Link>
               </Button>
             </div>
           </div>

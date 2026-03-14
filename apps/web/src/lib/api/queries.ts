@@ -8,7 +8,13 @@ import {
   fetchTasks,
   fetchUsers,
 } from "./client";
-import { FindTasksQuery, GetProjectsQueryDto } from "packages/types/dist";
+import {
+  FindTasksQuery,
+  GetProjectsQueryDto,
+  PaginatedProjectsListView,
+  PaginationResult,
+  TaskView,
+} from "packages/types/dist";
 
 export const ME_QUERY_KEY = ["me"] as const;
 
@@ -24,11 +30,19 @@ export function useMeQuery() {
 
 export const PROJECTS_QUERY_KEY = ["projects"] as const;
 
-export function useProjectsQuery(query: GetProjectsQueryDto) {
+export function useProjectsQuery(
+  query: GetProjectsQueryDto,
+  options?: {
+    initialData?: PaginatedProjectsListView;
+    initialDataUpdatedAt?: number;
+  },
+) {
   return useQuery({
     queryKey: [...PROJECTS_QUERY_KEY, query],
     queryFn: () => fetchProjects(query),
     staleTime: 30 * 1000,
+    initialData: options?.initialData,
+    initialDataUpdatedAt: options?.initialDataUpdatedAt,
   });
 }
 
@@ -50,6 +64,10 @@ export const TASK_QUERY_KEY = (taskId: string) => ["tasks", taskId] as const;
 export function useProjectTasksQuery(
   projectId: string | null,
   query: Omit<FindTasksQuery, "projectId"> & { projectId?: string },
+  options?: {
+    initialData?: PaginationResult<TaskView>;
+    initialDataUpdatedAt?: number;
+  },
 ) {
   const effectiveQuery = {
     ...query,
@@ -57,12 +75,13 @@ export function useProjectTasksQuery(
     page: query.page ?? 1,
     limit: query.limit ?? 10,
   };
-
   return useQuery({
     queryKey: [...PROJECT_TASKS_QUERY_KEY(projectId ?? ""), effectiveQuery],
     queryFn: () => fetchTasks(effectiveQuery),
     enabled: !!projectId,
     staleTime: 30 * 1000,
+    initialData: options?.initialData,
+    initialDataUpdatedAt: options?.initialDataUpdatedAt,
   });
 }
 
@@ -101,3 +120,13 @@ export function useUsersSearchQuery(search: string) {
     staleTime: 60 * 1000,
   });
 }
+
+export const DASHBOARD_PROJECTS_QUERY: GetProjectsQueryDto = {
+  page: 1,
+  pageSize: 50,
+  includeArchived: false,
+  search: undefined,
+  filter: "all",
+  sort: "updated-desc",
+};
+export const DASHBOARD_TASKS_LIMIT = 5;

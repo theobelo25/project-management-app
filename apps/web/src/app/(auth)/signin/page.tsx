@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthCard } from "@web/components/auth/auth-card";
 
-import SignInForm from "../../../components/auth/signin-form";
+import SignInForm from "@web/components/auth/signin-form";
 import { ROUTES } from "@web/lib/routes";
 
 export const metadata: Metadata = {
@@ -10,14 +10,22 @@ export const metadata: Metadata = {
   description: "Sign in to your Nudge account to manage your projects.",
 };
 
-export default function SignInPage() {
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string }> | { callbackUrl?: string };
+}) {
+  const resolvedParams = await searchParams; // or use React.use() if you have it
+  const signupHref = resolvedParams?.callbackUrl
+    ? `${ROUTES.signup}?callbackUrl=${encodeURIComponent(resolvedParams.callbackUrl)}`
+    : ROUTES.signup;
+
   return (
     <AuthCard
       title="Sign In"
       footer={
         <span>
-          Don't have an account? <Link href={ROUTES.signup}>Sign Up</Link>{" "}
-          instead!
+          Don't have an account? <Link href={signupHref}>Sign Up</Link> instead!
         </span>
       }
     >
