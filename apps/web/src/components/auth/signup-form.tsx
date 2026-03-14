@@ -13,8 +13,10 @@ import { Button } from "@web/components/ui/button";
 import { Input } from "@web/components/ui/input";
 import { Label } from "@web/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ME_QUERY_KEY } from "@web/lib/api/queries";
+import { ROUTES } from "@web/lib/routes";
+import { toast } from "sonner";
 
 type SignUpFormProps = {
   isLoading?: boolean;
@@ -24,15 +26,19 @@ export default function SignUpForm({ isLoading = false }: SignUpFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") ?? ROUTES.projects;
+
   const queryClient = useQueryClient();
   const signupMutation = useMutation({
     mutationFn: signup,
     onSuccess: (data) => {
       queryClient.setQueryData(ME_QUERY_KEY, data);
-      router.push("/projects");
+      toast.success("Account created successfully!");
+      router.push(callbackUrl);
     },
     onError: (error: Error) => {
-      console.error(error);
+      toast.error(error.message || "Failed to create account.");
     },
   });
 

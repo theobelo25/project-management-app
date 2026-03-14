@@ -35,6 +35,7 @@ import {
   UserSearchCombobox,
   type UserSearchResult,
 } from "@web/components/projects/members/user-search-combobox";
+import { toast } from "sonner";
 
 type InviteMemberDialogProps = {
   projectId: string;
@@ -66,12 +67,13 @@ export function InviteMemberDialog({
       await queryClient.refetchQueries({
         queryKey: PROJECT_QUERY_KEY(projectId),
       });
+      toast.success("Member added successfully!");
       reset({ userId: "", role: "MEMBER" });
       setSelectedUser(null);
       setOpen(false);
     },
     onError: (error: Error) => {
-      console.error(error);
+      toast.error(error.message || "Failed to add member.");
     },
   });
 

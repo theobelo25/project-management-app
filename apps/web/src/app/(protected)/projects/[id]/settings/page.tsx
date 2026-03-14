@@ -30,6 +30,8 @@ import {
   updateProject,
 } from "@web/lib/api/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { error } from "node:console";
 
 type ProjectRole = "OWNER" | "ADMIN" | "MEMBER";
 
@@ -294,6 +296,10 @@ function GeneralForm({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: PROJECT_QUERY_KEY(projectId) });
       queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
+      toast.success("Project updated successfully!");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Update failed.");
     },
   });
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -352,6 +358,10 @@ function RemoveMemberButton({
       queryClient.invalidateQueries({
         queryKey: PROJECT_MEMBERS_QUERY_KEY(projectId),
       });
+      toast.success("Member removed successfully!");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to remove member.");
     },
   });
   return (
@@ -379,6 +389,10 @@ function ArchiveButton({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: PROJECT_QUERY_KEY(projectId) });
       queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
+      toast.success("Project archived successfully!");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to archive project");
     },
   });
   const unarchiveMutation = useMutation({
@@ -386,6 +400,10 @@ function ArchiveButton({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: PROJECT_QUERY_KEY(projectId) });
       queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
+      toast.success("Project unarchived successfully!");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to unarchive project");
     },
   });
   if (archivedAt) {

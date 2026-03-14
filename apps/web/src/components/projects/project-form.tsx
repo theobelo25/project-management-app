@@ -18,6 +18,7 @@ import { Button } from "@web/components/ui/button";
 import { Input } from "@web/components/ui/input";
 import { Label } from "@web/components/ui/label";
 import { Textarea } from "@web/components/ui/textarea";
+import { toast } from "sonner";
 
 type ProjectFormProps = {
   isLoading?: boolean;
@@ -38,10 +39,11 @@ export function ProjectForm({
     onSuccess: async (project) => {
       await queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
       onSuccess?.(project);
+      toast.success("Project creted successfully!");
       router.push(`/projects/${project.id}`);
     },
     onError: (error: Error) => {
-      console.error(error);
+      toast.error(error.message || "Failed to create project");
     },
   });
 

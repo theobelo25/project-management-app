@@ -24,6 +24,7 @@ import {
 import { taskViewToListItem } from "@web/components/tasks/task-view-to-list-item";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteTask } from "@web/lib/api/client";
+import { toast } from "sonner";
 
 const PAGE_SIZE = 10;
 
@@ -56,13 +57,15 @@ export default function ProjectTasksPage() {
   const deleteTaskMutation = useMutation({
     mutationFn: (taskId: string) => deleteTask(taskId),
     onSuccess: async () => {
-      if (projectId)
+      if (projectId) {
         await queryClient.refetchQueries({
           queryKey: PROJECT_TASKS_QUERY_KEY(projectId),
         });
+        toast.success("Task deleted successfully!");
+      }
     },
     onError: (error: Error) => {
-      console.error(error);
+      toast.error(error.message || "Failed to delete task");
     },
   });
 

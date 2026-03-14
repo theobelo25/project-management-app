@@ -23,6 +23,7 @@ import {
 } from "@web/components/ui/dialog";
 
 import { TaskForm } from "@web/components/tasks/task-form";
+import { toast } from "sonner";
 
 type CreateTaskDialogProps = {
   projectId: string;
@@ -41,11 +42,11 @@ export function CreateTaskDialog({ projectId }: CreateTaskDialogProps) {
       queryClient.invalidateQueries({
         queryKey: PROJECT_QUERY_KEY(projectId),
       });
-
+      toast.success("Task created successfully!");
       setOpen(false);
     },
     onError: (error: Error) => {
-      console.error(error);
+      toast.error(error.message || "Failed to create task.");
     },
   });
 

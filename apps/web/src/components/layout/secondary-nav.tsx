@@ -6,10 +6,12 @@ import { logout } from "@web/lib/api/client";
 import { ME_QUERY_KEY, useMeQuery } from "@web/lib/api/queries";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { ROUTES } from "@web/lib/routes";
+import { toast } from "sonner";
 
 const authItems = [
-  { href: "/signin", label: "Sign in", primary: false },
-  { href: "/signup", label: "Sign up", primary: true },
+  { href: ROUTES.signin, label: "Sign in", primary: false },
+  { href: ROUTES.signup, label: "Sign up", primary: true },
 ] as const;
 
 type SecondaryNavVariant = "bar" | "drawer";
@@ -28,6 +30,7 @@ export function SecondaryNav({ variant = "bar" }: SecondaryNavProps) {
   const handleLogoutClick = () => {
     logout();
     queryClient.setQueryData(ME_QUERY_KEY, null);
+    toast.success("Logout successfull!");
     router.push("/");
   };
 

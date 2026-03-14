@@ -1,39 +1,37 @@
-import { PageLayout } from "@web/components/layout/page-layout";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@web/components/ui/card";
-import SignUpForm from "./signup-form";
-
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AuthCard } from "@web/components/auth/auth-card";
+
+import SignUpForm from "@web/components/auth/signup-form";
+import { ROUTES } from "@web/lib/routes";
+
 export const metadata: Metadata = {
   title: "Sign Up",
   description:
     "Create a Nudge account to start tracking and managing your projects.",
 };
 
-export default function SignUpPage() {
+export default async function SignUpPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string }>;
+}) {
+  const resolvedParams = await searchParams; // or use React.use() if you have it
+  const signinHref = resolvedParams?.callbackUrl
+    ? `${ROUTES.signin}?callbackUrl=${encodeURIComponent(resolvedParams.callbackUrl)}`
+    : ROUTES.signin;
+
   return (
-    <PageLayout variant="narrow" centerVertical={true}>
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            <h2>Sign Up</h2>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SignUpForm />
-        </CardContent>
-        <CardFooter>
-          Already have an account?&nbsp;&nbsp;
-          <Link href={"/signin"}>Sign In</Link>
-          &nbsp;instead!
-        </CardFooter>
-      </Card>
-    </PageLayout>
+    <AuthCard
+      title="Sign Up"
+      footer={
+        <span>
+          Already have an account? <Link href={signinHref}>Sign In</Link>{" "}
+          instead!
+        </span>
+      }
+    >
+      <SignUpForm />
+    </AuthCard>
   );
 }

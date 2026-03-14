@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { setSessionExpiredHandler } from "@web/lib/api/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { ME_QUERY_KEY } from "@web/lib/api/queries";
+import { ROUTES } from "@web/lib/routes";
 
 export function SessionExpiredHandlerSetup() {
   const router = useRouter();
@@ -14,7 +15,7 @@ export function SessionExpiredHandlerSetup() {
   useEffect(() => {
     setSessionExpiredHandler(() => {
       queryClient.setQueryData(ME_QUERY_KEY, null);
-      router.push("/signin");
+      router.push(ROUTES.signin);
     });
   }, [router]);
 

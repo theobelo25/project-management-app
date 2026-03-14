@@ -24,6 +24,7 @@ import {
 } from "@web/components/ui/dialog";
 
 import { TaskForm } from "@web/components/tasks/task-form";
+import { toast } from "sonner";
 
 type EditTaskDialogProps = {
   projectId: string;
@@ -67,10 +68,11 @@ export function EditTaskDialog({
       queryClient.invalidateQueries({
         queryKey: TASK_QUERY_KEY(task.id),
       });
+      toast.success("Task updated successfully!");
       setOpen(false);
     },
     onError: (error: Error) => {
-      console.error(error);
+      toast.error(error.message || "Failed to update task.");
     },
   });
 
