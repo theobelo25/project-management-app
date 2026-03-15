@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-type SettingsActionRowProps = { = {
+type SettingsActionRowProps = {
   title: string;
   description: string;
   children: ReactNode;
