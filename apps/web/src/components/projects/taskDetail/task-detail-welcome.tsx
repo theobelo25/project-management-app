@@ -1,13 +1,14 @@
-import { Button } from "@web/components/ui/button";
 import { Pencil } from "lucide-react";
-import { TaskView } from "@repo/types";
-import { Badge } from "@web/components/ui/badge";
+
+import { BackLink, PageHeader } from "@web/components/projects";
 import {
   formatTaskStatus,
   getStatusBadgeVariant,
 } from "@web/components/projects/utils";
+import { Badge } from "@web/components/ui/badge";
+import { Button } from "@web/components/ui/button";
 import { ROUTES } from "@web/lib/routes";
-import { PageHeader, BackLink } from "@web/components/projects";
+import type { TaskView } from "@repo/types";
 
 type TaskDetailWelcomeProps = {
   projectId: string;

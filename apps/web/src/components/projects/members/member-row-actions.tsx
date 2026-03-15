@@ -4,11 +4,11 @@ import type {
   ProjectMember,
   ProjectRole,
 } from "@web/components/projects/members";
-import { DropdownMenuItem } from "@web/components/ui/dropdown-menu";
 import {
-  RowActionsMenu,
   DestructiveDropdownItem,
+  RowActionsMenu,
 } from "@web/components/projects/row-actions-menu";
+import { DropdownMenuItem } from "@web/components/ui/dropdown-menu";
 
 type MemberRowActionsProps = {
   member: ProjectMember;

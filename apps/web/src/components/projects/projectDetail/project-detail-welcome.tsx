@@ -1,12 +1,13 @@
+import Link from "next/link";
+import { Settings } from "lucide-react";
+
+import { BackLink, PageHeader } from "@web/components/projects";
 import { CreateTaskDialog } from "@web/components/projects/tasks";
+import { formatProjectRole } from "@web/components/projects/utils";
 import { Badge } from "@web/components/ui/badge";
 import { Button } from "@web/components/ui/button";
-import { Settings } from "lucide-react";
-import Link from "next/link";
-import { ProjectListItemView } from "@repo/types";
-import { formatProjectRole } from "@web/components/projects/utils";
 import { ROUTES } from "@web/lib/routes";
-import { PageHeader, BackLink } from "@web/components/projects";
+import type { ProjectListItemView } from "@repo/types";
 
 export function ProjectDetailWelcome({
   project,

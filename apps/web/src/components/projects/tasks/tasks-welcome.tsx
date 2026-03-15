@@ -1,6 +1,6 @@
+import { BackLink, PageHeader } from "@web/components/projects";
 import { CreateTaskDialog } from "@web/components/projects/tasks";
 import { ROUTES } from "@web/lib/routes";
-import { PageHeader, BackLink } from "@web/components/projects";
 
 type TasksWelcomeProps = {
   project: {

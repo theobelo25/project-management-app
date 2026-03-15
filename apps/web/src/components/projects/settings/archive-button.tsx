@@ -1,8 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
 import { Button } from "@web/components/ui/button";
 import { archiveProject, unarchiveProject } from "@web/lib/api/client";
 import { PROJECT_QUERY_KEY, PROJECTS_QUERY_KEY } from "@web/lib/api/queries";
-import { toast } from "sonner";
 
 export function ArchiveButton({
   projectId,

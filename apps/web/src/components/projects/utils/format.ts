@@ -1,5 +1,6 @@
-import { ProjectRole } from "@repo/types";
-import { ProjectTask } from "./types";
+import type { ProjectRole } from "@repo/types";
+
+import type { ProjectTask } from "./types";
 
 export function formatProjectRole(role: ProjectRole | undefined): string {
   if (!role) return "Member";

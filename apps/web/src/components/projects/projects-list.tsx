@@ -1,5 +1,5 @@
 import { ProjectCard, ProjectsEmptyState } from "@web/components/projects";
-import { ProjectListItemView } from "@repo/types";
+import type { ProjectListItemView } from "@repo/types";
 
 type ProjectsListProps = {
   projects: ProjectListItemView[];

@@ -1,3 +1,13 @@
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+import {
+  ArchiveButton,
+  DeleteProjectDialog,
+  SettingsActionRow,
+} from "@web/components/projects/settings";
 import {
   Card,
   CardContent,
@@ -5,18 +15,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import {
-  ArchiveButton,
-  DeleteProjectDialog,
-  SettingsActionRow,
-} from "@web/components/projects/settings";
-import { useRouter } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 import { deleteProject } from "@web/lib/api/client";
 import { PROJECT_QUERY_KEY, PROJECTS_QUERY_KEY } from "@web/lib/api/queries";
 import { ROUTES } from "@web/lib/routes";
-import { toast } from "sonner";
 
 type DangerZoneCardProps = {
   project: {

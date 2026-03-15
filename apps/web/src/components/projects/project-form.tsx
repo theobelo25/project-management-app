@@ -1,24 +1,22 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-
-import { createProject } from "@web/lib/api/client";
-import { PROJECTS_QUERY_KEY } from "@web/lib/api/queries";
-
-import {
-  CreateProjectSchema,
-  type CreateProjectDto,
-  type ProjectView,
-} from "@repo/types";
+import { toast } from "sonner";
 
 import { Button } from "@web/components/ui/button";
 import { Input } from "@web/components/ui/input";
 import { Label } from "@web/components/ui/label";
 import { Textarea } from "@web/components/ui/textarea";
-import { toast } from "sonner";
+import { createProject } from "@web/lib/api/client";
+import { PROJECTS_QUERY_KEY } from "@web/lib/api/queries";
+import {
+  CreateProjectSchema,
+  type CreateProjectDto,
+  type ProjectView,
+} from "@repo/types";
 
 type ProjectFormProps = {
   isLoading?: boolean;

@@ -1,6 +1,6 @@
 import { FolderKanban } from "lucide-react";
 
-import { EmptyStateCard, CreateProjectDialog } from "@web/components/projects";
+import { CreateProjectDialog, EmptyStateCard } from "@web/components/projects";
 
 type ProjectsEmptyStateProps = {
   title?: string;

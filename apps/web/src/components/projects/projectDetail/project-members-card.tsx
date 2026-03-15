@@ -1,3 +1,6 @@
+import Link from "next/link";
+
+import { getInitials } from "@web/components/projects/utils";
 import { Button } from "@web/components/ui/button";
 import {
   Card,
@@ -6,9 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import Link from "next/link";
-import { ProjectDetailMember, ProjectDetailView } from "@repo/types";
-import { getInitials } from "@web/components/projects/utils";
+import type { ProjectDetailMember, ProjectDetailView } from "@repo/types";
 
 export interface ProjectMembersCardProps {
   project: Pick<ProjectDetailView, "id">;

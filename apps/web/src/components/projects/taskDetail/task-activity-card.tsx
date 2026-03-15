@@ -1,3 +1,5 @@
+import { Calendar } from "lucide-react";
+
 import {
   Card,
   CardContent,
@@ -5,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import { Calendar } from "lucide-react";
+
 import { formatDate } from "../utils/format";
 
 type TaskActivityCardProps = {

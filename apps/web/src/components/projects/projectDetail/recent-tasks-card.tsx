@@ -1,3 +1,6 @@
+import Link from "next/link";
+
+import { formatTaskStatus } from "@web/components/projects/utils";
 import { Badge } from "@web/components/ui/badge";
 import { Button } from "@web/components/ui/button";
 import {
@@ -7,9 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import Link from "next/link";
-import { ProjectDetailView, ProjectRecentTask } from "@repo/types";
-import { formatTaskStatus } from "@web/components/projects/utils";
+import type { ProjectDetailView, ProjectRecentTask } from "@repo/types";
 
 export interface RecentTasksCardProps {
   project: Pick<ProjectDetailView, "id">;

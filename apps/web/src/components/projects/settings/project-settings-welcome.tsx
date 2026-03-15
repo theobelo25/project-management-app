@@ -1,6 +1,6 @@
-import { ProjectDetailView } from "@repo/types";
+import { BackLink, PageHeader } from "@web/components/projects";
 import { ROUTES } from "@web/lib/routes";
-import { PageHeader, BackLink } from "@web/components/projects";
+import type { ProjectDetailView } from "@repo/types";
 
 type ProjectSettingsWelcomeProps = {
   project: Pick<ProjectDetailView, "id" | "name">;

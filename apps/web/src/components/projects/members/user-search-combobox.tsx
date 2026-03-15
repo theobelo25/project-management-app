@@ -1,7 +1,9 @@
 "use client";
+
 import { useMemo, useState } from "react";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
-import { useUsersSearchQuery } from "@web/lib/api/queries";
+
+import { getInitials } from "@web/components/projects/utils";
 import { Button } from "@web/components/ui/button";
 import {
   Command,
@@ -16,8 +18,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@web/components/ui/popover";
+import { useUsersSearchQuery } from "@web/lib/api/queries";
 import { cn } from "@web/lib/utils";
-import { getInitials } from "@web/components/projects/utils";
 
 export type UserSearchResult = {
   id: string;

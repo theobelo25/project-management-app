@@ -1,3 +1,10 @@
+import { InviteMemberDialog } from "@web/components/projects/members";
+import { RemoveMemberButton } from "@web/components/projects/settings";
+import {
+  formatProjectRole,
+  getInitials,
+  MemberWithRole,
+} from "@web/components/projects/utils";
 import { Badge } from "@web/components/ui/badge";
 import {
   Card,
@@ -6,13 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import { RemoveMemberButton } from "@web/components/projects/settings";
-import { InviteMemberDialog } from "@web/components/projects/members";
-import {
-  formatProjectRole,
-  MemberWithRole,
-  getInitials,
-} from "@web/components/projects/utils";
 
 type MemberSettingsCardProps = {
   project: { id: string };

@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import {
-  MoreHorizontal,
-  FolderKanban,
-  CheckCircle2,
   Circle,
+  CheckCircle2,
+  FolderKanban,
+  MoreHorizontal,
 } from "lucide-react";
 
+import { Badge } from "@web/components/ui/badge";
 import {
   Card,
   CardAction,
@@ -17,7 +18,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import { Badge } from "@web/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,11 +25,11 @@ import {
   DropdownMenuTrigger,
 } from "@web/components/ui/dropdown-menu";
 import {
-  getInitials,
   formatProjectRole,
   formatUpdatedAt,
+  getInitials,
 } from "@web/components/projects/utils";
-import {
+import type {
   ProjectListItemView,
   ProjectListMember,
   ProjectRole,

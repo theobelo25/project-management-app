@@ -3,12 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 
+import {
+  DestructiveDropdownItem,
+  RowActionsMenu,
+} from "@web/components/projects/row-actions-menu";
 import { EditTaskDialog } from "@web/components/projects/tasks";
 import { DropdownMenuItem } from "@web/components/ui/dropdown-menu";
-import {
-  RowActionsMenu,
-  DestructiveDropdownItem,
-} from "@web/components/projects/row-actions-menu";
 
 type TaskRowActionsProps = {
   projectId: string;

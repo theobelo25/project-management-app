@@ -1,7 +1,5 @@
 "use client";
 
-import type { ProjectDetailView } from "@repo/types";
-import { useProjectQuery } from "@web/lib/api/queries";
 import {
   ProjectDetailWelcome,
   ProjectMembersCard,
@@ -9,6 +7,8 @@ import {
   ProjectStats,
   RecentTasksCard,
 } from "@web/components/projects/projectDetail";
+import { useProjectQuery } from "@web/lib/api/queries";
+import type { ProjectDetailView } from "@repo/types";
 
 type ProjectMember = {
   id: string;

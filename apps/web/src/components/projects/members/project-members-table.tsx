@@ -1,3 +1,5 @@
+import { MemberRowActions } from "@web/components/projects/members";
+import { formatProjectRole, getInitials } from "@web/components/projects/utils";
 import { Badge } from "@web/components/ui/badge";
 import {
   Card,
@@ -5,9 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import { MemberRowActions } from "@web/components/projects/members";
-import { formatProjectRole, getInitials } from "@web/components/projects/utils";
-import { ProjectRole } from "@repo/types";
+import type { ProjectRole } from "@repo/types";
+
 import type { ProjectMember } from "./types";
 
 type ProjectMembersTableProps = {

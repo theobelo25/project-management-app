@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@web/components/ui/select";
+
 import { FilterToolbar } from "../filter-toolbar";
 
 export type TasksFilterStatus = "all" | "TODO" | "IN_PROGRESS" | "DONE";

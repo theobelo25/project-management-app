@@ -1,9 +1,15 @@
 import Link from "next/link";
+
 import {
+  type TaskListItem,
   TaskRowActions,
   TasksEmptyState,
-  type TaskListItem,
 } from "@web/components/projects/tasks";
+import {
+  formatTaskStatus,
+  formatUpdatedAt,
+  getStatusBadgeVariant,
+} from "@web/components/projects/utils";
 import { Badge } from "@web/components/ui/badge";
 import {
   Card,
@@ -11,11 +17,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import {
-  formatTaskStatus,
-  formatUpdatedAt,
-  getStatusBadgeVariant,
-} from "@web/components/projects/utils";
 
 type TasksTableProps = {
   projectId: string;

@@ -1,23 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import {
-  updateProjectMemberRole,
+  InviteMemberDialog,
+  type ProjectMember,
+  ProjectMembersTable,
+} from "@web/components/projects/members";
+import {
   removeProjectMember,
+  updateProjectMemberRole,
 } from "@web/lib/api/client";
 import {
   PROJECT_MEMBERS_QUERY_KEY,
   PROJECT_QUERY_KEY,
 } from "@web/lib/api/queries";
-import {
-  InviteMemberDialog,
-  ProjectMembersTable,
-  type ProjectMember,
-} from "@web/components/projects/members";
 import type { ProjectRole } from "@repo/types";
-import { toast } from "sonner";
 
 type ProjectMembersManagerProps = {
   projectId: string;

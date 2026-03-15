@@ -1,3 +1,5 @@
+import { CheckCircle2, Circle, User } from "lucide-react";
+
 import {
   Card,
   CardContent,
@@ -5,8 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import { CheckCircle2, Circle, User } from "lucide-react";
-import { TaskStatus } from "@repo/types";
+import type { TaskStatus } from "@repo/types";
+
 import { formatTaskStatus } from "../utils/format";
 
 type TaskDetailsCardProps = {

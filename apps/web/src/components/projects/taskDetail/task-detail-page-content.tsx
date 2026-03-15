@@ -1,15 +1,16 @@
 "use client";
 
-import { useTaskQuery } from "@web/lib/api/queries";
 import { useState } from "react";
-import { EditTaskDialog } from "@web/components/projects/tasks";
+
 import {
-  TaskDetailWelcome,
-  TaskDetailsCard,
   TaskAssigneeCard,
   TaskActivityCard,
+  TaskDetailWelcome,
+  TaskDetailsCard,
   TaskQuickActionsCard,
 } from "@web/components/projects/taskDetail";
+import { EditTaskDialog } from "@web/components/projects/tasks";
+import { useTaskQuery } from "@web/lib/api/queries";
 import type { TaskView } from "@repo/types";
 
 type TaskDetailPageContentProps = {

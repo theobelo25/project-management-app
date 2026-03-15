@@ -1,4 +1,5 @@
 import { CreateTaskDialog } from "@web/components/projects/tasks";
+import { formatProjectRole } from "@web/components/projects/utils";
 import {
   Card,
   CardContent,
@@ -6,8 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import { ProjectDetailView } from "@repo/types";
-import { formatProjectRole } from "@web/components/projects/utils";
+import type { ProjectDetailView } from "@repo/types";
 
 export interface ProjectOverviewCardProps {
   project: Pick<ProjectDetailView, "id" | "currentUserRole">;

@@ -1,12 +1,13 @@
+import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
 import { Button } from "@web/components/ui/button";
 import { Input } from "@web/components/ui/input";
 import { Label } from "@web/components/ui/label";
 import { Textarea } from "@web/components/ui/textarea";
 import { updateProject } from "@web/lib/api/client";
 import { PROJECT_QUERY_KEY, PROJECTS_QUERY_KEY } from "@web/lib/api/queries";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
 export function GeneralSettingsForm({
   projectId,

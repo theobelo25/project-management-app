@@ -1,19 +1,20 @@
 "use client";
 
-import { useProjectMembersQuery, useProjectQuery } from "@web/lib/api/queries";
+import {
+  InvalidProjectMessage,
+  PageErrorMessage,
+  PageLoadingMessage,
+} from "@web/components/projects";
 import {
   type ProjectMember,
   type ProjectRole,
   ProjectMembersManager,
 } from "@web/components/projects/members";
-import type { ProjectDetailView, ProjectMembersView } from "@repo/types";
-import { BackLink } from "../back-link";
+import { useProjectMembersQuery, useProjectQuery } from "@web/lib/api/queries";
 import { ROUTES } from "@web/lib/routes";
-import {
-  PageLoadingMessage,
-  PageErrorMessage,
-  InvalidProjectMessage,
-} from "@web/components/projects";
+import type { ProjectDetailView, ProjectMembersView } from "@repo/types";
+
+import { BackLink } from "../back-link";
 
 function mergeMembersWithRoles(
   projectMembers: { id: string; name: string; email?: string }[],

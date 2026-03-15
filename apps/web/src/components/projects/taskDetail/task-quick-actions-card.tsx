@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { Pencil } from "lucide-react";
+
 import { Button } from "@web/components/ui/button";
 import {
   Card,
@@ -6,8 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import { Pencil } from "lucide-react";
-import Link from "next/link";
 
 type TaskQuickActionsCardProps = {
   projectId: string;

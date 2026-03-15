@@ -1,5 +1,8 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { UseMutationResult } from "@tanstack/react-query";
+import { Copy, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
 import { Button } from "@web/components/ui/button";
 import {
   Dialog,
@@ -12,8 +15,6 @@ import {
 } from "@web/components/ui/dialog";
 import { Input } from "@web/components/ui/input";
 import { Label } from "@web/components/ui/label";
-import { Copy, Trash2 } from "lucide-react";
-import { toast } from "sonner";
 
 type DeleteProjectDialogProps = {
   deleteDialogOpen: boolean;

@@ -1,3 +1,5 @@
+import { Users } from "lucide-react";
+
 import {
   Card,
   CardContent,
@@ -5,8 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import { Users } from "lucide-react";
-import { ProjectRole } from "@repo/types";
+import type { ProjectRole } from "@repo/types";
+
 import { formatProjectRole } from "../utils/format";
 
 type PermissionsSummaryCardProps = {

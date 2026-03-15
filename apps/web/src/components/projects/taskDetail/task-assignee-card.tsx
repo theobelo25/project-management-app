@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
+
 import { getInitials } from "../utils/string";
 
 type TaskAssigneeCardProps = {

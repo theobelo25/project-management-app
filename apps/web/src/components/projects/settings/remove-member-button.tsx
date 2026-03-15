@@ -1,11 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
 import { Button } from "@web/components/ui/button";
 import { removeProjectMember } from "@web/lib/api/client";
 import {
   PROJECT_MEMBERS_QUERY_KEY,
   PROJECT_QUERY_KEY,
 } from "@web/lib/api/queries";
-import { toast } from "sonner";
 
 export function RemoveMemberButton({
   projectId,

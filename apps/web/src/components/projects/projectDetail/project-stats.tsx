@@ -1,4 +1,5 @@
 import { CheckCircle2, Circle, FolderKanban, Users } from "lucide-react";
+
 import { StatCard } from "./stat-card";
 
 export interface ProjectStatsProps {

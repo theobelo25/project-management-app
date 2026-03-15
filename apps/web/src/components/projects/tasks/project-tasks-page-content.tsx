@@ -1,31 +1,32 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
 import {
-  TasksToolbar,
-  TasksTable,
+  PageErrorMessage,
+  PageLoadingMessage,
+  ProjectsPagination,
+} from "@web/components/projects";
+import {
   taskViewToListItem,
+  TasksTable,
+  TasksToolbar,
   TasksWelcome,
   type TasksFilterStatus,
   type TasksSort,
 } from "@web/components/projects/tasks";
-import {
-  ProjectsPagination,
-  PageLoadingMessage,
-  PageErrorMessage,
-} from "@web/components/projects";
+import { deleteTask } from "@web/lib/api/client";
 import {
   PROJECT_TASKS_QUERY_KEY,
   useProjectQuery,
   useProjectTasksQuery,
 } from "@web/lib/api/queries";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteTask } from "@web/lib/api/client";
-import { toast } from "sonner";
 import type {
   PaginationResult,
-  TaskView,
   ProjectDetailView,
+  TaskView,
 } from "@repo/types";
 
 type ProjectTasksPageContentProps = {

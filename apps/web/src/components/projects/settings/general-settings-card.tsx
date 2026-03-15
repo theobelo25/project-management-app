@@ -1,3 +1,4 @@
+import { GeneralSettingsForm } from "@web/components/projects/settings";
 import {
   Card,
   CardContent,
@@ -5,8 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import { GeneralSettingsForm } from "@web/components/projects/settings";
-import { ProjectDetailView } from "@repo/types";
+import type { ProjectDetailView } from "@repo/types";
 
 type GeneralSettingsCardProps = {
   project: Pick<ProjectDetailView, "id" | "name" | "description">;

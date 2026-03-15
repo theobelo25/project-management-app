@@ -1,4 +1,5 @@
 import { ClipboardList } from "lucide-react";
+
 import { EmptyStateCard } from "../empty-state-card";
 
 type TasksEmptyStateProps = {

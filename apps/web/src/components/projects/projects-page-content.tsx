@@ -1,8 +1,18 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { useProjectsQuery } from "@web/lib/api/queries";
+import { usePathname, useRouter } from "next/navigation";
+import type {
+  GetProjectsQueryDto,
+  PaginatedProjectsListView,
+} from "packages/types/dist";
+
+import {
+  parseProjectsSearchParams,
+  buildProjectsSearchParams,
+  type ProjectsFilter as ParamFilter,
+  type ProjectsSort as ParamSort,
+} from "@web/app/(protected)/projects/params";
 import { PageLayout } from "@web/components/layout/page-layout";
 import {
   ProjectsWelcome,
@@ -13,17 +23,10 @@ import {
   type ProjectsSort,
   type ProjectListItem,
 } from "@web/components/projects";
-import type {
-  GetProjectsQueryDto,
-  PaginatedProjectsListView,
-} from "packages/types/dist";
-import { PROJECTS_LIST_PAGE_SIZE } from "@web/lib/api/queries";
 import {
-  parseProjectsSearchParams,
-  buildProjectsSearchParams,
-  type ProjectsFilter as ParamFilter,
-  type ProjectsSort as ParamSort,
-} from "@web/app/(protected)/projects/params";
+  useProjectsQuery,
+  PROJECTS_LIST_PAGE_SIZE,
+} from "@web/lib/api/queries";
 
 type ProjectsPageContentProps = {
   initialData: PaginatedProjectsListView | null;
