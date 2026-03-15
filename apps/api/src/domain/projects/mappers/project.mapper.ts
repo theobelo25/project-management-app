@@ -3,6 +3,8 @@ import {
   PaginatedProjectsView,
   ProjectListItemView,
   ProjectView,
+  ProjectDetailView,
+  ProjectRecentTask,
 } from '@repo/types';
 import {
   ProjectWithRole,
@@ -13,6 +15,7 @@ import {
   toIsoString,
   toIsoStringOrNull,
 } from '@api/common/mappers/mapper.utils';
+import { TaskWithAssignees } from '../../tasks/types/tasks.repository.types';
 
 export function toProjectView(project: ProjectWithRole): ProjectView {
   return {
@@ -79,12 +82,6 @@ export function toPaginatedProjectListView(
   };
 }
 
-// Add to imports from '@repo/types':
-import { ProjectDetailView, ProjectRecentTask } from '@repo/types';
-
-// Add mapper (adjust TaskWithAssignees import if your task type lives elsewhere):
-import { TaskWithAssignees } from '../../tasks/types/tasks.repository.types';
-
 export function toProjectDetailView(
   project: ProjectWithRole,
   counts: { total: number; completed: number },
@@ -101,6 +98,7 @@ export function toProjectDetailView(
     members: members.map((m) => ({
       id: m.userId,
       name: m.name,
+      email: m.email ?? undefined,
       image: m.image ?? null,
     })),
     recentTasks: recentTasks.map((t) => ({

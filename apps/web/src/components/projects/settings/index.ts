@@ -6,3 +6,4 @@ export * from "./member-settings-card";
 export * from "./permissions-summary-card";
 export * from "./project-settings-welcome";
 export * from "./remove-member-button";
+export * from "./delete-project-dialog";

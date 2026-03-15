@@ -56,7 +56,7 @@ export function TasksToolbar({
     sort !== "updated-desc";
 
   return (
-    <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+    <section className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between mb-4">
       <div className="grid gap-3 sm:grid-cols-2 xl:flex xl:flex-1">
         <div className="relative w-full xl:max-w-sm">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -126,6 +126,6 @@ export function TasksToolbar({
           </Button>
         ) : null}
       </div>
-    </div>
+    </section>
   );
 }

@@ -157,4 +157,14 @@ export class ProjectsController {
       body,
     );
   }
+
+  @Delete(':id')
+  @RequireProjectRole(ProjectRole.OWNER)
+  @HttpCode(204)
+  async delete(
+    @CurrentUser() user: AuthUser,
+    @Param() params: ProjectIdParamDto,
+  ): Promise<void> {
+    return this.projectsService.delete(params.id, user.id);
+  }
 }

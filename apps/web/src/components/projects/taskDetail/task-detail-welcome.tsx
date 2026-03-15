@@ -40,7 +40,7 @@ export function TaskDetailWelcome({
   task,
 }: TaskDetailWelcomeProps) {
   return (
-    <section className="flex flex-col gap-4">
+    <section className="flex flex-col gap-4 my-4">
       <div>
         <Button asChild variant="ghost" size="sm" className="mb-2 -ml-2">
           <Link href={`/projects/${projectId}/tasks`}>

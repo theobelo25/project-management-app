@@ -10,6 +10,7 @@ import {
 import { UserPlus } from "lucide-react";
 import { RemoveMemberButton } from "./remove-member-button";
 import { ProjectRole } from "@repo/types";
+import { InviteMemberDialog } from "@web/components/projects/members";
 
 function getInitials(name: string) {
   return name
@@ -60,10 +61,10 @@ export function MemberSettingsCard({
           </CardDescription>
         </div>
         {canManageMembers ? (
-          <Button type="button" variant="outline" size="sm">
-            <UserPlus className="mr-2 h-4 w-4" />
-            Invite Member
-          </Button>
+          <InviteMemberDialog
+            projectId={project.id}
+            currentMemberIds={membersWithRole.map((m) => m.id)}
+          />
         ) : null}
       </CardHeader>
       <CardContent className="space-y-3">

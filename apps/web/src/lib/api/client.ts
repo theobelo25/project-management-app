@@ -384,3 +384,14 @@ export async function updateTask(
 
   return response.json();
 }
+
+export async function deleteProject(projectId: string): Promise<void> {
+  const res = await fetchWithAuth(`${API_BASE}/api/projects/${projectId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to delete project");
+  }
+}

@@ -175,4 +175,13 @@ export class ProjectsService {
     const membersList = members.get(projectId) ?? [];
     return toProjectDetailView(project, counts, membersList, recentTasks);
   }
+
+  async delete(projectId: string, userId: string): Promise<void> {
+    await this.projectAccessService.requireOwner(projectId, userId);
+    await this.projectsRepository.delete(projectId);
+    this.logger.info(
+      { event: 'project.deleted', userId, projectId },
+      'Project deleted successfully',
+    );
+  }
 }

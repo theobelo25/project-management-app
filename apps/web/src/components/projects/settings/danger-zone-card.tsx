@@ -1,4 +1,3 @@
-import { Button } from "@web/components/ui/button";
 import {
   Card,
   CardContent,
@@ -6,13 +5,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import { Trash2 } from "lucide-react";
 import { ArchiveButton } from "./archive-button";
+import { DeleteProjectDialog } from "./delete-project-dialog";
+import { useRouter } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { deleteProject } from "@web/lib/api/client";
+import { PROJECT_QUERY_KEY, PROJECTS_QUERY_KEY } from "@web/lib/api/queries";
+import { ROUTES } from "@web/lib/routes";
+import { toast } from "sonner";
 
 type DangerZoneCardProps = {
   project: {
     id: string;
     archivedAt: string | null;
+    name: string;
   };
   canDeleteProject: boolean;
 };
@@ -21,6 +28,21 @@ export function DangerZoneCard({
   project,
   canDeleteProject,
 }: DangerZoneCardProps) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteProject(project.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
+      queryClient.removeQueries({ queryKey: PROJECT_QUERY_KEY(project.id) });
+      toast.success("Project deleted successfully.");
+      setDeleteDialogOpen(false);
+      router.push(ROUTES.projects);
+    },
+  });
+
   return (
     <Card className="border-destructive/30">
       <CardHeader>
@@ -39,14 +61,13 @@ export function DangerZoneCard({
                 action cannot be undone.
               </p>
             </div>
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={!canDeleteProject}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete Project
-            </Button>
+            <DeleteProjectDialog
+              projectName={project.name}
+              deleteDialogOpen={deleteDialogOpen}
+              setDeleteDialogOpen={setDeleteDialogOpen}
+              canDeleteProject={canDeleteProject}
+              deleteMutation={deleteMutation}
+            />
           </div>
           {!canDeleteProject ? (
             <p className="mt-3 text-sm text-muted-foreground">

@@ -2,7 +2,6 @@
 
 import type { ProjectDetailView } from "@repo/types";
 import { useProjectQuery } from "@web/lib/api/queries";
-import { PageLayout } from "@web/components/layout/page-layout";
 import {
   ProjectDetailWelcome,
   ProjectMembersCard,
@@ -48,13 +47,11 @@ export function ProjectDetailContent({
 
   if (isError || !project) {
     return (
-      <PageLayout>
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 md:px-6">
-          <div className="flex items-center justify-center py-12 text-destructive">
-            {error?.message ?? "Project not found"}
-          </div>
+      <>
+        <div className="flex items-center justify-center py-12 text-destructive">
+          {error?.message ?? "Project not found"}
         </div>
-      </PageLayout>
+      </>
     );
   }
 
@@ -80,7 +77,7 @@ export function ProjectDetailContent({
       : [];
 
   return (
-    <PageLayout>
+    <>
       <ProjectDetailWelcome project={project} />
       <ProjectStats
         totalTasks={totalTasks}
@@ -88,13 +85,13 @@ export function ProjectDetailContent({
         completedTasks={completedTasks}
         members={members}
       />
-      <section className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
-        <div className="space-y-6">
-          <RecentTasksCard project={project} recentTasks={recentTasks} />
-          <ProjectMembersCard project={project} members={members} />
+      <section className="grid gap-4 mb-4 lg:grid-cols-2">
+        <RecentTasksCard project={project} recentTasks={recentTasks} />
+        <ProjectMembersCard project={project} members={members} />
+        <div className="lg:col-span-2">
           <ProjectOverviewCard project={project} openTasks={openTasks} />
         </div>
       </section>
-    </PageLayout>
+    </>
   );
 }

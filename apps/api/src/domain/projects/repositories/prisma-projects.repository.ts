@@ -405,7 +405,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
         projectId: true,
         userId: true,
         user: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, email: true },
         },
       },
     });
@@ -416,6 +416,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
       list.push({
         userId: m.userId,
         name: m.user.name,
+        email: m.user.email,
       });
       map.set(m.projectId, list);
     }

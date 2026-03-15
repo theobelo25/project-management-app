@@ -3,3 +3,4 @@ export * from "./task-assignee-card";
 export * from "./task-detail-welcome";
 export * from "./task-details-card";
 export * from "./task-quick-actions-card";
+export * from "./task-detail-page-content";

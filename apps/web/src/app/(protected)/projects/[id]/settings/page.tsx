@@ -13,7 +13,7 @@ import {
 
 type ProjectRole = "OWNER" | "ADMIN" | "MEMBER";
 
-export default async function ProjectSettingsPage() {
+export default function ProjectSettingsPage() {
   const params = useParams();
   const id = typeof params?.id === "string" ? params.id : null;
 
@@ -42,9 +42,14 @@ export default async function ProjectSettingsPage() {
   if (!id) return null;
   if (isLoading) {
     return (
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-6 md:px-6">
-        <div className="flex items-center justify-center py-12">Loading…</div>
-      </div>
+      <PageLayout>
+        <div className="flex min-h-[40vh] items-center justify-center">
+          <div
+            className="size-10 animate-spin rounded-full border-2 border-primary border-t-transparent"
+            aria-label="Loading"
+          />
+        </div>
+      </PageLayout>
     );
   }
   if (isError || !project) {
@@ -60,7 +65,7 @@ export default async function ProjectSettingsPage() {
   return (
     <PageLayout>
       <ProjectSettingsWelcome project={project} />
-      <div className="grid gap-6">
+      <div className="grid gap-4 mb-4">
         <GeneralSettingsCard project={project} />
         <MemberSettingsCard
           project={project}

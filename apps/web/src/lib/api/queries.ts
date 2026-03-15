@@ -95,12 +95,20 @@ export function useProjectTasksQuery(
   });
 }
 
-export function useTaskQuery(taskId: string | null) {
+export function useTaskQuery(
+  taskId: string | null,
+  options?: {
+    initialData?: TaskView | null;
+    initialDataUpdatedAt?: number;
+  },
+) {
   return useQuery({
     queryKey: TASK_QUERY_KEY(taskId ?? ""),
     queryFn: () => fetchTask(taskId!),
     enabled: !!taskId,
     staleTime: 30 * 1000,
+    initialData: options?.initialData ?? undefined,
+    initialDataUpdatedAt: options?.initialDataUpdatedAt,
   });
 }
 

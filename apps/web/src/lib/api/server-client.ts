@@ -94,3 +94,15 @@ export async function fetchProjectMembersServer(
   }
   return res.json();
 }
+
+export async function fetchTaskServer(taskId: string): Promise<TaskView> {
+  const res = await fetch(`${API_BASE}/api/tasks/${taskId}`, {
+    headers: { Cookie: await getCookieHeader() },
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    if (res.status === 404) throw new Error("Task not found");
+    throw new Error("Failed to fetch task");
+  }
+  return res.json();
+}

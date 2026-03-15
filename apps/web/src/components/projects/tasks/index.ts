@@ -8,3 +8,4 @@ export * from "./tasks-empty-state";
 export * from "./tasks-table";
 export * from "./tasks-toolbar";
 export * from "./types";
+export * from "./project-tasks-page-content";
