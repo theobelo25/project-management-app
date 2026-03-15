@@ -59,6 +59,7 @@ export type TransferProjectOwnershipInput = {
 export type ProjectListMemberWithUser = {
   userId: string;
   name: string;
+  email?: string | null;
   image?: string | null;
 };
 

@@ -5,14 +5,12 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserPlus } from "lucide-react";
+import { toast } from "sonner";
 
-import { addProjectMember } from "@web/lib/api/client";
 import {
-  PROJECT_MEMBERS_QUERY_KEY,
-  PROJECT_QUERY_KEY,
-} from "@web/lib/api/queries";
-import { AddProjectMemberSchema, type AddProjectMemberDto } from "@repo/types";
-
+  UserSearchCombobox,
+  type UserSearchResult,
+} from "@web/components/projects/members";
 import { Button } from "@web/components/ui/button";
 import {
   Dialog,
@@ -30,12 +28,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@web/components/ui/select";
-
+import { addProjectMember } from "@web/lib/api/client";
 import {
-  UserSearchCombobox,
-  type UserSearchResult,
-} from "@web/components/projects/members/user-search-combobox";
-import { toast } from "sonner";
+  PROJECT_MEMBERS_QUERY_KEY,
+  PROJECT_QUERY_KEY,
+} from "@web/lib/api/queries";
+import { AddProjectMemberSchema, type AddProjectMemberDto } from "@repo/types";
 
 type InviteMemberDialogProps = {
   projectId: string;

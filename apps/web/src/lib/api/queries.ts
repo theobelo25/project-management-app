@@ -1,4 +1,4 @@
-import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   fetchMe,
   fetchProject,
@@ -13,8 +13,10 @@ import {
   GetProjectsQueryDto,
   PaginatedProjectsListView,
   PaginationResult,
+  ProjectDetailView,
+  ProjectMembersView,
   TaskView,
-} from "packages/types/dist";
+} from "@repo/types";
 
 export const ME_QUERY_KEY = ["me"] as const;
 
@@ -50,12 +52,20 @@ export const PROJECT_QUERY_KEY = (id: string) => ["projects", id] as const;
 export const PROJECT_TASKS_QUERY_KEY = (projectId: string) =>
   ["projects", projectId, "tasks"] as const;
 
-export function useProjectQuery(projectId: string | null) {
+export function useProjectQuery(
+  projectId: string | null,
+  options?: {
+    initialData?: ProjectDetailView | null;
+    initialDataUpdatedAt?: number;
+  },
+) {
   return useQuery({
     queryKey: [...PROJECTS_QUERY_KEY, projectId],
     queryFn: () => fetchProject(projectId!),
     enabled: !!projectId,
     staleTime: 30 * 1000,
+    initialData: options?.initialData ?? undefined,
+    initialDataUpdatedAt: options?.initialDataUpdatedAt,
   });
 }
 
@@ -85,24 +95,40 @@ export function useProjectTasksQuery(
   });
 }
 
-export function useTaskQuery(taskId: string | null) {
+export function useTaskQuery(
+  taskId: string | null,
+  options?: {
+    initialData?: TaskView | null;
+    initialDataUpdatedAt?: number;
+  },
+) {
   return useQuery({
     queryKey: TASK_QUERY_KEY(taskId ?? ""),
     queryFn: () => fetchTask(taskId!),
     enabled: !!taskId,
     staleTime: 30 * 1000,
+    initialData: options?.initialData ?? undefined,
+    initialDataUpdatedAt: options?.initialDataUpdatedAt,
   });
 }
 
 export const PROJECT_MEMBERS_QUERY_KEY = (projectId: string) =>
   ["projects", projectId, "members"] as const;
 
-export function useProjectMembersQuery(projectId: string | null) {
+export function useProjectMembersQuery(
+  projectId: string | null,
+  options?: {
+    initialData?: ProjectMembersView | null;
+    initialDataUpdatedAt?: number;
+  },
+) {
   return useQuery({
     queryKey: PROJECT_MEMBERS_QUERY_KEY(projectId ?? ""),
     queryFn: () => fetchProjectMembers(projectId!),
     enabled: !!projectId,
     staleTime: 30 * 1000,
+    initialData: options?.initialData ?? undefined,
+    initialDataUpdatedAt: options?.initialDataUpdatedAt,
   });
 }
 
@@ -130,3 +156,13 @@ export const DASHBOARD_PROJECTS_QUERY: GetProjectsQueryDto = {
   sort: "updated-desc",
 };
 export const DASHBOARD_TASKS_LIMIT = 5;
+
+export const PROJECTS_LIST_PAGE_SIZE = 20;
+export const DEFAULT_PROJECTS_LIST_QUERY: GetProjectsQueryDto = {
+  page: 1,
+  pageSize: PROJECTS_LIST_PAGE_SIZE,
+  includeArchived: false,
+  search: undefined,
+  filter: "all",
+  sort: "updated-desc",
+};

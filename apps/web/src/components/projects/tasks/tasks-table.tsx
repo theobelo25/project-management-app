@@ -1,17 +1,22 @@
 import Link from "next/link";
-import { TaskRowActions } from "@web/components/tasks/task-row-actions";
 
-import type { TaskListItem, TaskStatus } from "@web/components/tasks/types";
-
+import {
+  type TaskListItem,
+  TaskRowActions,
+  TasksEmptyState,
+} from "@web/components/projects/tasks";
+import {
+  formatTaskStatus,
+  formatUpdatedAt,
+  getStatusBadgeVariant,
+} from "@web/components/projects/utils";
 import { Badge } from "@web/components/ui/badge";
-import { Button } from "@web/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import { TasksEmptyState } from "@web/components/tasks/tasks-empty-state";
 
 type TasksTableProps = {
   projectId: string;
@@ -20,41 +25,6 @@ type TasksTableProps = {
   emptyTitle?: string;
   emptyDescription?: string;
 };
-
-function formatTaskStatus(status: TaskStatus) {
-  switch (status) {
-    case "TODO":
-      return "Todo";
-    case "IN_PROGRESS":
-      return "In Progress";
-    case "DONE":
-      return "Done";
-    default:
-      return status;
-  }
-}
-
-function getStatusBadgeVariant(status: TaskStatus) {
-  switch (status) {
-    case "DONE":
-      return "default";
-    case "IN_PROGRESS":
-      return "secondary";
-    case "TODO":
-      return "outline";
-    default:
-      return "outline";
-  }
-}
-
-function formatUpdatedAt(date: string | Date) {
-  const value = typeof date === "string" ? new Date(date) : date;
-
-  return new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(
-    Math.round((value.getTime() - Date.now()) / (1000 * 60 * 60)),
-    "hour",
-  );
-}
 
 export function TasksTable({
   projectId,

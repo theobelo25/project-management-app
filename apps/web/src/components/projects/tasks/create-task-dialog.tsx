@@ -1,36 +1,22 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { toast } from "sonner";
 
+import { CreateEntityDialog } from "@web/components/projects/create-entity-dialog";
+import { TaskForm } from "@web/components/projects/tasks";
 import { createTask } from "@web/lib/api/client";
 import {
   PROJECT_QUERY_KEY,
   PROJECT_TASKS_QUERY_KEY,
 } from "@web/lib/api/queries";
-
 import type { CreateTaskDto, TaskView } from "@repo/types";
-
-import { Button } from "@web/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@web/components/ui/dialog";
-
-import { TaskForm } from "@web/components/tasks/task-form";
-import { toast } from "sonner";
 
 type CreateTaskDialogProps = {
   projectId: string;
 };
 
 export function CreateTaskDialog({ projectId }: CreateTaskDialogProps) {
-  const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const createTaskMutation = useMutation({
@@ -43,7 +29,6 @@ export function CreateTaskDialog({ projectId }: CreateTaskDialogProps) {
         queryKey: PROJECT_QUERY_KEY(projectId),
       });
       toast.success("Task created successfully!");
-      setOpen(false);
     },
     onError: (error: Error) => {
       toast.error(error.message || "Failed to create task.");
@@ -51,22 +36,12 @@ export function CreateTaskDialog({ projectId }: CreateTaskDialogProps) {
   });
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          New Task
-        </Button>
-      </DialogTrigger>
-
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Create task</DialogTitle>
-          <DialogDescription>
-            Add a new task to this project and keep work moving forward.
-          </DialogDescription>
-        </DialogHeader>
-
+    <CreateEntityDialog
+      triggerLabel="New Task"
+      dialogTitle="Create task"
+      dialogDescription="Add a new task to this project and keep work moving forward."
+    >
+      {({ onSuccess }) => (
         <TaskForm
           projectId={projectId}
           submitLabel="Create Task"
@@ -74,9 +49,10 @@ export function CreateTaskDialog({ projectId }: CreateTaskDialogProps) {
           errorMessage={createTaskMutation.error?.message ?? null}
           onSubmit={async (values) => {
             await createTaskMutation.mutateAsync(values);
+            onSuccess();
           }}
         />
-      </DialogContent>
-    </Dialog>
+      )}
+    </CreateEntityDialog>
   );
 }

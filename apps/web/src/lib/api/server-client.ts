@@ -6,6 +6,8 @@ import {
   PaginationResult,
   TaskView,
   COOKIE,
+  ProjectDetailView,
+  ProjectMembersView,
 } from "@repo/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -43,6 +45,20 @@ export async function fetchProjectsServer(
   return res.json();
 }
 
+export async function fetchProjectServer(
+  id: string,
+): Promise<ProjectDetailView> {
+  const res = await fetch(`${API_BASE}/api/projects/${id}`, {
+    headers: { Cookie: await getCookieHeader() },
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    if (res.status === 404) throw new Error("Project not found");
+    throw new Error("Failed to fetch project");
+  }
+  return res.json();
+}
+
 export async function fetchTasksServer(
   query: FindTasksQuery,
 ): Promise<PaginationResult<TaskView>> {
@@ -62,5 +78,31 @@ export async function fetchTasksServer(
 
   if (!res.ok) throw new Error("Failed to fetch tasks");
 
+  return res.json();
+}
+
+export async function fetchProjectMembersServer(
+  projectId: string,
+): Promise<ProjectMembersView> {
+  const res = await fetch(`${API_BASE}/api/projects/${projectId}/members`, {
+    headers: { Cookie: await getCookieHeader() },
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    if (res.status === 404) throw new Error("Project not found");
+    throw new Error("Failed to fetch project members");
+  }
+  return res.json();
+}
+
+export async function fetchTaskServer(taskId: string): Promise<TaskView> {
+  const res = await fetch(`${API_BASE}/api/tasks/${taskId}`, {
+    headers: { Cookie: await getCookieHeader() },
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    if (res.status === 404) throw new Error("Task not found");
+    throw new Error("Failed to fetch task");
+  }
   return res.json();
 }

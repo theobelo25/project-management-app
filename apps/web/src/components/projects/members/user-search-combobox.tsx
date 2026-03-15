@@ -1,7 +1,9 @@
 "use client";
+
 import { useMemo, useState } from "react";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
-import { useUsersSearchQuery } from "@web/lib/api/queries";
+
+import { getInitials } from "@web/components/projects/utils";
 import { Button } from "@web/components/ui/button";
 import {
   Command,
@@ -16,28 +18,23 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@web/components/ui/popover";
+import { useUsersSearchQuery } from "@web/lib/api/queries";
 import { cn } from "@web/lib/utils";
+
 export type UserSearchResult = {
   id: string;
   name: string;
   email: string;
 };
+
 type UserSearchComboboxProps = {
   value?: string;
   onChange: (user: UserSearchResult) => void;
   disabled?: boolean;
   excludeUserIds?: string[];
-  /** When using server search, pass the selected user so the trigger can show name/email when value is set but not in current results */
   selectedUserDisplay?: UserSearchResult | null;
 };
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
+
 export function UserSearchCombobox({
   value,
   onChange,

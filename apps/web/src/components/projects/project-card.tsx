@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import {
-  MoreHorizontal,
-  FolderKanban,
-  CheckCircle2,
   Circle,
+  CheckCircle2,
+  FolderKanban,
+  MoreHorizontal,
 } from "lucide-react";
 
+import { Badge } from "@web/components/ui/badge";
 import {
   Card,
   CardAction,
@@ -17,68 +18,28 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import { Badge } from "@web/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@web/components/ui/dropdown-menu";
-
-type ProjectRole = "OWNER" | "ADMIN" | "MEMBER";
-
-type ProjectMember = {
-  id: string;
-  name: string;
-  image?: string | null;
-};
+import {
+  formatProjectRole,
+  formatUpdatedAt,
+  getInitials,
+} from "@web/components/projects/utils";
+import type {
+  ProjectListItemView,
+  ProjectListMember,
+  ProjectRole,
+} from "@repo/types";
 
 type ProjectCardProps = {
-  project: {
-    id: string;
-    name: string;
-    description: string | null;
-    currentUserRole: ProjectRole;
-    updatedAt: string | Date;
-    totalTasks: number;
-    completedTasks: number;
-    openTasks: number;
-    members: ProjectMember[];
-  };
+  project: ProjectListItemView;
 };
 
-function formatRole(role: ProjectRole) {
-  switch (role) {
-    case "OWNER":
-      return "Owner";
-    case "ADMIN":
-      return "Admin";
-    case "MEMBER":
-      return "Member";
-    default:
-      return role;
-  }
-}
-
-function formatUpdatedAt(date: string | Date) {
-  const value = typeof date === "string" ? new Date(date) : date;
-
-  return new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(
-    Math.round((value.getTime() - Date.now()) / (1000 * 60 * 60)),
-    "hour",
-  );
-}
-
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
-
-function MembersPreview({ members }: { members: ProjectMember[] }) {
+function MembersPreview({ members }: { members: ProjectListMember[] }) {
   const visibleMembers = members.slice(0, 3);
   const remainingCount = Math.max(members.length - visibleMembers.length, 0);
 
@@ -108,7 +69,7 @@ function MembersPreview({ members }: { members: ProjectMember[] }) {
 function RoleBadge({ role }: { role: ProjectRole }) {
   return (
     <Badge variant="secondary" className="font-normal">
-      {formatRole(role)}
+      {formatProjectRole(role)}
     </Badge>
   );
 }
@@ -199,7 +160,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         </CardContent>
 
         <CardFooter className="flex items-center justify-between gap-3 border-t pt-4 text-sm">
-          <RoleBadge role={project.currentUserRole} />
+          <RoleBadge role={project.currentUserRole ?? "MEMBER"} />
           <span className="text-muted-foreground">
             Updated {formatUpdatedAt(project.updatedAt)}
           </span>

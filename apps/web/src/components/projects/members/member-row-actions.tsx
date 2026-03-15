@@ -1,19 +1,14 @@
 "use client";
 
-import { MoreHorizontal } from "lucide-react";
-
 import type {
   ProjectMember,
   ProjectRole,
-} from "@web/components/projects/members/types";
-
-import { Button } from "@web/components/ui/button";
+} from "@web/components/projects/members";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@web/components/ui/dropdown-menu";
+  DestructiveDropdownItem,
+  RowActionsMenu,
+} from "@web/components/projects/row-actions-menu";
+import { DropdownMenuItem } from "@web/components/ui/dropdown-menu";
 
 type MemberRowActionsProps = {
   member: ProjectMember;
@@ -49,43 +44,23 @@ export function MemberRowActions({
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label="Open member actions"
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent align="end">
-        {canChangeRole ? (
-          <>
-            <DropdownMenuItem
-              onClick={() => onChangeRole?.(member.id, "ADMIN")}
-            >
-              Make Admin
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => onChangeRole?.(member.id, "MEMBER")}
-            >
-              Make Member
-            </DropdownMenuItem>
-          </>
-        ) : null}
-
-        {canRemove ? (
-          <DropdownMenuItem
-            className="text-destructive focus:text-destructive"
-            onClick={() => onRemove?.(member.id)}
-          >
-            Remove Member
+    <RowActionsMenu ariaLabel="Open member actions">
+      {canChangeRole ? (
+        <>
+          <DropdownMenuItem onClick={() => onChangeRole?.(member.id, "ADMIN")}>
+            Make Admin
           </DropdownMenuItem>
-        ) : null}
-      </DropdownMenuContent>
-    </DropdownMenu>
+          <DropdownMenuItem onClick={() => onChangeRole?.(member.id, "MEMBER")}>
+            Make Member
+          </DropdownMenuItem>
+        </>
+      ) : null}
+
+      {canRemove ? (
+        <DestructiveDropdownItem onClick={() => onRemove?.(member.id)}>
+          Remove Member
+        </DestructiveDropdownItem>
+      ) : null}
+    </RowActionsMenu>
   );
 }

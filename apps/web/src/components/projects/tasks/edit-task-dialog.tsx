@@ -3,16 +3,9 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Pencil } from "lucide-react";
+import { toast } from "sonner";
 
-import { updateTask } from "@web/lib/api/client";
-import {
-  PROJECT_QUERY_KEY,
-  PROJECT_TASKS_QUERY_KEY,
-  TASK_QUERY_KEY,
-} from "@web/lib/api/queries";
-
-import type { CreateTaskDto, TaskView } from "@repo/types";
-
+import { TaskForm } from "@web/components/projects/tasks";
 import { Button } from "@web/components/ui/button";
 import {
   Dialog,
@@ -22,9 +15,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@web/components/ui/dialog";
-
-import { TaskForm } from "@web/components/tasks/task-form";
-import { toast } from "sonner";
+import { updateTask } from "@web/lib/api/client";
+import {
+  PROJECT_QUERY_KEY,
+  PROJECT_TASKS_QUERY_KEY,
+  TASK_QUERY_KEY,
+} from "@web/lib/api/queries";
+import type { CreateTaskDto, TaskView } from "@repo/types";
 
 type EditTaskDialogProps = {
   projectId: string;
@@ -33,7 +30,6 @@ type EditTaskDialogProps = {
     title: string;
     description: string | null;
   };
-  /** When provided, dialog is controlled and no trigger is rendered. */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   trigger?: React.ReactNode;

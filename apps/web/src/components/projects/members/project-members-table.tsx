@@ -1,3 +1,5 @@
+import { MemberRowActions } from "@web/components/projects/members";
+import { formatProjectRole, getInitials } from "@web/components/projects/utils";
 import { Badge } from "@web/components/ui/badge";
 import {
   Card,
@@ -5,12 +7,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
+import type { ProjectRole } from "@repo/types";
 
-import { MemberRowActions } from "@web/components/projects/members/member-row-actions";
-import type {
-  ProjectMember,
-  ProjectRole,
-} from "@web/components/projects/members/types";
+import type { ProjectMember } from "./types";
 
 type ProjectMembersTableProps = {
   members: ProjectMember[];
@@ -21,28 +20,6 @@ type ProjectMembersTableProps = {
   ) => void;
   onRemove?: (memberId: string) => void;
 };
-
-function formatRole(role: ProjectRole) {
-  switch (role) {
-    case "OWNER":
-      return "Owner";
-    case "ADMIN":
-      return "Admin";
-    case "MEMBER":
-      return "Member";
-    default:
-      return role;
-  }
-}
-
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
 
 export function ProjectMembersTable({
   members,
@@ -84,7 +61,9 @@ export function ProjectMembersTable({
                 </p>
 
                 <div>
-                  <Badge variant="secondary">{formatRole(member.role)}</Badge>
+                  <Badge variant="secondary">
+                    {formatProjectRole(member.role)}
+                  </Badge>
                 </div>
 
                 <div className="flex justify-end">
@@ -125,7 +104,9 @@ export function ProjectMembersTable({
                 />
               </div>
 
-              <Badge variant="secondary">{formatRole(member.role)}</Badge>
+              <Badge variant="secondary">
+                {formatProjectRole(member.role)}
+              </Badge>
             </div>
           ))}
         </div>
