@@ -34,7 +34,7 @@ import {
 import {
   UserSearchCombobox,
   type UserSearchResult,
-} from "@web/components/projects/members/user-search-combobox";
+} from "@web/components/projects/members";
 import { toast } from "sonner";
 
 type InviteMemberDialogProps = {

@@ -23,7 +23,7 @@ import {
   DialogTrigger,
 } from "@web/components/ui/dialog";
 
-import { TaskForm } from "@web/components/projects/tasks/task-form";
+import { TaskForm } from "@web/components/projects/tasks";
 import { toast } from "sonner";
 
 type EditTaskDialogProps = {
@@ -33,7 +33,6 @@ type EditTaskDialogProps = {
     title: string;
     description: string | null;
   };
-  /** When provided, dialog is controlled and no trigger is rendered. */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   trigger?: React.ReactNode;

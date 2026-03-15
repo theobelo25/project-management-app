@@ -5,15 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
+import { getInitials } from "../utils/string";
 
 type TaskAssigneeCardProps = {
   assignee: {

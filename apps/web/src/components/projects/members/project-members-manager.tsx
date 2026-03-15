@@ -11,12 +11,12 @@ import {
   PROJECT_MEMBERS_QUERY_KEY,
   PROJECT_QUERY_KEY,
 } from "@web/lib/api/queries";
-import { InviteMemberDialog } from "@web/components/projects/members/invite-member-dialog";
-import { ProjectMembersTable } from "@web/components/projects/members/project-members-table";
-import type {
-  ProjectMember,
-  ProjectRole,
-} from "@web/components/projects/members/types";
+import {
+  InviteMemberDialog,
+  ProjectMembersTable,
+  type ProjectMember,
+} from "@web/components/projects/members";
+import type { ProjectRole } from "@repo/types";
 import { toast } from "sonner";
 
 type ProjectMembersManagerProps = {

@@ -7,19 +7,7 @@ import {
 } from "@web/components/ui/card";
 import { CheckCircle2, Circle, User } from "lucide-react";
 import { TaskStatus } from "@repo/types";
-
-function formatTaskStatus(status: string) {
-  switch (status) {
-    case "TODO":
-      return "Todo";
-    case "IN_PROGRESS":
-      return "In Progress";
-    case "DONE":
-      return "Done";
-    default:
-      return status;
-  }
-}
+import { formatTaskStatus } from "../utils/format";
 
 type TaskDetailsCardProps = {
   task: {

@@ -1,4 +1,4 @@
-import { CreateTaskDialog } from "@web/components/projects/tasks/create-task-dialog";
+import { CreateTaskDialog } from "@web/components/projects/tasks";
 import {
   Card,
   CardContent,
@@ -6,21 +6,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import { ProjectDetailView, ProjectRole } from "@repo/types";
-
-function formatRole(role: ProjectRole | undefined): string {
-  if (!role) return "Member";
-  switch (role) {
-    case "OWNER":
-      return "Owner";
-    case "ADMIN":
-      return "Admin";
-    case "MEMBER":
-      return "Member";
-    default:
-      return role;
-  }
-}
+import { ProjectDetailView } from "@repo/types";
+import { formatProjectRole } from "@web/components/projects/utils";
 
 export interface ProjectOverviewCardProps {
   project: Pick<ProjectDetailView, "id" | "currentUserRole">;
@@ -44,7 +31,7 @@ export function ProjectOverviewCard({
         <div className="flex items-center justify-between gap-4">
           <span className="text-muted-foreground">Role</span>
           <span className="font-medium">
-            {formatRole(project.currentUserRole)}
+            {formatProjectRole(project.currentUserRole)}
           </span>
         </div>
 

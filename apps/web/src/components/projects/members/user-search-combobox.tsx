@@ -17,27 +17,22 @@ import {
   PopoverTrigger,
 } from "@web/components/ui/popover";
 import { cn } from "@web/lib/utils";
+import { getInitials } from "@web/components/projects/utils";
+
 export type UserSearchResult = {
   id: string;
   name: string;
   email: string;
 };
+
 type UserSearchComboboxProps = {
   value?: string;
   onChange: (user: UserSearchResult) => void;
   disabled?: boolean;
   excludeUserIds?: string[];
-  /** When using server search, pass the selected user so the trigger can show name/email when value is set but not in current results */
   selectedUserDisplay?: UserSearchResult | null;
 };
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
+
 export function UserSearchCombobox({
   value,
   onChange,

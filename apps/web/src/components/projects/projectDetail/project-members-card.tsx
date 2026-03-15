@@ -8,15 +8,7 @@ import {
 } from "@web/components/ui/card";
 import Link from "next/link";
 import { ProjectDetailMember, ProjectDetailView } from "@repo/types";
-
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
+import { getInitials } from "@web/components/projects/utils";
 
 export interface ProjectMembersCardProps {
   project: Pick<ProjectDetailView, "id">;

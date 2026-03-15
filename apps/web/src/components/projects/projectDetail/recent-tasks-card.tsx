@@ -9,25 +9,7 @@ import {
 } from "@web/components/ui/card";
 import Link from "next/link";
 import { ProjectDetailView, ProjectRecentTask } from "@repo/types";
-
-type ProjectTask = {
-  id: string;
-  title: string;
-  status: "TODO" | "IN_PROGRESS" | "DONE";
-};
-
-function formatTaskStatus(status: ProjectTask["status"]) {
-  switch (status) {
-    case "TODO":
-      return "Todo";
-    case "IN_PROGRESS":
-      return "In Progress";
-    case "DONE":
-      return "Done";
-    default:
-      return status;
-  }
-}
+import { formatTaskStatus } from "@web/components/projects/utils";
 
 export interface RecentTasksCardProps {
   project: Pick<ProjectDetailView, "id">;

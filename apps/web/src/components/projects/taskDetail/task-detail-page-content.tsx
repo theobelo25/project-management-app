@@ -2,7 +2,7 @@
 
 import { useTaskQuery } from "@web/lib/api/queries";
 import { useState } from "react";
-import { EditTaskDialog } from "@web/components/projects/tasks/edit-task-dialog";
+import { EditTaskDialog } from "@web/components/projects/tasks";
 import {
   TaskDetailWelcome,
   TaskDetailsCard,

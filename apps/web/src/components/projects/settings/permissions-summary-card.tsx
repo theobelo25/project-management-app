@@ -7,19 +7,7 @@ import {
 } from "@web/components/ui/card";
 import { Users } from "lucide-react";
 import { ProjectRole } from "@repo/types";
-
-function formatRole(role: ProjectRole | undefined) {
-  switch (role) {
-    case "OWNER":
-      return "Owner";
-    case "ADMIN":
-      return "Admin";
-    case "MEMBER":
-      return "Member";
-    default:
-      return role;
-  }
-}
+import { formatProjectRole } from "../utils/format";
 
 type PermissionsSummaryCardProps = {
   project: {
@@ -44,7 +32,9 @@ export function PermissionsSummaryCard({
             <Users className="h-4 w-4 text-muted-foreground" />
           </div>
           <div>
-            <p className="font-medium">{formatRole(project.currentUserRole)}</p>
+            <p className="font-medium">
+              {formatProjectRole(project.currentUserRole)}
+            </p>
             <p className="text-sm text-muted-foreground">
               {project.currentUserRole === "OWNER"
                 ? "You can manage settings, members, and destructive actions."

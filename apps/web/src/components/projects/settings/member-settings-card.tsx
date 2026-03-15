@@ -1,5 +1,4 @@
 import { Badge } from "@web/components/ui/badge";
-import { Button } from "@web/components/ui/button";
 import {
   Card,
   CardContent,
@@ -7,39 +6,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import { UserPlus } from "lucide-react";
-import { RemoveMemberButton } from "./remove-member-button";
-import { ProjectRole } from "@repo/types";
+import { RemoveMemberButton } from "@web/components/projects/settings";
 import { InviteMemberDialog } from "@web/components/projects/members";
+import {
+  formatProjectRole,
+  MemberWithRole,
+  getInitials,
+} from "@web/components/projects/utils";
 
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
-
-function formatRole(role: ProjectRole | undefined) {
-  switch (role) {
-    case "OWNER":
-      return "Owner";
-    case "ADMIN":
-      return "Admin";
-    case "MEMBER":
-      return "Member";
-    default:
-      return role;
-  }
-}
-
-type MemberWithRole = {
-  id: string;
-  name: string;
-  email?: string | null;
-  role: ProjectRole;
-};
 type MemberSettingsCardProps = {
   project: { id: string };
   canManageMembers: boolean;
@@ -85,7 +59,9 @@ export function MemberSettingsCard({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="secondary">{formatRole(member.role)}</Badge>
+              <Badge variant="secondary">
+                {formatProjectRole(member.role)}
+              </Badge>
               {canManageMembers && member.role !== "OWNER" ? (
                 <RemoveMemberButton projectId={project.id} userId={member.id} />
               ) : null}

@@ -9,7 +9,11 @@ import {
   type TasksFilterStatus,
   type TasksSort,
 } from "@web/components/projects/tasks";
-import { ProjectsPagination } from "@web/components/projects/projects-pagination";
+import {
+  ProjectsPagination,
+  PageLoadingMessage,
+  PageErrorMessage,
+} from "@web/components/projects";
 import {
   PROJECT_TASKS_QUERY_KEY,
   useProjectQuery,
@@ -18,9 +22,11 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteTask } from "@web/lib/api/client";
 import { toast } from "sonner";
-import { PageLayout } from "@web/components/layout/page-layout";
-import type { ProjectDetailView } from "@repo/types";
-import type { PaginationResult, TaskView } from "@repo/types";
+import type {
+  PaginationResult,
+  TaskView,
+  ProjectDetailView,
+} from "@repo/types";
 
 type ProjectTasksPageContentProps = {
   projectId: string;
@@ -119,7 +125,7 @@ export function ProjectTasksPageContent({
   if (projectLoading && !project) {
     return (
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 md:px-6">
-        <div className="flex items-center justify-center py-12">Loading…</div>
+        <PageLoadingMessage />
       </div>
     );
   }
@@ -127,9 +133,7 @@ export function ProjectTasksPageContent({
   if (!project) {
     return (
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 md:px-6">
-        <div className="flex items-center justify-center py-12 text-destructive">
-          Project not found
-        </div>
+        <PageErrorMessage message="Project not found" />
       </div>
     );
   }

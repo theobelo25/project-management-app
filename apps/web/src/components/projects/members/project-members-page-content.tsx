@@ -1,8 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@web/components/ui/button";
 import { useProjectMembersQuery, useProjectQuery } from "@web/lib/api/queries";
 import {
   type ProjectMember,
@@ -10,6 +7,13 @@ import {
   ProjectMembersManager,
 } from "@web/components/projects/members";
 import type { ProjectDetailView, ProjectMembersView } from "@repo/types";
+import { BackLink } from "../back-link";
+import { ROUTES } from "@web/lib/routes";
+import {
+  PageLoadingMessage,
+  PageErrorMessage,
+  InvalidProjectMessage,
+} from "@web/components/projects";
 
 function mergeMembersWithRoles(
   projectMembers: { id: string; name: string; email?: string }[],
@@ -72,45 +76,22 @@ export function ProjectMembersPageContent({
     <>
       <div className="flex flex-col gap-8 my-4">
         {!projectId ? (
-          <div className="flex flex-col gap-4">
-            <div className="text-sm text-muted-foreground">
-              Invalid project.
-            </div>
-          </div>
+          <InvalidProjectMessage />
         ) : isLoading && !project && !membersData ? (
           <div className="flex flex-col gap-4">
-            <div
-              className="flex items-center justify-center py-12 text-sm text-muted-foreground"
-              role="status"
-              aria-live="polite"
-            >
-              Loading…
-            </div>
+            <PageLoadingMessage />
           </div>
         ) : isError || !project ? (
           <div className="flex flex-col gap-4">
-            <div
-              className="flex items-center justify-center py-12 text-sm text-destructive"
-              role="alert"
-            >
-              {errorMessage}
-            </div>
+            <PageErrorMessage message={errorMessage} />
           </div>
         ) : (
           <>
             <div className="flex flex-col gap-4">
               <div>
-                <Button
-                  asChild
-                  variant="ghost"
-                  size="sm"
-                  className="mb-2 -ml-2"
-                >
-                  <Link href={`/projects/${project!.id}`}>
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Project
-                  </Link>
-                </Button>
+                <BackLink href={`${ROUTES.projects}/${project.id}`}>
+                  Back to Project
+                </BackLink>
               </div>
               <div className="space-y-1">
                 <h1 className="text-3xl font-semibold tracking-tight">

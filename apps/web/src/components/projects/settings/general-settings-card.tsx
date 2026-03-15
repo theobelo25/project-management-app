@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import { GeneralSettingsForm } from "./general-settings-form";
+import { GeneralSettingsForm } from "@web/components/projects/settings";
 import { ProjectDetailView } from "@repo/types";
 
 type GeneralSettingsCardProps = {

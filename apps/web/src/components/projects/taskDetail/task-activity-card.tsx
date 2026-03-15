@@ -6,13 +6,7 @@ import {
   CardTitle,
 } from "@web/components/ui/card";
 import { Calendar } from "lucide-react";
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-CA", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
+import { formatDate } from "../utils/format";
 
 type TaskActivityCardProps = {
   task: {

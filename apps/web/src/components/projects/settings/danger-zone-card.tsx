@@ -5,8 +5,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import { ArchiveButton } from "./archive-button";
-import { DeleteProjectDialog } from "./delete-project-dialog";
+import {
+  ArchiveButton,
+  DeleteProjectDialog,
+  SettingsActionRow,
+} from "@web/components/projects/settings";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -52,44 +55,34 @@ export function DangerZoneCard({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="rounded-xl border border-destructive/20 p-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="space-y-1">
-              <p className="font-medium">Delete Project</p>
-              <p className="text-sm text-muted-foreground">
-                Permanently remove this project and its associated data. This
-                action cannot be undone.
-              </p>
-            </div>
-            <DeleteProjectDialog
-              projectName={project.name}
-              deleteDialogOpen={deleteDialogOpen}
-              setDeleteDialogOpen={setDeleteDialogOpen}
-              canDeleteProject={canDeleteProject}
-              deleteMutation={deleteMutation}
-            />
-          </div>
-          {!canDeleteProject ? (
-            <p className="mt-3 text-sm text-muted-foreground">
-              Only the project owner can delete this project.
-            </p>
-          ) : null}
-        </div>
-        <div className="rounded-xl border p-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="space-y-1">
-              <p className="font-medium">Archive Project</p>
-              <p className="text-sm text-muted-foreground">
-                Hide this project from active views while keeping its data
-                available for later reference.
-              </p>
-            </div>
-            <ArchiveButton
-              projectId={project.id}
-              archivedAt={project.archivedAt}
-            />
-          </div>
-        </div>
+        <SettingsActionRow
+          variant="destructive"
+          title="Delete Project"
+          description="Permanently remove this project and its associated data. This action cannot be undone."
+        >
+          <DeleteProjectDialog
+            projectName={project.name}
+            deleteDialogOpen={deleteDialogOpen}
+            setDeleteDialogOpen={setDeleteDialogOpen}
+            canDeleteProject={canDeleteProject}
+            deleteMutation={deleteMutation}
+          />
+        </SettingsActionRow>
+        {!canDeleteProject ? (
+          <p className="text-sm text-muted-foreground">
+            Only the project owner can delete this project.
+          </p>
+        ) : null}
+
+        <SettingsActionRow
+          title="Archive Project"
+          description="Hide this project from active views while keeping its data available for later reference."
+        >
+          <ArchiveButton
+            projectId={project.id}
+            archivedAt={project.archivedAt}
+          />
+        </SettingsActionRow>
       </CardContent>
     </Card>
   );

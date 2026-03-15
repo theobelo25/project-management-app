@@ -1,7 +1,22 @@
+// ---------------------------------------------------------------------------
+// Members page (used by app/(protected)/projects/[id]/members)
+// ---------------------------------------------------------------------------
+export * from "./project-members-page-content";
+
+// ---------------------------------------------------------------------------
+// Manager & table
+// ---------------------------------------------------------------------------
+export * from "./project-members-manager";
+export * from "./project-members-table";
+
+// ---------------------------------------------------------------------------
+// Invite & row actions
+// ---------------------------------------------------------------------------
 export * from "./invite-member-dialog";
 export * from "./member-row-actions";
-export * from "./project-members-manager";
-export * from "./project-members-page-content";
-export * from "./project-members-table";
-export * from "./types";
+
+// ---------------------------------------------------------------------------
+// Shared (search, types)
+// ---------------------------------------------------------------------------
 export * from "./user-search-combobox";
+export * from "./types";

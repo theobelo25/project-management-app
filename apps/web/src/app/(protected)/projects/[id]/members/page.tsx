@@ -4,7 +4,7 @@ import {
 } from "@web/lib/api/server-client";
 import { PageLayout } from "@web/components/layout/page-layout";
 import { notFound } from "next/navigation";
-import { ProjectMembersPageContent } from "@web/components/projects/members/project-members-page-content";
+import { ProjectMembersPageContent } from "@web/components/projects/members";
 
 type PageProps = {
   params: Promise<{ id: string }>;
