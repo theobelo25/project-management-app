@@ -1,5 +1,6 @@
 import { ProjectCard, ProjectsEmptyState } from "@web/components/projects";
 import type { ProjectListItemView } from "@repo/types";
+import { PROJECTS_EMPTY_STATE } from "./constants";
 
 type ProjectsListProps = {
   projects: ProjectListItemView[];
@@ -9,8 +10,8 @@ type ProjectsListProps = {
 
 export function ProjectsList({
   projects,
-  emptyTitle = "No projects yet",
-  emptyDescription = "Create your first project to start organizing tasks and collaborating with your team.",
+  emptyTitle = PROJECTS_EMPTY_STATE.title,
+  emptyDescription = PROJECTS_EMPTY_STATE.description,
 }: ProjectsListProps) {
   if (projects.length === 0) {
     return (

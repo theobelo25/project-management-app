@@ -83,7 +83,7 @@ export function DashboardContent({
 
   if (isError) {
     return (
-      <PageLayout>
+      <PageLayout className="space-y-6 pb-6">
         <div className="p-6 text-destructive">
           {error instanceof Error ? error.message : "Failed to load dashboard"}
         </div>
@@ -92,17 +92,19 @@ export function DashboardContent({
   }
   if (isPending && !projectsQuery.data) {
     return (
-      <PageLayout>
+      <PageLayout className="space-y-6 pb-6">
         <div className="p-6 text-muted-foreground">Loading dashboard…</div>
       </PageLayout>
     );
   }
   return (
-    <PageLayout>
+    <PageLayout className="space-y-6 pb-6">
       <DashboardWelcome />
       <DashboardStats stats={stats} />
-      <section className="grid gap-6 xl:grid-cols-[2fr_1fr]">
-        <DashboardProjectsCard projects={recentProjects} />
+      <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="sm:col-span-2 xl:col-span-2">
+          <DashboardProjectsCard projects={recentProjects} />
+        </div>
         <DashboardTasksCard tasks={myTasks} />
       </section>
     </PageLayout>

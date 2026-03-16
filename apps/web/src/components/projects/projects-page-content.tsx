@@ -5,7 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import type {
   GetProjectsQueryDto,
   PaginatedProjectsListView,
-} from "packages/types/dist";
+  ProjectListItemView,
+} from "@repo/types";
 
 import {
   parseProjectsSearchParams,
@@ -13,7 +14,6 @@ import {
   type ProjectsFilter as ParamFilter,
   type ProjectsSort as ParamSort,
 } from "@web/app/(protected)/projects/params";
-import { ProjectListItemView } from "packages/types/dist";
 import {
   ProjectsToolbar,
   ProjectsList,
@@ -21,6 +21,7 @@ import {
   type ProjectsFilter,
   type ProjectsSort,
 } from "@web/components/projects";
+import { Button } from "@web/components/ui/button";
 import {
   useProjectsQuery,
   PROJECTS_LIST_PAGE_SIZE,
@@ -31,20 +32,17 @@ type ProjectsPageContentProps = {
   initialQuery: GetProjectsQueryDto;
 };
 
-function mapItemToListItem(
-  item: PaginatedProjectsListView["items"][number],
-): ProjectListItemView {
-  return {
-    id: item.id,
-    name: item.name,
-    description: item.description,
-    currentUserRole: item.currentUserRole ?? "MEMBER",
-    updatedAt: item.updatedAt,
-    totalTasks: item.totalTasks,
-    completedTasks: item.completedTasks,
-    openTasks: item.openTasks,
-    members: item.members,
-  };
+function ProjectsGridSkeleton() {
+  return (
+    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div
+          key={i}
+          className="h-40 rounded-lg border bg-muted/50 animate-pulse"
+        />
+      ))}
+    </div>
+  );
 }
 
 export function ProjectsPageContent({
@@ -134,7 +132,7 @@ export function ProjectsPageContent({
   }, [updateUrl]);
 
   const projects: ProjectListItemView[] = useMemo(
-    () => (data?.items ?? []).map(mapItemToListItem),
+    () => data?.items ?? [],
     [data?.items],
   );
 
@@ -144,21 +142,21 @@ export function ProjectsPageContent({
 
   if (isError) {
     return (
-      <>
-        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
-          <p className="font-medium">Failed to load projects</p>
-          <p className="text-sm mt-1">
-            {error?.message ?? "Something went wrong."}
-          </p>
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            className="mt-2 text-sm underline"
-          >
-            Retry
-          </button>
-        </div>
-      </>
+      <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
+        <p className="font-medium">Failed to load projects</p>
+        <p className="text-sm mt-1">
+          {error?.message ?? "Something went wrong."}
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="mt-2"
+          onClick={() => window.location.reload()}
+        >
+          Retry
+        </Button>
+      </div>
     );
   }
 
@@ -175,14 +173,7 @@ export function ProjectsPageContent({
       />
 
       {isLoading && !data ? (
-        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-40 rounded-lg border bg-muted/50 animate-pulse"
-            />
-          ))}
-        </div>
+        <ProjectsGridSkeleton />
       ) : (
         <>
           <ProjectsList projects={projects} />

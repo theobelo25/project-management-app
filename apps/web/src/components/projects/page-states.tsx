@@ -1,10 +1,10 @@
+import type { ReactNode } from "react";
 type PageMessageProps = {
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
   role?: "status" | "alert";
   "aria-live"?: "polite";
 };
-
 function PageMessage({
   children,
   className = "",
@@ -44,17 +44,16 @@ export function PageErrorMessage({ message }: { message: string }) {
 
 export function InvalidProjectMessage() {
   return (
-    <div className="flex flex-col gap-4">
-      <div className="text-sm text-muted-foreground">Invalid project.</div>
-    </div>
+    <PageMessage className="text-muted-foreground">
+      Invalid project.
+    </PageMessage>
   );
 }
-
 export function PageStateContainer({
   children,
   className = "flex flex-col gap-8 my-4",
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 }) {
   return <div className={className}>{children}</div>;
