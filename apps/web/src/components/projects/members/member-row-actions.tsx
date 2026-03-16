@@ -1,14 +1,12 @@
 "use client";
 
-import type {
-  ProjectMember,
-  ProjectRole,
-} from "@web/components/projects/members";
+import type { ProjectMember } from "@web/components/projects/members";
 import {
   DestructiveDropdownItem,
   RowActionsMenu,
 } from "@web/components/projects/row-actions-menu";
 import { DropdownMenuItem } from "@web/components/ui/dropdown-menu";
+import type { ProjectRole } from "@repo/types";
 
 type MemberRowActionsProps = {
   member: ProjectMember;

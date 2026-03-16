@@ -99,6 +99,12 @@ export function InviteMemberDialog({
 
   const submitting = isSubmitting || addMemberMutation.isPending;
 
+  const errorMessage =
+    errors.userId?.message ??
+    errors.role?.message ??
+    addMemberMutation.error?.message ??
+    null;
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -121,10 +127,15 @@ export function InviteMemberDialog({
           noValidate
           className="space-y-6"
         >
+          {errorMessage ? (
+            <p className="text-sm text-destructive">{errorMessage}</p>
+          ) : null}
+
           <div className="space-y-2">
             <Label htmlFor="user-search">User</Label>
 
             <UserSearchCombobox
+              id="user-search"
               value={userId}
               onChange={(user) => {
                 setSelectedUser(user);
@@ -133,6 +144,7 @@ export function InviteMemberDialog({
                   shouldDirty: true,
                 });
               }}
+              selectedUserDisplay={selectedUser}
               excludeUserIds={currentMemberIds}
               disabled={submitting}
             />
@@ -142,12 +154,6 @@ export function InviteMemberDialog({
                 Selected: {selectedUser.name} ({selectedUser.email})
               </p>
             ) : null}
-
-            {errors.userId && (
-              <p className="text-sm text-destructive">
-                {errors.userId.message}
-              </p>
-            )}
           </div>
 
           <div className="space-y-2">
@@ -169,17 +175,7 @@ export function InviteMemberDialog({
                 <SelectItem value="MEMBER">Member</SelectItem>
               </SelectContent>
             </Select>
-
-            {errors.role && (
-              <p className="text-sm text-destructive">{errors.role.message}</p>
-            )}
           </div>
-
-          {addMemberMutation.error && (
-            <p className="text-sm text-destructive">
-              {addMemberMutation.error.message || "Failed to invite member."}
-            </p>
-          )}
 
           <Button
             type="submit"

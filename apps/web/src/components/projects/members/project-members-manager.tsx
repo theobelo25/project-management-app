@@ -23,7 +23,6 @@ type ProjectMembersManagerProps = {
   projectId: string;
   members: ProjectMember[];
   currentUserRole: ProjectRole;
-  showCardHeader?: boolean;
   title?: string;
   description?: string;
 };
@@ -61,6 +60,12 @@ export function ProjectMembersManager({
     onError: (error: Error) => {
       toast.error(error.message || "Failed to update role.");
       setOptimisticMembers(members);
+      void queryClient.invalidateQueries({
+        queryKey: PROJECT_MEMBERS_QUERY_KEY(projectId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: PROJECT_QUERY_KEY(projectId),
+      });
     },
   });
 
@@ -78,6 +83,12 @@ export function ProjectMembersManager({
     onError: (error: Error) => {
       toast.error(error.message || "Failed to remove member");
       setOptimisticMembers(members);
+      void queryClient.invalidateQueries({
+        queryKey: PROJECT_MEMBERS_QUERY_KEY(projectId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: PROJECT_QUERY_KEY(projectId),
+      });
     },
   });
 

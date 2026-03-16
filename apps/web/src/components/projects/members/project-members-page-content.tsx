@@ -7,10 +7,10 @@ import {
 } from "@web/components/projects";
 import {
   type ProjectMember,
-  type ProjectRole,
   ProjectMembersManager,
 } from "@web/components/projects/members";
 import { useProjectMembersQuery, useProjectQuery } from "@web/lib/api/queries";
+import type { ProjectRole } from "@repo/types";
 
 function mergeMembersWithRoles(
   projectMembers: { id: string; name: string; email?: string }[],
@@ -21,7 +21,7 @@ function mergeMembersWithRoles(
     return {
       id: m.id,
       name: m.name,
-      email: "email" in m && m.email != null ? m.email : "",
+      email: m.email ?? "",
       role: roleItem?.role ?? "MEMBER",
     };
   });
@@ -73,13 +73,11 @@ export function ProjectMembersPageContent({
             <PageErrorMessage message={errorMessage} />
           </div>
         ) : (
-          <>
-            <ProjectMembersManager
-              projectId={project!.id}
-              members={members}
-              currentUserRole={currentUserRole}
-            />
-          </>
+          <ProjectMembersManager
+            projectId={project.id}
+            members={members}
+            currentUserRole={currentUserRole}
+          />
         )}
       </div>
     </>

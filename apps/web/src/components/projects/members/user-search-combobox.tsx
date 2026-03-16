@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 
 import { getInitials } from "@web/components/projects/utils";
@@ -28,6 +28,7 @@ export type UserSearchResult = {
 };
 
 type UserSearchComboboxProps = {
+  id: string;
   value?: string;
   onChange: (user: UserSearchResult) => void;
   disabled?: boolean;
@@ -36,6 +37,7 @@ type UserSearchComboboxProps = {
 };
 
 export function UserSearchCombobox({
+  id,
   value,
   onChange,
   disabled = false,
@@ -44,11 +46,12 @@ export function UserSearchCombobox({
 }: UserSearchComboboxProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const deferredSearch = useDeferredValue(search);
   const {
     data: searchResults = [],
     isLoading: usersLoading,
     isError: usersError,
-  } = useUsersSearchQuery(search);
+  } = useUsersSearchQuery(deferredSearch);
   const availableUsers = useMemo(
     () => searchResults.filter((u) => !excludeUserIds?.includes(u.id)),
     [searchResults, excludeUserIds],
@@ -59,6 +62,7 @@ export function UserSearchCombobox({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          id={id}
           type="button"
           variant="outline"
           role="combobox"
