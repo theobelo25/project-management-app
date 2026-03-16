@@ -39,19 +39,16 @@ export function RecentTasksCard({
       <CardContent className="space-y-3">
         {recentTasks.length > 0 ? (
           recentTasks.map((task) => (
-            <div
+            <Link
               key={task.id}
+              href={`/projects/${project.id}/tasks/${task.id}`}
               className="flex items-center justify-between rounded-lg border p-4"
             >
               <div className="min-w-0">
                 <p className="truncate font-medium">{task.title}</p>
-                <p className="text-sm text-muted-foreground">
-                  {formatTaskStatus(task.status)}
-                </p>
               </div>
-
               <Badge variant="outline">{formatTaskStatus(task.status)}</Badge>
-            </div>
+            </Link>
           ))
         ) : (
           <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">

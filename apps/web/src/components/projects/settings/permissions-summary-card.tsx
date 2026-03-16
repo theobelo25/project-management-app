@@ -9,7 +9,7 @@ import {
 } from "@web/components/ui/card";
 import type { ProjectRole } from "@repo/types";
 
-import { formatProjectRole } from "../utils/format";
+import { formatProjectRole } from "@web/components/projects/utils";
 
 type PermissionsSummaryCardProps = {
   project: {

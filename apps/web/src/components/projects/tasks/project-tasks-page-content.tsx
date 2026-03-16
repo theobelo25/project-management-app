@@ -1,9 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-
 import {
   PageErrorMessage,
   PageLoadingMessage,
@@ -16,13 +13,8 @@ import {
   type TasksFilterStatus,
   type TasksSort,
 } from "@web/components/projects/tasks";
-import { deleteTask } from "@web/lib/api/client";
-import {
-  PROJECT_TASKS_QUERY_KEY,
-  useProjectQuery,
-  useProjectTasksQuery,
-} from "@web/lib/api/queries";
-import type { PaginationResult, TaskView } from "@repo/types";
+import { useProjectQuery, useProjectTasksQuery } from "@web/lib/api/queries";
+import { useDeleteTask } from "@web/lib/api/mutations/use-delete-task";
 
 type ProjectTasksPageContentProps = {
   projectId: string;
@@ -54,19 +46,7 @@ export function ProjectTasksPageContent({
     },
   );
 
-  const queryClient = useQueryClient();
-  const deleteTaskMutation = useMutation({
-    mutationFn: (taskId: string) => deleteTask(taskId),
-    onSuccess: async () => {
-      await queryClient.refetchQueries({
-        queryKey: PROJECT_TASKS_QUERY_KEY(projectId),
-      });
-      toast.success("Task deleted successfully!");
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to delete task");
-    },
-  });
+  const deleteTaskMutation = useDeleteTask(projectId);
 
   function handleDeleteTask(taskId: string) {
     deleteTaskMutation.mutate(taskId);

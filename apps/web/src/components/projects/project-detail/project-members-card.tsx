@@ -36,23 +36,29 @@ export function ProjectMembersCard({
       </CardHeader>
 
       <CardContent className="space-y-3">
-        {members.map((member) => (
-          <div
-            key={member.id}
-            className="flex items-center gap-3 rounded-lg border p-3"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full border bg-muted text-xs font-medium text-muted-foreground">
-              {getInitials(member.name)}
-            </div>
+        {members.length > 0 ? (
+          members.map((member) => (
+            <div
+              key={member.id}
+              className="flex items-center gap-3 rounded-lg border p-3"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border bg-muted text-xs font-medium text-muted-foreground">
+                {getInitials(member.name)}
+              </div>
 
-            <div className="min-w-0">
-              <p className="truncate font-medium">{member.name}</p>
-              <p className="truncate text-sm text-muted-foreground">
-                {member.email ?? ""}
-              </p>
+              <div className="min-w-0">
+                <p className="truncate font-medium">{member.name}</p>
+                <p className="truncate text-sm text-muted-foreground">
+                  {member.email ?? ""}
+                </p>
+              </div>
             </div>
+          ))
+        ) : (
+          <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
+            No members yet.
           </div>
-        ))}
+        )}
       </CardContent>
     </Card>
   );

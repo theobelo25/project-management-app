@@ -1,29 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 
 import {
   InviteMemberDialog,
   type ProjectMember,
   ProjectMembersTable,
 } from "@web/components/projects/members";
-import {
-  removeProjectMember,
-  updateProjectMemberRole,
-} from "@web/lib/api/client";
-import {
-  PROJECT_MEMBERS_QUERY_KEY,
-  PROJECT_QUERY_KEY,
-} from "@web/lib/api/queries";
 import type { ProjectRole } from "@repo/types";
 import { cn } from "@web/lib/utils";
-
-type ChangeRolePayload = {
-  memberId: string;
-  role: Exclude<ProjectRole, "OWNER">;
-};
+import { useRemoveProjectMember } from "@web/lib/api/mutations/use-remove-project-member";
+import { useUpdateProjectMemberRole } from "@web/lib/api/mutations/use-update-project-member-role";
 
 type ProjectMembersManagerProps = {
   projectId: string;
@@ -40,56 +27,20 @@ export function ProjectMembersManager({
   title,
   description,
 }: ProjectMembersManagerProps) {
-  const queryClient = useQueryClient();
   const [optimisticMembers, setOptimisticMembers] = useState(members);
 
   const canManageMembers =
     currentUserRole === "OWNER" || currentUserRole === "ADMIN";
 
-  const changeRoleMutation = useMutation({
-    mutationFn: ({ memberId, role }: ChangeRolePayload) =>
-      updateProjectMemberRole(projectId, memberId, { role }),
-    onSuccess: async () => {
-      await queryClient.refetchQueries({
-        queryKey: PROJECT_MEMBERS_QUERY_KEY(projectId),
-      });
-      await queryClient.refetchQueries({
-        queryKey: PROJECT_QUERY_KEY(projectId),
-      });
-      toast.success("Role updated successfully!");
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to update role.");
+  const changeRoleMutation = useUpdateProjectMemberRole(projectId, {
+    onError: () => {
       setOptimisticMembers(members);
-      void queryClient.invalidateQueries({
-        queryKey: PROJECT_MEMBERS_QUERY_KEY(projectId),
-      });
-      void queryClient.invalidateQueries({
-        queryKey: PROJECT_QUERY_KEY(projectId),
-      });
     },
   });
 
-  const removeMemberMutation = useMutation({
-    mutationFn: (memberId: string) => removeProjectMember(projectId, memberId),
-    onSuccess: async () => {
-      await queryClient.refetchQueries({
-        queryKey: PROJECT_MEMBERS_QUERY_KEY(projectId),
-      });
-      await queryClient.refetchQueries({
-        queryKey: PROJECT_QUERY_KEY(projectId),
-      });
-      toast.success("Member removed successfully!");
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to remove member");
+  const removeMemberMutation = useRemoveProjectMember(projectId, {
+    onError: () => {
       setOptimisticMembers(members);
-      void queryClient.invalidateQueries({
-        queryKey: PROJECT_MEMBERS_QUERY_KEY(projectId),
-      });
-      void queryClient.invalidateQueries({
-        queryKey: PROJECT_QUERY_KEY(projectId),
-      });
     },
   });
 

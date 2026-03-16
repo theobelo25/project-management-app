@@ -3,9 +3,7 @@
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserPlus } from "lucide-react";
-import { toast } from "sonner";
 
 import {
   UserSearchCombobox,
@@ -28,12 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@web/components/ui/select";
-import { addProjectMember } from "@web/lib/api/client";
-import {
-  PROJECT_MEMBERS_QUERY_KEY,
-  PROJECT_QUERY_KEY,
-} from "@web/lib/api/queries";
 import { AddProjectMemberSchema, type AddProjectMemberDto } from "@repo/types";
+import { useAddProjectMember } from "@web/lib/api/mutations/use-add-project-member";
 
 type InviteMemberDialogProps = {
   projectId: string;
@@ -54,24 +48,11 @@ export function InviteMemberDialog({
     null,
   );
 
-  const queryClient = useQueryClient();
-
-  const addMemberMutation = useMutation({
-    mutationFn: (dto: AddProjectMemberDto) => addProjectMember(projectId, dto),
-    onSuccess: async () => {
-      await queryClient.refetchQueries({
-        queryKey: PROJECT_MEMBERS_QUERY_KEY(projectId),
-      });
-      await queryClient.refetchQueries({
-        queryKey: PROJECT_QUERY_KEY(projectId),
-      });
-      toast.success("Member added successfully!");
+  const addMemberMutation = useAddProjectMember(projectId, {
+    onSuccess: () => {
       reset({ userId: "", role: "MEMBER" });
       setSelectedUser(null);
       setOpen(false);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to add member.");
     },
   });
 

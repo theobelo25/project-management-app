@@ -17,6 +17,7 @@ import {
   type CreateProjectDto,
   type ProjectView,
 } from "@repo/types";
+import { useCreateProject } from "@web/lib/api/mutations/use-create-project";
 
 type ProjectFormProps = {
   isLoading?: boolean;
@@ -29,21 +30,7 @@ export function ProjectForm({
   onSuccess,
   submitLabel = "Create Project",
 }: ProjectFormProps) {
-  const router = useRouter();
-  const queryClient = useQueryClient();
-
-  const createProjectMutation = useMutation({
-    mutationFn: createProject,
-    onSuccess: async (project) => {
-      await queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
-      onSuccess?.(project);
-      toast.success("Project creted successfully!");
-      router.push(`/projects/${project.id}`);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to create project");
-    },
-  });
+  const createProjectMutation = useCreateProject({ onSuccess });
 
   const onSubmit = (values: CreateProjectDto) => {
     createProjectMutation.mutate(values);

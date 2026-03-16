@@ -11,29 +11,14 @@ import {
   PROJECT_TASKS_QUERY_KEY,
 } from "@web/lib/api/queries";
 import type { CreateTaskDto, TaskView } from "@repo/types";
+import { useCreateTask } from "@web/lib/api/mutations/use-create-task";
 
 type CreateTaskDialogProps = {
   projectId: string;
 };
 
 export function CreateTaskDialog({ projectId }: CreateTaskDialogProps) {
-  const queryClient = useQueryClient();
-
-  const createTaskMutation = useMutation({
-    mutationFn: (values: CreateTaskDto) => createTask(projectId, values),
-    onSuccess: (task: TaskView) => {
-      queryClient.invalidateQueries({
-        queryKey: PROJECT_TASKS_QUERY_KEY(projectId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: PROJECT_QUERY_KEY(projectId),
-      });
-      toast.success("Task created successfully!");
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to create task.");
-    },
-  });
+  const createTaskMutation = useCreateTask(projectId);
 
   return (
     <CreateEntityDialog

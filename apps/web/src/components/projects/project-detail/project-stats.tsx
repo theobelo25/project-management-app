@@ -1,12 +1,14 @@
 import { CheckCircle2, Circle, FolderKanban, Users } from "lucide-react";
 
+import type { ProjectDetailMember } from "@repo/types";
+
 import { StatCard } from "./stat-card";
 
 export interface ProjectStatsProps {
   totalTasks: number;
   openTasks: number;
   completedTasks: number;
-  members: readonly unknown[] | { length: number };
+  members: readonly ProjectDetailMember[];
 }
 
 export function ProjectStats({
@@ -16,7 +18,10 @@ export function ProjectStats({
   members,
 }: ProjectStatsProps) {
   return (
-    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-4">
+    <section
+      className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+      aria-label="Project statistics"
+    >
       <StatCard
         title="Total Tasks"
         description="All tasks in this project"

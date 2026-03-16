@@ -34,17 +34,6 @@ export function ProjectOverviewCard({
             {formatProjectRole(project.currentUserRole)}
           </span>
         </div>
-
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-muted-foreground">Project ID</span>
-          <span className="font-medium">{project.id}</span>
-        </div>
-
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-muted-foreground">Open tasks</span>
-          <span className="font-medium">{openTasks}</span>
-        </div>
-
         <div className="pt-2">
           <CreateTaskDialog projectId={project.id} />
         </div>

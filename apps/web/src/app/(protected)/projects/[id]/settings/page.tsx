@@ -8,28 +8,20 @@ import {
   DangerZoneCard,
   PermissionsSummaryCard,
 } from "@web/components/projects/settings";
-
-type ProjectRole = "OWNER" | "ADMIN" | "MEMBER";
+import { ProjectRole } from "@repo/types";
+import { mapMembersWithRole } from "@web/components/projects/utils/map-member-with-role";
+import { PageLoader } from "@web/components/layout/page-loader";
+import { PageError } from "@web/components/layout/page-error";
 
 export default function ProjectSettingsPage() {
   const params = useParams();
   const id = typeof params?.id === "string" ? params.id : null;
-
   const { data: project, isLoading, isError, error } = useProjectQuery(id);
   const { data: membersData } = useProjectMembersQuery(id);
-
-  const membersWithRole =
-    project?.members && membersData?.items
-      ? project.members.map((m) => {
-          const roleItem = membersData.items.find((i) => i.userId === m.id);
-          return {
-            id: m.id,
-            name: m.name,
-            email: "email" in m ? (m as { email?: string }).email : undefined,
-            role: roleItem?.role ?? ("MEMBER" as ProjectRole),
-          };
-        })
-      : [];
+  const membersWithRole = mapMembersWithRole({
+    projectMembers: project?.members,
+    membersItems: membersData?.items,
+  });
 
   const canManageMembers =
     project?.currentUserRole === "OWNER" ||
@@ -39,23 +31,10 @@ export default function ProjectSettingsPage() {
 
   if (!id) return null;
   if (isLoading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <div
-          className="size-10 animate-spin rounded-full border-2 border-primary border-t-transparent"
-          aria-label="Loading"
-        />
-      </div>
-    );
+    return <PageLoader />;
   }
   if (isError || !project) {
-    return (
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-6 md:px-6">
-        <div className="flex items-center justify-center py-12 text-destructive">
-          {error?.message ?? "Project not found"}
-        </div>
-      </div>
-    );
+    return <PageError message={error?.message ?? "Project not found"} />;
   }
 
   return (

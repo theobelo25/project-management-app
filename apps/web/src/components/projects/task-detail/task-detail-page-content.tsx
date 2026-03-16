@@ -56,15 +56,10 @@ export function TaskDetailPageContent({
   return (
     <>
       <section className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
-        <div className="space-y-6">
-          <TaskDetailsCard task={task} assignee={assignee} />
-          <TaskAssigneeCard assignee={assignee} />
-          <TaskActivityCard task={task} />
-          <TaskQuickActionsCard
-            projectId={projectId}
-            setEditOpen={setEditOpen}
-          />
-        </div>
+        <TaskDetailsCard task={task} assignee={assignee} />
+        <TaskAssigneeCard assignee={assignee} />
+        <TaskActivityCard task={task} />
+        <TaskQuickActionsCard projectId={projectId} setEditOpen={setEditOpen} />
       </section>
       <EditTaskDialog
         projectId={projectId}

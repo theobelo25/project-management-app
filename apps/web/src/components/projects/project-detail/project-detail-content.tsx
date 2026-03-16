@@ -1,29 +1,15 @@
 "use client";
 
-import {
-  ProjectMembersCard,
-  ProjectOverviewCard,
-  ProjectStats,
-  RecentTasksCard,
-} from "@web/components/projects/project-detail";
 import { useProjectQuery } from "@web/lib/api/queries";
-import type { ProjectDetailView } from "@repo/types";
-
-type ProjectMember = {
-  id: string;
-  name: string;
-  email?: string;
-};
-
-type ProjectTask = {
-  id: string;
-  title: string;
-  status: "TODO" | "IN_PROGRESS" | "DONE";
-};
+import { ProjectMembersCard } from "./project-members-card";
+import { ProjectOverviewCard } from "./project-overview-card";
+import { ProjectStats } from "./project-stats";
+import { RecentTasksCard } from "./recent-tasks-card";
 
 type ProjectDetailContentProps = {
   projectId: string;
 };
+
 export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
   const {
     data: project,
@@ -38,50 +24,33 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
 
   if (isError || !project) {
     return (
-      <>
-        <div className="flex items-center justify-center py-12 text-destructive">
-          {error?.message ?? "Project not found"}
-        </div>
-      </>
+      <div
+        role="alert"
+        className="flex items-center justify-center py-12 text-destructive"
+      >
+        {error?.message ?? "Project not found"}
+      </div>
     );
   }
 
-  const totalTasks =
-    "totalTasks" in project && typeof project.totalTasks === "number"
-      ? project.totalTasks
-      : 0;
-  const completedTasks =
-    "completedTasks" in project && typeof project.completedTasks === "number"
-      ? project.completedTasks
-      : 0;
-  const openTasks =
-    "openTasks" in project && typeof project.openTasks === "number"
-      ? project.openTasks
-      : 0;
-  const members: ProjectMember[] =
-    "members" in project && Array.isArray(project.members)
-      ? (project.members as ProjectMember[])
-      : [];
-  const recentTasks: ProjectTask[] =
-    "recentTasks" in project && Array.isArray(project.recentTasks)
-      ? (project.recentTasks as ProjectTask[])
-      : [];
-
   return (
-    <>
+    <div className="space-y-4">
       <ProjectStats
-        totalTasks={totalTasks}
-        openTasks={openTasks}
-        completedTasks={completedTasks}
-        members={members}
+        totalTasks={project.totalTasks}
+        openTasks={project.openTasks}
+        completedTasks={project.completedTasks}
+        members={project.members}
       />
       <section className="grid gap-4 mb-4 lg:grid-cols-2">
-        <RecentTasksCard project={project} recentTasks={recentTasks} />
-        <ProjectMembersCard project={project} members={members} />
+        <RecentTasksCard project={project} recentTasks={project.recentTasks} />
+        <ProjectMembersCard project={project} members={project.members} />
         <div className="lg:col-span-2">
-          <ProjectOverviewCard project={project} openTasks={openTasks} />
+          <ProjectOverviewCard
+            project={project}
+            openTasks={project.openTasks}
+          />
         </div>
       </section>
-    </>
+    </div>
   );
 }

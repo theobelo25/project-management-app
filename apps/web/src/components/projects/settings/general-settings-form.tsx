@@ -1,13 +1,10 @@
 import { useRouter } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 
 import { Button } from "@web/components/ui/button";
 import { Input } from "@web/components/ui/input";
 import { Label } from "@web/components/ui/label";
 import { Textarea } from "@web/components/ui/textarea";
-import { updateProject } from "@web/lib/api/client";
-import { PROJECT_QUERY_KEY, PROJECTS_QUERY_KEY } from "@web/lib/api/queries";
+import { useUpdateProject } from "@web/lib/api/mutations/use-update-project";
 
 export function GeneralSettingsForm({
   projectId,
@@ -19,20 +16,10 @@ export function GeneralSettingsForm({
   defaultDescription: string;
 }) {
   const router = useRouter();
-  const queryClient = useQueryClient();
-  const updateMutation = useMutation({
-    mutationFn: (dto: { name?: string; description?: string | null }) =>
-      updateProject(projectId, dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PROJECT_QUERY_KEY(projectId) });
-      queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
-      toast.success("Project updated successfully!");
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Update failed.");
-    },
-  });
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+
+  const updateMutation = useUpdateProject(projectId);
+
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const name = (form.elements.namedItem("name") as HTMLInputElement).value;
@@ -41,6 +28,7 @@ export function GeneralSettingsForm({
     ).value;
     updateMutation.mutate({ name, description: description || null });
   };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">

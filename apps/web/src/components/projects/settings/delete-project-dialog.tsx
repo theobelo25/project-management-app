@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { Copy, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -32,10 +32,14 @@ export function DeleteProjectDialog({
   deleteMutation,
 }: DeleteProjectDialogProps) {
   const [confirmValue, setConfirmValue] = useState("");
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const isConfirmed = confirmValue.trim() === projectName.trim();
 
   useEffect(() => {
-    if (!deleteDialogOpen) setConfirmValue("");
+    if (!deleteDialogOpen) {
+      setConfirmValue("");
+      return;
+    }
   }, [deleteDialogOpen]);
 
   return (
@@ -77,6 +81,7 @@ export function DeleteProjectDialog({
           </Label>
           <Input
             id="delete-confirm"
+            ref={inputRef}
             type="text"
             value={confirmValue}
             onChange={(e) => setConfirmValue(e.target.value)}
