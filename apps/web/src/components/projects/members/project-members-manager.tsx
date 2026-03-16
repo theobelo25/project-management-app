@@ -18,6 +18,7 @@ import {
   PROJECT_QUERY_KEY,
 } from "@web/lib/api/queries";
 import type { ProjectRole } from "@repo/types";
+import { cn } from "@web/lib/utils";
 
 type ChangeRolePayload = {
   memberId: string;
@@ -92,6 +93,9 @@ export function ProjectMembersManager({
     },
   });
 
+  const isMutating =
+    changeRoleMutation.isPending || removeMemberMutation.isPending;
+
   const handleChangeRole = useCallback(
     (memberId: string, role: Exclude<ProjectRole, "OWNER">) => {
       setOptimisticMembers((prev) =>
@@ -121,7 +125,12 @@ export function ProjectMembersManager({
   return (
     <div className="space-y-4">
       <div
-        className={`flex flex-col gap-4 sm:flex-row sm:items-start ${title != null || description != null ? "sm:justify-between" : "sm:justify-end"}`}
+        className={cn(
+          "flex flex-col gap-4 sm:flex-row sm:items-start",
+          title != null || description != null
+            ? "sm:justify-between"
+            : "sm:justify-end",
+        )}
       >
         {title != null || description != null ? (
           <div className="space-y-1">
@@ -145,6 +154,7 @@ export function ProjectMembersManager({
         currentUserRole={currentUserRole}
         onChangeRole={canManageMembers ? handleChangeRole : undefined}
         onRemove={canManageMembers ? handleRemove : undefined}
+        isMutating={isMutating}
       />
     </div>
   );

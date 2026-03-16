@@ -61,7 +61,7 @@ export function ProjectMembersPageContent({
     <div className="flex flex-col gap-8">
       {!projectId ? (
         <InvalidProjectMessage />
-      ) : isLoading && !project && !membersData ? (
+      ) : isLoading ? (
         <div className="flex flex-col gap-4">
           <PageLoadingMessage />
         </div>

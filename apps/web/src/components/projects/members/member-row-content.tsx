@@ -17,6 +17,7 @@ export type MemberRowContentProps = {
   ) => void;
   onRemove?: (memberId: string) => void;
   layout: "row" | "stack";
+  disabled?: boolean;
 };
 
 export function MemberRowContent({
@@ -25,10 +26,11 @@ export function MemberRowContent({
   onChangeRole,
   onRemove,
   layout,
+  disabled = false,
 }: MemberRowContentProps) {
   const avatar = (
     <div className="flex h-10 w-10 items-center justify-center rounded-full border bg-muted text-xs font-medium text-muted-foreground">
-      {getInitials(member.name)}
+      {getInitials(member.name || "?")}
     </div>
   );
   const badge = (
@@ -40,6 +42,7 @@ export function MemberRowContent({
       currentUserRole={currentUserRole}
       onChangeRole={onChangeRole}
       onRemove={onRemove}
+      disabled={disabled}
     />
   );
 

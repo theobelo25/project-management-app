@@ -22,6 +22,7 @@ type ProjectMembersTableProps = {
     role: Exclude<ProjectRole, "OWNER">,
   ) => void;
   onRemove?: (memberId: string) => void;
+  isMutating?: boolean;
 };
 
 export function ProjectMembersTable({
@@ -29,6 +30,7 @@ export function ProjectMembersTable({
   currentUserRole,
   onChangeRole,
   onRemove,
+  isMutating = false,
 }: ProjectMembersTableProps) {
   return (
     <Card>
@@ -56,8 +58,17 @@ export function ProjectMembersTable({
           </div>
 
           {members.length === 0 ? (
-            <div className="px-6 py-8 text-center text-sm text-muted-foreground">
-              {EMPTY_MEMBERS_MESSAGE}
+            <div
+              role="row"
+              className={cn(MEMBERS_TABLE_GRID_CLASS, "px-6 py-8")}
+            >
+              <div
+                role="cell"
+                className="col-span-full text-center text-sm text-muted-foreground"
+                style={{ gridColumn: "1 / -1" }}
+              >
+                {EMPTY_MEMBERS_MESSAGE}
+              </div>
             </div>
           ) : (
             <div className="divide-y">
@@ -69,6 +80,7 @@ export function ProjectMembersTable({
                   onChangeRole={onChangeRole}
                   onRemove={onRemove}
                   layout="row"
+                  disabled={isMutating}
                 />
               ))}
             </div>
@@ -89,6 +101,7 @@ export function ProjectMembersTable({
                 onChangeRole={onChangeRole}
                 onRemove={onRemove}
                 layout="stack"
+                disabled={isMutating}
               />
             ))
           )}

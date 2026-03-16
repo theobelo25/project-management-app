@@ -42,7 +42,7 @@ type InviteMemberDialogProps = {
 
 type AddMemberFormValues = {
   userId: string;
-  role?: "ADMIN" | "MEMBER";
+  role?: AddProjectMemberDto["role"];
 };
 
 export function InviteMemberDialog({
@@ -106,7 +106,16 @@ export function InviteMemberDialog({
     null;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen) {
+          reset({ userId: "", role: "MEMBER" });
+          setSelectedUser(null);
+        }
+      }}
+    >
       <DialogTrigger asChild>
         <Button type="button" variant="outline" size="sm">
           <UserPlus className="mr-2 h-4 w-4" />

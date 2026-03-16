@@ -55,14 +55,24 @@ export function UserSearchCombobox({
     isLoading: usersLoading,
     isError: usersError,
   } = useUsersSearchQuery(deferredSearch);
+  const excludeSet = useMemo(
+    () => new Set(excludeUserIds ?? []),
+    [excludeUserIds],
+  );
   const availableUsers = useMemo(
-    () => searchResults.filter((u) => !excludeUserIds?.includes(u.id)),
-    [searchResults, excludeUserIds],
+    () => searchResults.filter((u) => !excludeSet.has(u.id)),
+    [searchResults, excludeSet],
   );
   const selectedUser =
     selectedUserDisplay ?? availableUsers.find((u) => u.id === value);
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen) setSearch("");
+      }}
+    >
       <PopoverTrigger asChild>
         <Button
           id={id}
