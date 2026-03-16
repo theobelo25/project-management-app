@@ -43,6 +43,7 @@ export function ProjectTasksPageContent({
       status: status === "all" ? undefined : status,
       assigneeId: assigneeId === "all" ? undefined : assigneeId,
       search: search.trim() || undefined,
+      sort,
     },
   );
 

@@ -16,6 +16,7 @@ import {
   AddProjectMemberDto,
   ProjectMemberView,
   UpdateProjectMemberRoleDto,
+  UpdateTaskInput,
 } from "@repo/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -366,7 +367,7 @@ export async function deleteTask(taskId: string): Promise<void> {
 export async function updateTask(
   projectId: string,
   taskId: string,
-  payload: CreateTaskDto,
+  payload: UpdateTaskInput,
 ): Promise<TaskView> {
   const response = await fetch(`/api/projects/${projectId}/tasks/${taskId}`, {
     method: "PATCH",

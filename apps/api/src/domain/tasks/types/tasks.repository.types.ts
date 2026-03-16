@@ -47,6 +47,7 @@ export type FindTasksInput = {
   priority?: TaskPriority;
   assigneeId?: string;
   search?: string;
+  sort?: 'updated-desc' | 'created-desc' | 'title-asc' | 'status-asc';
 } & PaginationQuery;
 
 export type PaginatedTasksResult = PaginationResult<TaskWithAssignees>;

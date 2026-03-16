@@ -6,7 +6,7 @@ import {
   PROJECT_TASKS_QUERY_KEY,
   TASK_QUERY_KEY,
 } from "@web/lib/api/queries";
-import type { CreateTaskDto, TaskView } from "@repo/types";
+import type { UpdateTaskInput, TaskView } from "@repo/types";
 
 type Options = {
   onSuccess?: (task: TaskView) => void;
@@ -21,7 +21,7 @@ export function useUpdateTask(
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (values: CreateTaskDto) =>
+    mutationFn: (values: UpdateTaskInput) =>
       updateTask(projectId, taskId, values),
     onSuccess: async (updatedTask) => {
       await queryClient.invalidateQueries({

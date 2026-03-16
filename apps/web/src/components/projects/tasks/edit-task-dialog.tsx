@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from "@web/components/ui/dialog";
 import { useUpdateTask } from "@web/lib/api/mutations/use-update-task";
+import { UpdateTaskSchema, type UpdateTaskInput } from "@repo/types";
 
 type EditTaskDialogProps = {
   projectId: string;
@@ -57,6 +58,7 @@ export function EditTaskDialog({
           )}
         </DialogTrigger>
       )}
+
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Edit task</DialogTitle>
@@ -65,13 +67,13 @@ export function EditTaskDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <TaskForm
+        <TaskForm<UpdateTaskInput>
           projectId={projectId}
+          schema={UpdateTaskSchema}
           submitLabel="Save Changes"
           isLoading={updateTaskMutation.isPending}
           errorMessage={updateTaskMutation.error?.message ?? null}
           defaultValues={{
-            projectId,
             title: task.title,
             description: task.description ?? "",
           }}

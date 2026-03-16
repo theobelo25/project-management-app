@@ -1,6 +1,6 @@
 import { ClipboardList } from "lucide-react";
 
-import { EmptyStateCard } from "../empty-state-card";
+import { EmptyStateCard } from "@web/components/projects";
 
 type TasksEmptyStateProps = {
   title?: string;
