@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useId, useMemo, useState } from "react";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 
 import { getInitials } from "@web/components/projects/utils";
@@ -28,6 +28,7 @@ export type UserSearchResult = {
 };
 
 type UserSearchComboboxProps = {
+  id?: string;
   value?: string;
   onChange: (user: UserSearchResult) => void;
   disabled?: boolean;
@@ -36,29 +37,45 @@ type UserSearchComboboxProps = {
 };
 
 export function UserSearchCombobox({
+  id: idProp,
   value,
   onChange,
   disabled = false,
   excludeUserIds,
   selectedUserDisplay = null,
 }: UserSearchComboboxProps) {
+  const generatedId = useId();
+  const id = idProp ?? generatedId;
+
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const deferredSearch = useDeferredValue(search);
   const {
     data: searchResults = [],
     isLoading: usersLoading,
     isError: usersError,
-  } = useUsersSearchQuery(search);
+  } = useUsersSearchQuery(deferredSearch);
+  const excludeSet = useMemo(
+    () => new Set(excludeUserIds ?? []),
+    [excludeUserIds],
+  );
   const availableUsers = useMemo(
-    () => searchResults.filter((u) => !excludeUserIds?.includes(u.id)),
-    [searchResults, excludeUserIds],
+    () => searchResults.filter((u) => !excludeSet.has(u.id)),
+    [searchResults, excludeSet],
   );
   const selectedUser =
     selectedUserDisplay ?? availableUsers.find((u) => u.id === value);
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen) setSearch("");
+      }}
+    >
       <PopoverTrigger asChild>
         <Button
+          id={id}
           type="button"
           variant="outline"
           role="combobox"

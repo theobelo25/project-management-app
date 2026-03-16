@@ -1,8 +1,4 @@
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-
 import {
   ArchiveButton,
   DeleteProjectDialog,
@@ -15,9 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import { deleteProject } from "@web/lib/api/client";
-import { PROJECT_QUERY_KEY, PROJECTS_QUERY_KEY } from "@web/lib/api/queries";
-import { ROUTES } from "@web/lib/routes";
+import { useDeleteProject } from "@web/lib/api/mutations/use-delete-project";
 
 type DangerZoneCardProps = {
   project: {
@@ -32,19 +26,10 @@ export function DangerZoneCard({
   project,
   canDeleteProject,
 }: DangerZoneCardProps) {
-  const router = useRouter();
-  const queryClient = useQueryClient();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  const deleteMutation = useMutation({
-    mutationFn: () => deleteProject(project.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
-      queryClient.removeQueries({ queryKey: PROJECT_QUERY_KEY(project.id) });
-      toast.success("Project deleted successfully.");
-      setDeleteDialogOpen(false);
-      router.push(ROUTES.projects);
-    },
+  const deleteMutation = useDeleteProject(project.id, {
+    onSuccess: () => setDeleteDialogOpen(false),
   });
 
   return (

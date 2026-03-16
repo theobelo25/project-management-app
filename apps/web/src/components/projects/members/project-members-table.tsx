@@ -1,6 +1,7 @@
-import { MemberRowActions } from "@web/components/projects/members";
-import { formatProjectRole, getInitials } from "@web/components/projects/utils";
-import { Badge } from "@web/components/ui/badge";
+import {
+  MemberRowContent,
+  MEMBERS_TABLE_GRID_CLASS,
+} from "./member-row-content";
 import {
   Card,
   CardContent,
@@ -8,8 +9,10 @@ import {
   CardTitle,
 } from "@web/components/ui/card";
 import type { ProjectRole } from "@repo/types";
-
 import type { ProjectMember } from "./types";
+import { cn } from "@web/lib/utils";
+
+const EMPTY_MEMBERS_MESSAGE = "No members yet. Invite people to get started.";
 
 type ProjectMembersTableProps = {
   members: ProjectMember[];
@@ -19,6 +22,7 @@ type ProjectMembersTableProps = {
     role: Exclude<ProjectRole, "OWNER">,
   ) => void;
   onRemove?: (memberId: string) => void;
+  isMutating?: boolean;
 };
 
 export function ProjectMembersTable({
@@ -26,6 +30,7 @@ export function ProjectMembersTable({
   currentUserRole,
   onChangeRole,
   onRemove,
+  isMutating = false,
 }: ProjectMembersTableProps) {
   return (
     <Card>
@@ -34,81 +39,72 @@ export function ProjectMembersTable({
       </CardHeader>
 
       <CardContent className="p-0">
-        <div className="hidden md:block">
-          <div className="grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_120px_56px] items-center gap-4 border-b px-6 py-3 text-sm font-medium text-muted-foreground">
-            <div>Name</div>
-            <div>Email</div>
-            <div>Role</div>
-            <div />
+        <div
+          className="hidden md:block"
+          role="table"
+          aria-label="Project members"
+        >
+          <div
+            role="row"
+            className={cn(
+              MEMBERS_TABLE_GRID_CLASS,
+              "border-b px-6 py-3 text-sm font-medium text-muted-foreground",
+            )}
+          >
+            <div role="columnheader">Name</div>
+            <div role="columnheader">Email</div>
+            <div role="columnheader">Role</div>
+            <div role="columnheader" aria-hidden />
           </div>
 
-          <div className="divide-y">
-            {members.map((member) => (
+          {members.length === 0 ? (
+            <div
+              role="row"
+              className={cn(MEMBERS_TABLE_GRID_CLASS, "px-6 py-8")}
+            >
               <div
-                key={member.id}
-                className="grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_120px_56px] items-center gap-4 px-6 py-4"
+                role="cell"
+                className="col-span-full text-center text-sm text-muted-foreground"
+                style={{ gridColumn: "1 / -1" }}
               >
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border bg-muted text-xs font-medium text-muted-foreground">
-                    {getInitials(member.name)}
-                  </div>
-
-                  <p className="truncate font-medium">{member.name}</p>
-                </div>
-
-                <p className="truncate text-sm text-muted-foreground">
-                  {member.email}
-                </p>
-
-                <div>
-                  <Badge variant="secondary">
-                    {formatProjectRole(member.role)}
-                  </Badge>
-                </div>
-
-                <div className="flex justify-end">
-                  <MemberRowActions
-                    member={member}
-                    currentUserRole={currentUserRole}
-                    onChangeRole={onChangeRole}
-                    onRemove={onRemove}
-                  />
-                </div>
+                {EMPTY_MEMBERS_MESSAGE}
               </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="divide-y md:hidden">
-          {members.map((member) => (
-            <div key={member.id} className="space-y-3 px-4 py-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border bg-muted text-xs font-medium text-muted-foreground">
-                    {getInitials(member.name)}
-                  </div>
-
-                  <div className="min-w-0">
-                    <p className="truncate font-medium">{member.name}</p>
-                    <p className="truncate text-sm text-muted-foreground">
-                      {member.email}
-                    </p>
-                  </div>
-                </div>
-
-                <MemberRowActions
+            </div>
+          ) : (
+            <div className="divide-y">
+              {members.map((member) => (
+                <MemberRowContent
+                  key={member.id}
                   member={member}
                   currentUserRole={currentUserRole}
                   onChangeRole={onChangeRole}
                   onRemove={onRemove}
+                  layout="row"
+                  disabled={isMutating}
                 />
-              </div>
-
-              <Badge variant="secondary">
-                {formatProjectRole(member.role)}
-              </Badge>
+              ))}
             </div>
-          ))}
+          )}
+        </div>
+
+        <div className="divide-y md:hidden">
+          {members.length === 0 ? (
+            <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+              {EMPTY_MEMBERS_MESSAGE}
+            </div>
+          ) : (
+            members.map((member) => (
+              <MemberRowContent
+                key={member.id}
+                member={member}
+                currentUserRole={currentUserRole}
+                onChangeRole={onChangeRole}
+                onRemove={onRemove}
+                layout="stack"
+                disabled={isMutating}
+              />
+            ))
+          )}
         </div>
       </CardContent>
     </Card>

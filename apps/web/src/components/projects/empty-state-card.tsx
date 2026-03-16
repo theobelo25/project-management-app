@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { cn } from "@web/lib/utils";
 
 type EmptyStateCardProps = {
   icon: ReactNode;
@@ -18,7 +19,10 @@ export function EmptyStateCard({
 }: EmptyStateCardProps) {
   return (
     <div
-      className={`flex ${minHeight} flex-col items-center justify-center rounded-xl border border-dashed bg-muted/20 px-6 text-center`}
+      className={cn(
+        "flex flex-col items-center justify-center rounded-xl border border-dashed bg-muted/20 px-6 text-center",
+        minHeight,
+      )}
     >
       <div className="flex h-12 w-12 items-center justify-center rounded-full border bg-background">
         {icon}

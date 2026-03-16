@@ -1,14 +1,14 @@
 "use client";
 
-import type {
-  ProjectMember,
-  ProjectRole,
-} from "@web/components/projects/members";
+import { MoreHorizontal } from "lucide-react";
+import type { ProjectMember } from "./types";
 import {
   DestructiveDropdownItem,
   RowActionsMenu,
 } from "@web/components/projects/row-actions-menu";
+import { Button } from "@web/components/ui/button";
 import { DropdownMenuItem } from "@web/components/ui/dropdown-menu";
+import type { ProjectRole } from "@repo/types";
 
 type MemberRowActionsProps = {
   member: ProjectMember;
@@ -18,6 +18,7 @@ type MemberRowActionsProps = {
     role: Exclude<ProjectRole, "OWNER">,
   ) => void;
   onRemove?: (memberId: string) => void;
+  disabled?: boolean;
 };
 
 export function MemberRowActions({
@@ -25,6 +26,7 @@ export function MemberRowActions({
   currentUserRole,
   onChangeRole,
   onRemove,
+  disabled = false,
 }: MemberRowActionsProps) {
   const canManageMembers =
     currentUserRole === "OWNER" || currentUserRole === "ADMIN";
@@ -41,6 +43,20 @@ export function MemberRowActions({
 
   if (!canChangeRole && !canRemove) {
     return null;
+  }
+
+  if (disabled) {
+    return (
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        aria-label="Open member actions"
+        disabled
+      >
+        <MoreHorizontal className="h-4 w-4" />
+      </Button>
+    );
   }
 
   return (

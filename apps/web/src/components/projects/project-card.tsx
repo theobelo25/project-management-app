@@ -35,6 +35,23 @@ import type {
   ProjectRole,
 } from "@repo/types";
 
+type StatBlockProps = {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+};
+function StatBlock({ icon, label, value }: StatBlockProps) {
+  return (
+    <div className="rounded-lg border bg-background/60 p-3">
+      <div className="mb-1 flex items-center gap-1.5 text-muted-foreground">
+        {icon}
+        <span className="text-xs">{label}</span>
+      </div>
+      <p className="text-sm font-semibold">{value}</p>
+    </div>
+  );
+}
+
 type ProjectCardProps = {
   project: ProjectListItemView;
 };
@@ -125,29 +142,21 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
         <CardContent className="space-y-4">
           <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-lg border bg-background/60 p-3">
-              <div className="mb-1 flex items-center gap-1.5 text-muted-foreground">
-                <FolderKanban className="h-3.5 w-3.5" />
-                <span className="text-xs">Tasks</span>
-              </div>
-              <p className="text-sm font-semibold">{project.totalTasks}</p>
-            </div>
-
-            <div className="rounded-lg border bg-background/60 p-3">
-              <div className="mb-1 flex items-center gap-1.5 text-muted-foreground">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                <span className="text-xs">Completed</span>
-              </div>
-              <p className="text-sm font-semibold">{project.completedTasks}</p>
-            </div>
-
-            <div className="rounded-lg border bg-background/60 p-3">
-              <div className="mb-1 flex items-center gap-1.5 text-muted-foreground">
-                <Circle className="h-3.5 w-3.5" />
-                <span className="text-xs">Open</span>
-              </div>
-              <p className="text-sm font-semibold">{project.openTasks}</p>
-            </div>
+            <StatBlock
+              icon={<FolderKanban className="h-3.5 w-3.5" />}
+              label="Tasks"
+              value={project.totalTasks}
+            />
+            <StatBlock
+              icon={<CheckCircle2 className="h-3.5 w-3.5" />}
+              label="Completed"
+              value={project.completedTasks}
+            />
+            <StatBlock
+              icon={<Circle className="h-3.5 w-3.5" />}
+              label="Open"
+              value={project.openTasks}
+            />
           </div>
 
           <div className="flex items-center justify-between gap-3">

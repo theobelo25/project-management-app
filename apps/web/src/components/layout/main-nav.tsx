@@ -13,7 +13,6 @@ import { SecondaryNav } from "./secondary-nav";
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/projects", label: "Projects" },
-  { href: "/board", label: "Board" },
 ] as const;
 
 function NavLinks() {

@@ -3,9 +3,7 @@
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserPlus } from "lucide-react";
-import { toast } from "sonner";
 
 import {
   UserSearchCombobox,
@@ -28,12 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@web/components/ui/select";
-import { addProjectMember } from "@web/lib/api/client";
-import {
-  PROJECT_MEMBERS_QUERY_KEY,
-  PROJECT_QUERY_KEY,
-} from "@web/lib/api/queries";
 import { AddProjectMemberSchema, type AddProjectMemberDto } from "@repo/types";
+import { useAddProjectMember } from "@web/lib/api/mutations/use-add-project-member";
 
 type InviteMemberDialogProps = {
   projectId: string;
@@ -42,7 +36,7 @@ type InviteMemberDialogProps = {
 
 type AddMemberFormValues = {
   userId: string;
-  role?: "ADMIN" | "MEMBER";
+  role?: AddProjectMemberDto["role"];
 };
 
 export function InviteMemberDialog({
@@ -54,24 +48,11 @@ export function InviteMemberDialog({
     null,
   );
 
-  const queryClient = useQueryClient();
-
-  const addMemberMutation = useMutation({
-    mutationFn: (dto: AddProjectMemberDto) => addProjectMember(projectId, dto),
-    onSuccess: async () => {
-      await queryClient.refetchQueries({
-        queryKey: PROJECT_MEMBERS_QUERY_KEY(projectId),
-      });
-      await queryClient.refetchQueries({
-        queryKey: PROJECT_QUERY_KEY(projectId),
-      });
-      toast.success("Member added successfully!");
+  const addMemberMutation = useAddProjectMember(projectId, {
+    onSuccess: () => {
       reset({ userId: "", role: "MEMBER" });
       setSelectedUser(null);
       setOpen(false);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to add member.");
     },
   });
 
@@ -99,8 +80,23 @@ export function InviteMemberDialog({
 
   const submitting = isSubmitting || addMemberMutation.isPending;
 
+  const errorMessage =
+    errors.userId?.message ??
+    errors.role?.message ??
+    addMemberMutation.error?.message ??
+    null;
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen) {
+          reset({ userId: "", role: "MEMBER" });
+          setSelectedUser(null);
+        }
+      }}
+    >
       <DialogTrigger asChild>
         <Button type="button" variant="outline" size="sm">
           <UserPlus className="mr-2 h-4 w-4" />
@@ -121,10 +117,21 @@ export function InviteMemberDialog({
           noValidate
           className="space-y-6"
         >
+          {errorMessage ? (
+            <p
+              className="text-sm text-destructive"
+              role="alert"
+              aria-live="polite"
+            >
+              {errorMessage}
+            </p>
+          ) : null}
+
           <div className="space-y-2">
             <Label htmlFor="user-search">User</Label>
 
             <UserSearchCombobox
+              id="user-search"
               value={userId}
               onChange={(user) => {
                 setSelectedUser(user);
@@ -133,6 +140,7 @@ export function InviteMemberDialog({
                   shouldDirty: true,
                 });
               }}
+              selectedUserDisplay={selectedUser}
               excludeUserIds={currentMemberIds}
               disabled={submitting}
             />
@@ -142,12 +150,6 @@ export function InviteMemberDialog({
                 Selected: {selectedUser.name} ({selectedUser.email})
               </p>
             ) : null}
-
-            {errors.userId && (
-              <p className="text-sm text-destructive">
-                {errors.userId.message}
-              </p>
-            )}
           </div>
 
           <div className="space-y-2">
@@ -169,17 +171,7 @@ export function InviteMemberDialog({
                 <SelectItem value="MEMBER">Member</SelectItem>
               </SelectContent>
             </Select>
-
-            {errors.role && (
-              <p className="text-sm text-destructive">{errors.role.message}</p>
-            )}
           </div>
-
-          {addMemberMutation.error && (
-            <p className="text-sm text-destructive">
-              {addMemberMutation.error.message || "Failed to invite member."}
-            </p>
-          )}
 
           <Button
             type="submit"

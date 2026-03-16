@@ -1,3 +1,4 @@
+import { cn } from "@web/lib/utils";
 import { type ReactNode } from "react";
 
 interface PageLayoutProps {
@@ -5,6 +6,7 @@ interface PageLayoutProps {
   /** Optional: use "narrow" for reading-focused content (e.g. articles), "wide" for dashboards */
   variant?: "default" | "narrow" | "wide";
   centerVertical?: boolean;
+  className: string;
 }
 
 const maxWidthByVariant = {
@@ -17,15 +19,17 @@ export function PageLayout({
   children,
   variant = "default",
   centerVertical = false,
+  className,
 }: PageLayoutProps) {
   return (
     <div
-      className={[
+      className={cn(
         "mx-auto w-full min-w-0",
-        "px-4 sm:px-6 lg:px-8", // responsive horizontal padding
-        centerVertical ? "flex flex-col justify-center flex-1" : "",
+        "px-4 sm:px-6 lg:px-8",
+        centerVertical && "flex flex-col justify-center flex-1",
         maxWidthByVariant[variant],
-      ].join(" ")}
+        className,
+      )}
     >
       {children}
     </div>

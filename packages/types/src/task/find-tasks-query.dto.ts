@@ -9,6 +9,9 @@ export const FindTasksQuerySchema = PaginationQuerySchema.extend({
   priority: TaskPrioritySchema.optional(),
   assigneeId: z.string().uuid().optional(),
   search: z.string().trim().min(1).optional(),
+  sort: z
+    .enum(["updated-desc", "created-desc", "title-asc", "status-asc"])
+    .optional(),
 });
 
 export type FindTasksQuery = z.infer<typeof FindTasksQuerySchema>;

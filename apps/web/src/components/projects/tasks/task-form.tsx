@@ -1,59 +1,52 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldValues } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-
-import {
-  CreateTaskSchema,
-  type CreateTaskDto,
-  type TaskView,
-} from "@repo/types";
 
 import { Button } from "@web/components/ui/button";
 import { Input } from "@web/components/ui/input";
 import { Label } from "@web/components/ui/label";
 import { Textarea } from "@web/components/ui/textarea";
 
-type TaskFormProps = {
+type TaskFormProps<TValues extends FieldValues> = {
   projectId: string;
+  schema: unknown;
   isLoading?: boolean;
-  onSubmit: (values: CreateTaskDto) => void | Promise<void>;
-  onSuccess?: (task: TaskView) => void;
+  onSubmit: (values: TValues) => void | Promise<void>;
   submitLabel?: string;
-  defaultValues?: Partial<CreateTaskDto>;
+  defaultValues?: Partial<TValues>;
   errorMessage?: string | null;
 };
 
-export function TaskForm({
+export function TaskForm<TValues extends FieldValues>({
   projectId,
+  schema,
   isLoading = false,
   onSubmit,
-  submitLabel = "Create Task",
+  submitLabel,
   defaultValues,
   errorMessage,
-}: TaskFormProps) {
+}: TaskFormProps<TValues>) {
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<CreateTaskDto>({
-    resolver: standardSchemaResolver(CreateTaskSchema),
+  } = useForm<TValues>({
+    resolver: standardSchemaResolver(schema as never),
     defaultValues: {
+      ...(defaultValues ?? {}),
       projectId,
-      title: defaultValues?.title ?? "",
-      description: defaultValues?.description ?? "",
-    },
+    } as never,
     mode: "onBlur",
   });
 
   useEffect(() => {
     reset({
+      ...(defaultValues ?? {}),
       projectId,
-      title: defaultValues?.title ?? "",
-      description: defaultValues?.description ?? "",
-    });
+    } as never);
   }, [defaultValues, projectId, reset]);
 
   const submitting = isSubmitting || isLoading;
@@ -66,11 +59,13 @@ export function TaskForm({
           id="title"
           type="text"
           placeholder="Finish project toolbar"
-          aria-invalid={!!errors.title}
-          {...register("title")}
+          aria-invalid={!!(errors as any).title}
+          {...register("title" as never)}
         />
-        {errors.title && (
-          <p className="text-sm text-destructive">{errors.title.message}</p>
+        {(errors as any).title && (
+          <p className="text-sm text-destructive">
+            {(errors as any).title.message}
+          </p>
         )}
       </div>
 
@@ -80,12 +75,12 @@ export function TaskForm({
           id="description"
           placeholder="Add search, filter, and sort controls to the projects page"
           rows={4}
-          aria-invalid={!!errors.description}
-          {...register("description")}
+          aria-invalid={!!(errors as any).description}
+          {...register("description" as never)}
         />
-        {errors.description && (
+        {(errors as any).description && (
           <p className="text-sm text-destructive">
-            {errors.description.message}
+            {(errors as any).description.message}
           </p>
         )}
       </div>
@@ -95,7 +90,7 @@ export function TaskForm({
       ) : null}
 
       <Button type="submit" className="w-full" disabled={submitting}>
-        {submitting ? `${submitLabel}...` : submitLabel}
+        {submitting ? `${submitLabel ?? "Save"}...` : (submitLabel ?? "Save")}
       </Button>
     </form>
   );

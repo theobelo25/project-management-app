@@ -2,7 +2,6 @@
 // Tasks list page & welcome (used by app/(protected)/projects/[id]/tasks)
 // ---------------------------------------------------------------------------
 export * from "./project-tasks-page-content";
-export * from "./tasks-welcome";
 
 // ---------------------------------------------------------------------------
 // Toolbar & table

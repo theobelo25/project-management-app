@@ -82,36 +82,30 @@ export class PrismaTasksRepository extends TasksRepository {
   ): Promise<PaginatedTasksResult> {
     const prisma = db ?? this.prisma;
     const { skip, take, page, limit } = getPaginationParams(input);
-
     const where: Prisma.TaskWhereInput = {
       projectId: input.projectId,
       ...(input.status && { status: input.status }),
       ...(input.priority && { priority: input.priority }),
       ...(input.assigneeId && {
-        assignees: {
-          some: {
-            userId: input.assigneeId,
-          },
-        },
+        assignees: { some: { userId: input.assigneeId } },
       }),
       ...(input.search && {
         OR: [
           { title: { contains: input.search, mode: 'insensitive' } },
           {
-            description: {
-              contains: input.search,
-              mode: 'insensitive',
-            },
+            description: { contains: input.search, mode: 'insensitive' },
           },
         ],
       }),
     };
-
-    const taskOrderBy = [
-      { position: 'asc' as const },
-      { createdAt: 'asc' as const },
-      { id: 'asc' as const },
-    ];
+    const orderBy: Prisma.TaskOrderByWithRelationInput[] =
+      input.sort === 'created-desc'
+        ? [{ createdAt: 'desc' }, { id: 'asc' }]
+        : input.sort === 'title-asc'
+          ? [{ title: 'asc' }, { id: 'asc' }]
+          : input.sort === 'status-asc'
+            ? [{ status: 'asc' }, { position: 'asc' }, { id: 'asc' }]
+            : [{ updatedAt: 'desc' }, { id: 'asc' }]; // default "updated-desc"
 
     let data;
     let total;
@@ -120,7 +114,7 @@ export class PrismaTasksRepository extends TasksRepository {
       data = await prisma.task.findMany({
         where,
         include: taskWithAssigneesInclude,
-        orderBy: taskOrderBy,
+        orderBy: orderBy,
         skip,
         take,
       });
@@ -130,7 +124,7 @@ export class PrismaTasksRepository extends TasksRepository {
         this.prisma.task.findMany({
           where,
           include: taskWithAssigneesInclude,
-          orderBy: taskOrderBy,
+          orderBy: orderBy,
           skip,
           take,
         }),

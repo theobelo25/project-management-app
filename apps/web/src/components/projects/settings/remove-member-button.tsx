@@ -1,12 +1,5 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-
 import { Button } from "@web/components/ui/button";
-import { removeProjectMember } from "@web/lib/api/client";
-import {
-  PROJECT_MEMBERS_QUERY_KEY,
-  PROJECT_QUERY_KEY,
-} from "@web/lib/api/queries";
+import { useRemoveProjectMember } from "@web/lib/api/mutations/use-remove-project-member";
 
 export function RemoveMemberButton({
   projectId,
@@ -15,29 +8,17 @@ export function RemoveMemberButton({
   projectId: string;
   userId: string;
 }) {
-  const queryClient = useQueryClient();
-  const removeMutation = useMutation({
-    mutationFn: () => removeProjectMember(projectId, userId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PROJECT_QUERY_KEY(projectId) });
-      queryClient.invalidateQueries({
-        queryKey: PROJECT_MEMBERS_QUERY_KEY(projectId),
-      });
-      toast.success("Member removed successfully!");
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to remove member.");
-    },
-  });
+  const removeMutation = useRemoveProjectMember(projectId);
+
   return (
     <Button
       type="button"
       variant="ghost"
       size="sm"
-      onClick={() => removeMutation.mutate()}
+      onClick={() => removeMutation.mutate(userId)}
       disabled={removeMutation.isPending}
     >
-      Remove
+      {removeMutation.isPending ? "Removing…" : "Remove"}
     </Button>
   );
 }

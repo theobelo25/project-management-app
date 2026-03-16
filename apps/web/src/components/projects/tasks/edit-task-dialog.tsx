@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Pencil } from "lucide-react";
-import { toast } from "sonner";
 
 import { TaskForm } from "@web/components/projects/tasks";
 import { Button } from "@web/components/ui/button";
@@ -15,13 +13,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@web/components/ui/dialog";
-import { updateTask } from "@web/lib/api/client";
-import {
-  PROJECT_QUERY_KEY,
-  PROJECT_TASKS_QUERY_KEY,
-  TASK_QUERY_KEY,
-} from "@web/lib/api/queries";
-import type { CreateTaskDto, TaskView } from "@repo/types";
+import { useUpdateTask } from "@web/lib/api/mutations/use-update-task";
+import { UpdateTaskSchema, type UpdateTaskInput } from "@repo/types";
 
 type EditTaskDialogProps = {
   projectId: string;
@@ -49,27 +42,8 @@ export function EditTaskDialog({
   const open = isControlled ? controlledOpen : internalOpen;
   const setOpen = isControlled ? controlledOnOpenChange : setInternalOpen;
 
-  const queryClient = useQueryClient();
-
-  const updateTaskMutation = useMutation({
-    mutationFn: (values: CreateTaskDto) =>
-      updateTask(projectId, task.id, values),
-    onSuccess: (_updatedTask: TaskView) => {
-      queryClient.invalidateQueries({
-        queryKey: PROJECT_TASKS_QUERY_KEY(projectId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: PROJECT_QUERY_KEY(projectId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: TASK_QUERY_KEY(task.id),
-      });
-      toast.success("Task updated successfully!");
-      setOpen(false);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to update task.");
-    },
+  const updateTaskMutation = useUpdateTask(projectId, task.id, {
+    onSuccess: () => setOpen(false),
   });
 
   return (
@@ -84,6 +58,7 @@ export function EditTaskDialog({
           )}
         </DialogTrigger>
       )}
+
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Edit task</DialogTitle>
@@ -92,13 +67,13 @@ export function EditTaskDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <TaskForm
+        <TaskForm<UpdateTaskInput>
           projectId={projectId}
+          schema={UpdateTaskSchema}
           submitLabel="Save Changes"
           isLoading={updateTaskMutation.isPending}
           errorMessage={updateTaskMutation.error?.message ?? null}
           defaultValues={{
-            projectId,
             title: task.title,
             description: task.description ?? "",
           }}
