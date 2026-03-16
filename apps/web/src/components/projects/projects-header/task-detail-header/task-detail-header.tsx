@@ -1,6 +1,8 @@
+"use client";
+
 import { Pencil } from "lucide-react";
 
-import { BackLink, PageHeader } from "@web/components/projects";
+import { PageHeader } from "@web/components/projects";
 import {
   formatTaskStatus,
   getStatusBadgeVariant,
@@ -8,26 +10,21 @@ import {
 import { Badge } from "@web/components/ui/badge";
 import { Button } from "@web/components/ui/button";
 import { ROUTES } from "@web/lib/routes";
-import type { TaskView } from "@repo/types";
+import { useTaskDetail } from "./task-detail-context";
+import type { TaskForHeaderTask } from "./types";
 
-type TaskDetailWelcomeProps = {
+type TaskDetailHeaderProps = {
   projectId: string;
-  setEditOpen: (open: boolean) => void;
-  task: Pick<TaskView, "title" | "status">;
+  task: TaskForHeaderTask;
 };
 
-export function TaskDetailWelcome({
-  projectId,
-  setEditOpen,
-  task,
-}: TaskDetailWelcomeProps) {
+export function TaskDetailHeader({ projectId, task }: TaskDetailHeaderProps) {
+  const { setEditOpen } = useTaskDetail();
+
   return (
     <PageHeader
-      backLink={
-        <BackLink href={`${ROUTES.projects}/${projectId}/tasks`}>
-          Back to Tasks
-        </BackLink>
-      }
+      backHref={`${ROUTES.projects}/${projectId}/tasks`}
+      backLabel="Back to Tasks"
       title={task.title}
       badge={
         <Badge variant={getStatusBadgeVariant(task.status)}>

@@ -1,57 +1,50 @@
 "use client";
 
-import { useState } from "react";
-
 import {
   TaskAssigneeCard,
   TaskActivityCard,
-  TaskDetailWelcome,
   TaskDetailsCard,
   TaskQuickActionsCard,
-} from "@web/components/projects/taskDetail";
+  useTaskDetail,
+} from "@web/components/projects/task-detail";
 import { EditTaskDialog } from "@web/components/projects/tasks";
 import { useTaskQuery } from "@web/lib/api/queries";
-import type { TaskView } from "@repo/types";
+import { useLayoutEffect } from "react";
 
 type TaskDetailPageContentProps = {
   projectId: string;
   taskId: string;
-  initialTask: TaskView | null;
 };
 
 export function TaskDetailPageContent({
   projectId,
   taskId,
-  initialTask,
 }: TaskDetailPageContentProps) {
-  const {
-    data: task,
-    isLoading,
-    isError,
-    error,
-  } = useTaskQuery(taskId, {
-    initialData: initialTask ?? undefined,
-    initialDataUpdatedAt: initialTask ? Date.now() : undefined,
-  });
+  const { data: task, isLoading, isError, error } = useTaskQuery(taskId);
+  const { setTaskForHeader, setEditOpen, editOpen } = useTaskDetail();
 
-  const [editOpen, setEditOpen] = useState(false);
+  useLayoutEffect(() => {
+    if (task) {
+      setTaskForHeader(projectId, task);
+    }
+    return () => setTaskForHeader(null, null);
+  }, [projectId, task, setTaskForHeader]);
 
   if (!taskId || !projectId) return null;
 
   if (isLoading && !task) {
     return (
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-6 md:px-6">
-        <div className="flex items-center justify-center py-12">
+      <div className="flex flex-col gap-8">
+        <div className="flex flex-col items-center justify-center py-12">
           Loading task…
         </div>
       </div>
     );
   }
-
   if (isError || !task) {
     return (
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-6 md:px-6">
-        <div className="flex items-center justify-center py-12 text-destructive">
+      <div className="flex flex-col gap-8">
+        <div className="flex flex-col items-center justify-center py-12 text-destructive">
           {error?.message ?? "Task not found"}
         </div>
       </div>
@@ -62,12 +55,6 @@ export function TaskDetailPageContent({
 
   return (
     <>
-      <TaskDetailWelcome
-        projectId={projectId}
-        setEditOpen={setEditOpen}
-        task={task}
-      />
-
       <section className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
         <div className="space-y-6">
           <TaskDetailsCard task={task} assignee={assignee} />

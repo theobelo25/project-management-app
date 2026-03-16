@@ -42,11 +42,9 @@ export default async function ProjectsPage({ searchParams }: PageProps) {
   }
 
   return (
-    <PageLayout>
-      <ProjectsPageContent
-        initialData={initialData}
-        initialQuery={initialQuery}
-      />
-    </PageLayout>
+    <ProjectsPageContent
+      initialData={initialData}
+      initialQuery={initialQuery}
+    />
   );
 }

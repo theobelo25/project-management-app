@@ -13,15 +13,13 @@ import {
   type ProjectsFilter as ParamFilter,
   type ProjectsSort as ParamSort,
 } from "@web/app/(protected)/projects/params";
-import { PageLayout } from "@web/components/layout/page-layout";
+import { ProjectListItemView } from "packages/types/dist";
 import {
-  ProjectsWelcome,
   ProjectsToolbar,
   ProjectsList,
   ProjectsPagination,
   type ProjectsFilter,
   type ProjectsSort,
-  type ProjectListItem,
 } from "@web/components/projects";
 import {
   useProjectsQuery,
@@ -35,7 +33,7 @@ type ProjectsPageContentProps = {
 
 function mapItemToListItem(
   item: PaginatedProjectsListView["items"][number],
-): ProjectListItem {
+): ProjectListItemView {
   return {
     id: item.id,
     name: item.name,
@@ -135,7 +133,7 @@ export function ProjectsPageContent({
     });
   }, [updateUrl]);
 
-  const projects: ProjectListItem[] = useMemo(
+  const projects: ProjectListItemView[] = useMemo(
     () => (data?.items ?? []).map(mapItemToListItem),
     [data?.items],
   );
@@ -147,7 +145,6 @@ export function ProjectsPageContent({
   if (isError) {
     return (
       <>
-        <ProjectsWelcome />
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
           <p className="font-medium">Failed to load projects</p>
           <p className="text-sm mt-1">
@@ -167,8 +164,6 @@ export function ProjectsPageContent({
 
   return (
     <>
-      <ProjectsWelcome />
-
       <ProjectsToolbar
         search={search}
         filter={filter}

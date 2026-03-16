@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // Task detail page (used by app/(protected)/projects/[id]/tasks/[taskId])
 // ---------------------------------------------------------------------------
-export * from "./task-detail-welcome";
+export * from "../projects-header/task-detail-header";
 export * from "./task-detail-page-content";
 
 // ---------------------------------------------------------------------------

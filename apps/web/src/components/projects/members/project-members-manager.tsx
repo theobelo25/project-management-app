@@ -32,8 +32,8 @@ export function ProjectMembersManager({
   projectId,
   members,
   currentUserRole,
-  title = "Members",
-  description = "Manage who has access to this project and what they can do.",
+  title,
+  description,
 }: ProjectMembersManagerProps) {
   const queryClient = useQueryClient();
   const [optimisticMembers, setOptimisticMembers] = useState(members);
@@ -108,12 +108,19 @@ export function ProjectMembersManager({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
-          <p className="text-sm text-muted-foreground">{description}</p>
-        </div>
-
+      <div
+        className={`flex flex-col gap-4 sm:flex-row sm:items-start ${title != null || description != null ? "sm:justify-between" : "sm:justify-end"}`}
+      >
+        {title != null || description != null ? (
+          <div className="space-y-1">
+            {title != null && (
+              <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
+            )}
+            {description != null && (
+              <p className="text-sm text-muted-foreground">{description}</p>
+            )}
+          </div>
+        ) : null}
         {canManageMembers ? (
           <InviteMemberDialog
             projectId={projectId}
@@ -121,7 +128,6 @@ export function ProjectMembersManager({
           />
         ) : null}
       </div>
-
       <ProjectMembersTable
         members={optimisticMembers}
         currentUserRole={currentUserRole}

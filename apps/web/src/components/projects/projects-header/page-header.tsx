@@ -1,8 +1,13 @@
 import type { ReactNode } from "react";
+import { BackLink } from "./back-link";
 
 type PageHeaderProps = {
-  /** Optional back link (e.g. BackLink). */
+  /** Optional back link (e.g. BackLink), or use backHref + backLabel. */
   backLink?: ReactNode;
+  /** If set with backLabel, renders BackLink internally. Ignored when backLink is set. */
+  backHref?: string;
+  /** Label for the back link when using backHref. */
+  backLabel?: ReactNode;
   /** Main title (string or node for custom content). */
   title: ReactNode;
   /** Optional badge next to or under title. */
@@ -15,14 +20,22 @@ type PageHeaderProps = {
 
 export function PageHeader({
   backLink,
+  backHref,
+  backLabel,
   title,
   badge,
   description,
   actions,
 }: PageHeaderProps) {
+  const resolvedBackLink =
+    backLink ??
+    (backHref != null && backLabel != null ? (
+      <BackLink href={backHref}>{backLabel}</BackLink>
+    ) : null);
+
   return (
-    <section className="flex flex-col gap-4 my-4">
-      {backLink ? <div>{backLink}</div> : null}
+    <section className="flex flex-col gap-4">
+      {resolvedBackLink ? <div>{resolvedBackLink}</div> : null}
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className={badge ? "space-y-3" : "space-y-1"}>

@@ -13,7 +13,6 @@ import {
   taskViewToListItem,
   TasksTable,
   TasksToolbar,
-  TasksWelcome,
   type TasksFilterStatus,
   type TasksSort,
 } from "@web/components/projects/tasks";
@@ -23,23 +22,15 @@ import {
   useProjectQuery,
   useProjectTasksQuery,
 } from "@web/lib/api/queries";
-import type {
-  PaginationResult,
-  ProjectDetailView,
-  TaskView,
-} from "@repo/types";
+import type { PaginationResult, TaskView } from "@repo/types";
 
 type ProjectTasksPageContentProps = {
   projectId: string;
-  initialProject: ProjectDetailView | null;
-  initialTasks: PaginationResult<TaskView> | null;
   pageSize: number;
 };
 
 export function ProjectTasksPageContent({
   projectId,
-  initialProject,
-  initialTasks,
   pageSize: PAGE_SIZE,
 }: ProjectTasksPageContentProps) {
   const [search, setSearch] = useState("");
@@ -48,16 +39,8 @@ export function ProjectTasksPageContent({
   const [sort, setSort] = useState<TasksSort>("updated-desc");
   const [page, setPage] = useState(1);
 
-  const isInitialTasksQuery =
-    page === 1 && status === "all" && assigneeId === "all" && !search.trim();
-
-  const { data: project, isLoading: projectLoading } = useProjectQuery(
-    projectId,
-    {
-      initialData: initialProject ?? undefined,
-      initialDataUpdatedAt: initialProject ? Date.now() : undefined,
-    },
-  );
+  const { data: project, isLoading: projectLoading } =
+    useProjectQuery(projectId);
 
   const { data: tasksResult, isLoading: tasksLoading } = useProjectTasksQuery(
     projectId,
@@ -68,13 +51,6 @@ export function ProjectTasksPageContent({
       status: status === "all" ? undefined : status,
       assigneeId: assigneeId === "all" ? undefined : assigneeId,
       search: search.trim() || undefined,
-    },
-    {
-      initialData: isInitialTasksQuery
-        ? (initialTasks ?? undefined)
-        : undefined,
-      initialDataUpdatedAt:
-        isInitialTasksQuery && initialTasks ? Date.now() : undefined,
     },
   );
 
@@ -125,15 +101,14 @@ export function ProjectTasksPageContent({
 
   if (projectLoading && !project) {
     return (
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 md:px-6">
+      <div className="flex flex-col gap-8">
         <PageLoadingMessage />
       </div>
     );
   }
-
   if (!project) {
     return (
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 md:px-6">
+      <div className="flex flex-col gap-8">
         <PageErrorMessage message="Project not found" />
       </div>
     );
@@ -141,8 +116,6 @@ export function ProjectTasksPageContent({
 
   return (
     <>
-      <TasksWelcome project={project} />
-
       <TasksToolbar
         search={search}
         status={status}

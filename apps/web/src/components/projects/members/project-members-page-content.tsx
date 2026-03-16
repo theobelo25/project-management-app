@@ -11,10 +11,6 @@ import {
   ProjectMembersManager,
 } from "@web/components/projects/members";
 import { useProjectMembersQuery, useProjectQuery } from "@web/lib/api/queries";
-import { ROUTES } from "@web/lib/routes";
-import type { ProjectDetailView, ProjectMembersView } from "@repo/types";
-
-import { BackLink } from "../back-link";
 
 function mergeMembersWithRoles(
   projectMembers: { id: string; name: string; email?: string }[],
@@ -33,34 +29,24 @@ function mergeMembersWithRoles(
 
 type ProjectMembersPageContentProps = {
   projectId: string;
-  initialProject: ProjectDetailView | null;
-  initialMembers: ProjectMembersView | null;
 };
 
 export function ProjectMembersPageContent({
   projectId,
-  initialProject,
-  initialMembers,
 }: ProjectMembersPageContentProps) {
   const {
     data: project,
     isLoading: isProjectLoading,
     isError: isProjectError,
     error: projectError,
-  } = useProjectQuery(projectId, {
-    initialData: initialProject ?? undefined,
-    initialDataUpdatedAt: initialProject ? Date.now() : undefined,
-  });
+  } = useProjectQuery(projectId);
 
   const {
     data: membersData,
     isLoading: isMembersLoading,
     isError: isMembersError,
     error: membersError,
-  } = useProjectMembersQuery(projectId, {
-    initialData: initialMembers ?? undefined,
-    initialDataUpdatedAt: initialMembers ? Date.now() : undefined,
-  });
+  } = useProjectMembersQuery(projectId);
 
   const members =
     project?.members && membersData?.items
@@ -75,7 +61,7 @@ export function ProjectMembersPageContent({
 
   return (
     <>
-      <div className="flex flex-col gap-8 my-4">
+      <div className="flex flex-col gap-8">
         {!projectId ? (
           <InvalidProjectMessage />
         ) : isLoading && !project && !membersData ? (
@@ -88,28 +74,10 @@ export function ProjectMembersPageContent({
           </div>
         ) : (
           <>
-            <div className="flex flex-col gap-4">
-              <div>
-                <BackLink href={`${ROUTES.projects}/${project.id}`}>
-                  Back to Project
-                </BackLink>
-              </div>
-              <div className="space-y-1">
-                <h1 className="text-3xl font-semibold tracking-tight">
-                  Members
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  Manage access for{" "}
-                  <span className="font-medium">{project!.name}</span>.
-                </p>
-              </div>
-            </div>
             <ProjectMembersManager
               projectId={project!.id}
               members={members}
               currentUserRole={currentUserRole}
-              title="Project Members"
-              description="Invite teammates, update roles, and manage access to this project."
             />
           </>
         )}

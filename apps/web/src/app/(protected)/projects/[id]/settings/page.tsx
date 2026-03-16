@@ -2,9 +2,7 @@
 import { useParams } from "next/navigation";
 import { useProjectMembersQuery, useProjectQuery } from "@web/lib/api/queries";
 
-import { PageLayout } from "@web/components/layout/page-layout";
 import {
-  ProjectSettingsWelcome,
   GeneralSettingsCard,
   MemberSettingsCard,
   DangerZoneCard,
@@ -42,14 +40,12 @@ export default function ProjectSettingsPage() {
   if (!id) return null;
   if (isLoading) {
     return (
-      <PageLayout>
-        <div className="flex min-h-[40vh] items-center justify-center">
-          <div
-            className="size-10 animate-spin rounded-full border-2 border-primary border-t-transparent"
-            aria-label="Loading"
-          />
-        </div>
-      </PageLayout>
+      <div className="flex min-h-[40vh] items-center justify-center">
+        <div
+          className="size-10 animate-spin rounded-full border-2 border-primary border-t-transparent"
+          aria-label="Loading"
+        />
+      </div>
     );
   }
   if (isError || !project) {
@@ -63,8 +59,7 @@ export default function ProjectSettingsPage() {
   }
 
   return (
-    <PageLayout>
-      <ProjectSettingsWelcome project={project} />
+    <>
       <div className="grid gap-4 mb-4">
         <GeneralSettingsCard project={project} />
         <MemberSettingsCard
@@ -75,6 +70,6 @@ export default function ProjectSettingsPage() {
         <DangerZoneCard project={project} canDeleteProject={canDeleteProject} />
         <PermissionsSummaryCard project={project} />
       </div>
-    </PageLayout>
+    </>
   );
 }

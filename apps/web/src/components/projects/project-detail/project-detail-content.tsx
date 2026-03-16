@@ -1,12 +1,11 @@
 "use client";
 
 import {
-  ProjectDetailWelcome,
   ProjectMembersCard,
   ProjectOverviewCard,
   ProjectStats,
   RecentTasksCard,
-} from "@web/components/projects/projectDetail";
+} from "@web/components/projects/project-detail";
 import { useProjectQuery } from "@web/lib/api/queries";
 import type { ProjectDetailView } from "@repo/types";
 
@@ -24,22 +23,14 @@ type ProjectTask = {
 
 type ProjectDetailContentProps = {
   projectId: string;
-  initialProject: ProjectDetailView | null;
 };
-
-export function ProjectDetailContent({
-  projectId,
-  initialProject,
-}: ProjectDetailContentProps) {
+export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
   const {
     data: project,
     isLoading,
     isError,
     error,
-  } = useProjectQuery(projectId, {
-    initialData: initialProject ?? undefined,
-    initialDataUpdatedAt: initialProject ? Date.now() : undefined,
-  });
+  } = useProjectQuery(projectId);
 
   if (isLoading && !project) {
     return null; // Route-level loading.tsx handles the shell
@@ -78,7 +69,6 @@ export function ProjectDetailContent({
 
   return (
     <>
-      <ProjectDetailWelcome project={project} />
       <ProjectStats
         totalTasks={totalTasks}
         openTasks={openTasks}
