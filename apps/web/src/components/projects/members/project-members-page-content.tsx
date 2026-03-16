@@ -16,15 +16,13 @@ function mergeMembersWithRoles(
   projectMembers: { id: string; name: string; email?: string }[],
   membersDataItems: { userId: string; role: ProjectRole }[],
 ): ProjectMember[] {
-  return projectMembers.map((m) => {
-    const roleItem = membersDataItems.find((i) => i.userId === m.id);
-    return {
-      id: m.id,
-      name: m.name,
-      email: m.email ?? "",
-      role: roleItem?.role ?? "MEMBER",
-    };
-  });
+  const roleByUserId = new Map(membersDataItems.map((i) => [i.userId, i.role]));
+  return projectMembers.map((m) => ({
+    id: m.id,
+    name: m.name,
+    email: m.email ?? "",
+    role: roleByUserId.get(m.id) ?? "MEMBER",
+  }));
 }
 
 type ProjectMembersPageContentProps = {
@@ -60,26 +58,24 @@ export function ProjectMembersPageContent({
     projectError?.message ?? membersError?.message ?? "Something went wrong";
 
   return (
-    <>
-      <div className="flex flex-col gap-8">
-        {!projectId ? (
-          <InvalidProjectMessage />
-        ) : isLoading && !project && !membersData ? (
-          <div className="flex flex-col gap-4">
-            <PageLoadingMessage />
-          </div>
-        ) : isError || !project ? (
-          <div className="flex flex-col gap-4">
-            <PageErrorMessage message={errorMessage} />
-          </div>
-        ) : (
-          <ProjectMembersManager
-            projectId={project.id}
-            members={members}
-            currentUserRole={currentUserRole}
-          />
-        )}
-      </div>
-    </>
+    <div className="flex flex-col gap-8">
+      {!projectId ? (
+        <InvalidProjectMessage />
+      ) : isLoading && !project && !membersData ? (
+        <div className="flex flex-col gap-4">
+          <PageLoadingMessage />
+        </div>
+      ) : isError || !project ? (
+        <div className="flex flex-col gap-4">
+          <PageErrorMessage message={errorMessage} />
+        </div>
+      ) : (
+        <ProjectMembersManager
+          projectId={project.id}
+          members={members}
+          currentUserRole={currentUserRole}
+        />
+      )}
+    </div>
   );
 }

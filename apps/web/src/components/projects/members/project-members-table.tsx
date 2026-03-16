@@ -10,6 +10,7 @@ import {
 } from "@web/components/ui/card";
 import type { ProjectRole } from "@repo/types";
 import type { ProjectMember } from "./types";
+import { cn } from "@web/lib/utils";
 
 const EMPTY_MEMBERS_MESSAGE = "No members yet. Invite people to get started.";
 
@@ -36,17 +37,22 @@ export function ProjectMembersTable({
       </CardHeader>
 
       <CardContent className="p-0">
-        <div className="hidden md:block">
+        <div
+          className="hidden md:block"
+          role="table"
+          aria-label="Project members"
+        >
           <div
-            className={
-              MEMBERS_TABLE_GRID_CLASS +
-              " border-b px-6 py-3 text-sm font-medium text-muted-foreground"
-            }
+            role="row"
+            className={cn(
+              MEMBERS_TABLE_GRID_CLASS,
+              "border-b px-6 py-3 text-sm font-medium text-muted-foreground",
+            )}
           >
-            <div>Name</div>
-            <div>Email</div>
-            <div>Role</div>
-            <div />
+            <div role="columnheader">Name</div>
+            <div role="columnheader">Email</div>
+            <div role="columnheader">Role</div>
+            <div role="columnheader" aria-hidden />
           </div>
 
           {members.length === 0 ? (

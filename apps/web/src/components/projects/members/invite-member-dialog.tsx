@@ -128,7 +128,13 @@ export function InviteMemberDialog({
           className="space-y-6"
         >
           {errorMessage ? (
-            <p className="text-sm text-destructive">{errorMessage}</p>
+            <p
+              className="text-sm text-destructive"
+              role="alert"
+              aria-live="polite"
+            >
+              {errorMessage}
+            </p>
           ) : null}
 
           <div className="space-y-2">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -18,6 +18,11 @@ import {
   PROJECT_QUERY_KEY,
 } from "@web/lib/api/queries";
 import type { ProjectRole } from "@repo/types";
+
+type ChangeRolePayload = {
+  memberId: string;
+  role: Exclude<ProjectRole, "OWNER">;
+};
 
 type ProjectMembersManagerProps = {
   projectId: string;
@@ -41,13 +46,8 @@ export function ProjectMembersManager({
     currentUserRole === "OWNER" || currentUserRole === "ADMIN";
 
   const changeRoleMutation = useMutation({
-    mutationFn: ({
-      memberId,
-      role,
-    }: {
-      memberId: string;
-      role: Exclude<ProjectRole, "OWNER">;
-    }) => updateProjectMemberRole(projectId, memberId, { role }),
+    mutationFn: ({ memberId, role }: ChangeRolePayload) =>
+      updateProjectMemberRole(projectId, memberId, { role }),
     onSuccess: async () => {
       await queryClient.refetchQueries({
         queryKey: PROJECT_MEMBERS_QUERY_KEY(projectId),
@@ -92,26 +92,27 @@ export function ProjectMembersManager({
     },
   });
 
-  const handleChangeRole = (
-    memberId: string,
-    role: Exclude<ProjectRole, "OWNER">,
-  ) => {
-    setOptimisticMembers((prev) =>
-      prev.map((member) =>
-        member.id === memberId ? { ...member, role } : member,
-      ),
-    );
+  const handleChangeRole = useCallback(
+    (memberId: string, role: Exclude<ProjectRole, "OWNER">) => {
+      setOptimisticMembers((prev) =>
+        prev.map((member) =>
+          member.id === memberId ? { ...member, role } : member,
+        ),
+      );
+      changeRoleMutation.mutate({ memberId, role });
+    },
+    [changeRoleMutation],
+  );
 
-    changeRoleMutation.mutate({ memberId, role });
-  };
-
-  const handleRemove = (memberId: string) => {
-    setOptimisticMembers((prev) =>
-      prev.filter((member) => member.id !== memberId),
-    );
-
-    removeMemberMutation.mutate(memberId);
-  };
+  const handleRemove = useCallback(
+    (memberId: string) => {
+      setOptimisticMembers((prev) =>
+        prev.filter((member) => member.id !== memberId),
+      );
+      removeMemberMutation.mutate(memberId);
+    },
+    [removeMemberMutation],
+  );
 
   useEffect(() => {
     setOptimisticMembers(members);
