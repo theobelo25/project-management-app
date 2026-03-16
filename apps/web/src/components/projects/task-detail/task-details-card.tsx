@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, User } from "lucide-react";
+import { Circle, User, Hash } from "lucide-react";
 
 import {
   Card,
@@ -7,16 +7,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@web/components/ui/card";
-import type { TaskStatus } from "@repo/types";
+import type { TaskView } from "@repo/types";
 
 import { formatTaskStatus } from "../utils/format";
 
 type TaskDetailsCardProps = {
-  task: {
-    id: string;
-    description: string | null;
-    status: TaskStatus;
-  };
+  task: Pick<TaskView, "id" | "description" | "status">;
   assignee?: {
     name: string;
   } | null;
@@ -63,7 +59,7 @@ export function TaskDetailsCard({ task, assignee }: TaskDetailsCardProps) {
 
           <div className="rounded-xl border p-4">
             <div className="mb-2 flex items-center gap-2 text-muted-foreground">
-              <CheckCircle2 className="h-4 w-4" />
+              <Hash className="h-4 w-4" />
               <span className="text-sm">Task ID</span>
             </div>
             <p className="truncate font-medium">{task.id}</p>

@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@web/components/ui/card";
 
-import { formatDate } from "../utils/format";
+import { formatDate, formatDistanceToNow } from "../utils/format";
 
 type TaskActivityCardProps = {
   task: {
@@ -18,6 +18,9 @@ type TaskActivityCardProps = {
 };
 
 export function TaskActivityCard({ task }: TaskActivityCardProps) {
+  const createdAt = new Date(task.createdAt);
+  const updatedAt = new Date(task.updatedAt);
+
   return (
     <Card>
       <CardHeader>
@@ -32,7 +35,10 @@ export function TaskActivityCard({ task }: TaskActivityCardProps) {
             <span>Created</span>
           </div>
           <span className="text-right font-medium">
-            {formatDate(task.createdAt)}
+            {formatDate(createdAt.toISOString())}
+          </span>
+          <span className="text-right text-xs text-muted-foreground">
+            {formatDistanceToNow(createdAt)}
           </span>
         </div>
 
@@ -42,7 +48,10 @@ export function TaskActivityCard({ task }: TaskActivityCardProps) {
             <span>Last updated</span>
           </div>
           <span className="text-right font-medium">
-            {formatDate(task.updatedAt)}
+            {formatDate(updatedAt.toISOString())}
+          </span>
+          <span className="text-right text-xs text-muted-foreground">
+            {formatDistanceToNow(createdAt)}
           </span>
         </div>
       </CardContent>

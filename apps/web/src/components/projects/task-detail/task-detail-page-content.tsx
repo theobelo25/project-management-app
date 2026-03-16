@@ -9,21 +9,36 @@ import {
 } from "@web/components/projects/task-detail";
 import { EditTaskDialog } from "@web/components/projects/tasks";
 import { useTaskQuery } from "@web/lib/api/queries";
-import { useLayoutEffect } from "react";
+import { useEffect } from "react";
+import type { TaskView } from "@repo/types";
 
 type TaskDetailPageContentProps = {
   projectId: string;
   taskId: string;
 };
 
+type TaskDetailData = TaskView & {
+  assignees?: { user: { name: string; email: string } }[];
+};
+
 export function TaskDetailPageContent({
   projectId,
   taskId,
 }: TaskDetailPageContentProps) {
+  if (!taskId || !projectId) {
+    return (
+      <div className="flex flex-col gap-8">
+        <div className="flex flex-col items-center justify-center py-12 text-destructive">
+          Invalid task URL. Missing project or task identifier.
+        </div>
+      </div>
+    );
+  }
+
   const { data: task, isLoading, isError, error } = useTaskQuery(taskId);
   const { setTaskForHeader, setEditOpen, editOpen } = useTaskDetail();
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (task) {
       setTaskForHeader(projectId, task);
     }
@@ -51,7 +66,7 @@ export function TaskDetailPageContent({
     );
   }
 
-  const assignee = task.assignees?.[0]?.user;
+  const assignee = task.assignees?.[0]?.user ?? null;
 
   return (
     <>

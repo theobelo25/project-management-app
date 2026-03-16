@@ -13,6 +13,7 @@ type TaskAssigneeCardProps = {
     name: string;
     email: string;
   } | null;
+  onChangeAssignee?: () => void;
 };
 
 export function TaskAssigneeCard({ assignee }: TaskAssigneeCardProps) {
