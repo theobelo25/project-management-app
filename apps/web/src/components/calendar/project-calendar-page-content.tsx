@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   InvalidProjectMessage,
   PageErrorMessage,
   PageLoadingMessage,
 } from "@web/components/projects";
 import { useProjectQuery, useProjectTasksQuery } from "@web/lib/api/queries";
+import { useUpdateTaskDueDate } from "@web/lib/api/mutations/use-update-task-due-date";
 import { MonthCalendar } from "./month-calendar";
 import { getCalendarDaysForMonth } from "./calendar-days";
 import { formatMonthLabel, getTodayDateString } from "./format";
@@ -45,6 +46,15 @@ export function ProjectCalendarPageContent({
     },
   );
 
+  const updateDueDateMutation = useUpdateTaskDueDate(projectId);
+
+  const handleDueDateChange = useCallback(
+    (taskId: string, dueDate: string) => {
+      updateDueDateMutation.mutate({ taskId, dueDate });
+    },
+    [updateDueDateMutation],
+  );
+
   const calendarTasks = useMemo(() => {
     const items = tasksResult?.data ?? [];
     return items
@@ -72,6 +82,7 @@ export function ProjectCalendarPageContent({
       setCurrentMonth((m) => m - 1);
     }
   }
+
   function goToNextMonth() {
     if (currentMonth >= 12) {
       setCurrentYear((y) => y + 1);
@@ -102,6 +113,7 @@ export function ProjectCalendarPageContent({
         today={today}
         onPrevMonth={goToPrevMonth}
         onNextMonth={goToNextMonth}
+        onDueDateChange={handleDueDateChange}
       />
     </div>
   );
