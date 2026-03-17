@@ -18,6 +18,7 @@ import {
   UpdateProjectMemberRoleDto,
   UpdateTaskInput,
   TaskAssignmentView,
+  PendingInviteView,
 } from "@repo/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -140,6 +141,42 @@ export async function fetchMe(): Promise<UserView | null> {
   if (res.status === 401) return null;
   if (!res.ok) throw new Error("Failed to fetch user");
 
+  return res.json();
+}
+
+export async function fetchPendingInvites(): Promise<PendingInviteView[]> {
+  const res = await fetchWithAuth(`${API_BASE}/api/organizations/invites`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to fetch invites");
+  return res.json();
+}
+
+export async function acceptInviteById(
+  inviteId: string,
+): Promise<{ success: true }> {
+  const res = await fetchWithAuth(
+    `${API_BASE}/api/organizations/invites/${inviteId}/accept`,
+    { method: "POST", credentials: "include" },
+  );
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to accept invite");
+  }
+  return res.json();
+}
+
+export async function declineInviteById(
+  inviteId: string,
+): Promise<{ success: true }> {
+  const res = await fetchWithAuth(
+    `${API_BASE}/api/organizations/invites/${inviteId}/decline`,
+    { method: "POST", credentials: "include" },
+  );
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to decline invite");
+  }
   return res.json();
 }
 

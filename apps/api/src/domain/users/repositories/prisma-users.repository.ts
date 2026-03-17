@@ -177,4 +177,16 @@ export class PrismaUsersRepository implements UsersRepository {
 
     return users.map((user: any) => toUserView(user));
   }
+
+  async updateOrganization(
+    userId: string,
+    organizationId: string,
+    tx?: Db,
+  ): Promise<void> {
+    const prisma = tx ?? this.prisma;
+    await prisma.user.update({
+      where: { id: userId },
+      data: { organizationId },
+    });
+  }
 }

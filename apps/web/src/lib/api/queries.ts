@@ -1,6 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  acceptInviteById,
+  declineInviteById,
   fetchMe,
+  fetchPendingInvites,
   fetchProject,
   fetchProjectMembers,
   fetchProjects,
@@ -13,6 +16,7 @@ import {
   GetProjectsQueryDto,
   PaginatedProjectsListView,
   PaginationResult,
+  PendingInviteView,
   ProjectDetailView,
   ProjectMembersView,
   TaskView,
@@ -27,6 +31,43 @@ export function useMeQuery() {
     retry: false,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
+  });
+}
+
+export const PENDING_INVITES_QUERY_KEY = ["organizations", "invites"] as const;
+
+export function usePendingInvitesQuery(enabled: boolean) {
+  return useQuery<PendingInviteView[]>({
+    queryKey: PENDING_INVITES_QUERY_KEY,
+    queryFn: fetchPendingInvites,
+    enabled,
+    staleTime: 10 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useAcceptInviteByIdMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (inviteId: string) => acceptInviteById(inviteId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: PENDING_INVITES_QUERY_KEY,
+      });
+      await queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
+    },
+  });
+}
+
+export function useDeclineInviteByIdMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (inviteId: string) => declineInviteById(inviteId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: PENDING_INVITES_QUERY_KEY,
+      });
+    },
   });
 }
 

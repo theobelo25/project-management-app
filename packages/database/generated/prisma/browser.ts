@@ -52,3 +52,8 @@ export type TaskAssignee = Prisma.TaskAssigneeModel
  * 
  */
 export type Organization = Prisma.OrganizationModel
+/**
+ * Model OrganizationInvite
+ * 
+ */
+export type OrganizationInvite = Prisma.OrganizationInviteModel
