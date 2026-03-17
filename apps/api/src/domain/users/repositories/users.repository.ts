@@ -37,4 +37,10 @@ export abstract class UsersRepository {
   ): Promise<UserView>;
 
   abstract searchUsers(search: string, tx?: Db): Promise<UserView[]>;
+
+  abstract updateOrganization(
+    userId: string,
+    organizationId: string,
+    tx?: Db,
+  ): Promise<void>;
 }

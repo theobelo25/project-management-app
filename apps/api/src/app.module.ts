@@ -9,6 +9,7 @@ import { validateEnv, AppConfigModule } from './config';
 import { LoggerModule } from './logger/logger.module';
 import { ProjectsModule } from './domain/projects/projects.module';
 import { TasksModule } from './domain/tasks/tasks.module';
+import { OrganizationsModule } from './domain/organizations/organizations.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { TasksModule } from './domain/tasks/tasks.module';
     LoggerModule,
     ProjectsModule,
     TasksModule,
+    OrganizationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
