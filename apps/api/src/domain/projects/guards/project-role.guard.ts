@@ -5,14 +5,10 @@ import { ProjectRole } from '@repo/database';
 import { REQUIRE_PROJECT_ROLE_KEY } from '../decorators/require-project-role.decorator';
 import { ProjectAccessService } from '../policies/project-access.service';
 import { getSingleParam } from '@api/common/utils/http.utils';
-
-type RequestUser = {
-  id: string;
-  email: string;
-};
+import { AuthUser } from '@repo/types';
 
 type RequestWithUser = Request & {
-  user: RequestUser;
+  user: AuthUser;
 };
 
 @Injectable()
@@ -31,18 +27,12 @@ export class ProjectRoleGuard implements CanActivate {
     if (!requiredRole) return true;
 
     const request = context.switchToHttp().getRequest<RequestWithUser>();
-    const userId = request.user?.id;
+    const user = request.user;
     const projectId = getSingleParam(request.params.id);
 
-    if (!projectId || !userId) {
-      return false;
-    }
+    if (!projectId || !user?.id || !user?.orgId) return false;
 
-    await this.projectAccessService.requireRole(
-      projectId,
-      userId,
-      requiredRole,
-    );
+    await this.projectAccessService.requireRole(projectId, user, requiredRole);
 
     return true;
   }

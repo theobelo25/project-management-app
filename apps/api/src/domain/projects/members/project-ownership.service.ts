@@ -5,7 +5,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ProjectsRepository } from '../repositories/projects.repository';
-import { ProjectView, TransferProjectOwnershipDto } from '@repo/types';
+import {
+  AuthUser,
+  ProjectView,
+  TransferProjectOwnershipDto,
+} from '@repo/types';
 import { ProjectAccessService } from '../policies/project-access.service';
 import { UNIT_OF_WORK } from '@api/prisma';
 import { UnitOfWork } from '@api/prisma/uow/unit-of-work.interface';
@@ -27,20 +31,15 @@ export class ProjectOwnershipService {
 
   async transferOwnership(
     projectId: string,
-    actorUserId: string,
+    actor: AuthUser,
     dto: TransferProjectOwnershipDto,
   ): Promise<ProjectView> {
     return this.uow.transaction(async (db) => {
-      await this.projectAccessService.requireOwner(projectId, actorUserId, db);
+      await this.projectAccessService.requireOwner(projectId, actor, db);
 
-      if (dto.userId === actorUserId) {
+      if (dto.userId === actor.id) {
         throw new ConflictException('User is already the project owner');
       }
-
-      this.logger.info(
-        { projectId, actorUserId, targetUserId: dto.userId },
-        'Initiating project ownership transfer',
-      );
 
       const targetMembership = await this.projectsRepository.findMembership(
         projectId,
@@ -66,7 +65,7 @@ export class ProjectOwnershipService {
       await this.projectsRepository.updateMemberRole(
         {
           projectId,
-          userId: actorUserId,
+          userId: actor.id,
           role: ProjectRole.ADMIN,
         },
         db,
@@ -75,6 +74,7 @@ export class ProjectOwnershipService {
       const updatedProject = await this.projectsRepository.findAuthorizedById(
         projectId,
         dto.userId,
+        actor.orgId,
         db,
       );
 
@@ -86,7 +86,7 @@ export class ProjectOwnershipService {
         {
           event: 'project.owner.transfered',
           projectId,
-          previousOwnerId: actorUserId,
+          previousOwnerId: actor.id,
           newOwnerId: dto.userId,
         },
         'Project ownership transferred successfully',

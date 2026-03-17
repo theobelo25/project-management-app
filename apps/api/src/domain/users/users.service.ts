@@ -1,4 +1,4 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { UsersRepository } from './repositories/users.repository';
 import { Db } from '@api/prisma';
 import {
@@ -60,14 +60,14 @@ export class UsersService {
     return this.usersRepository.findPrivateUserByEmail(email, db);
   }
 
-  async getAllUsers(): Promise<UserView[]> {
-    return this.usersRepository.getAllUsers();
-  }
-
-  async getUsers(search?: string, db?: Db): Promise<UserView[]> {
+  async getUsersForOrg(
+    orgId: string,
+    search?: string,
+    db?: Db,
+  ): Promise<UserView[]> {
     if (search?.trim()) {
-      return this.usersRepository.searchUsers(search.trim(), db);
+      return this.usersRepository.searchUsersByOrgId(orgId, search.trim(), db);
     }
-    return this.usersRepository.getAllUsers(db);
+    return this.usersRepository.getUsersByOrgId(orgId, db);
   }
 }

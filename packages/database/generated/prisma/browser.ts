@@ -47,3 +47,8 @@ export type Task = Prisma.TaskModel
  * 
  */
 export type TaskAssignee = Prisma.TaskAssigneeModel
+/**
+ * Model Organization
+ * 
+ */
+export type Organization = Prisma.OrganizationModel

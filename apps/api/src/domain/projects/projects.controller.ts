@@ -15,7 +15,6 @@ import { ProjectsService } from './projects.service';
 import {
   AuthUser,
   PaginatedProjectsListView,
-  PaginatedProjectsView,
   ProjectMembersView,
   ProjectMemberView,
   ProjectView,
@@ -50,7 +49,7 @@ export class ProjectsController {
     @CurrentUser() user: AuthUser,
     @Body() body: CreateProjectDto,
   ): Promise<ProjectView> {
-    return this.projectsService.create(user.id, body);
+    return this.projectsService.create(user, body);
   }
 
   @Get()
@@ -58,7 +57,7 @@ export class ProjectsController {
     @CurrentUser() user: AuthUser,
     @Query() query: GetProjectsQueryDto,
   ): Promise<PaginatedProjectsListView> {
-    return this.projectsService.findManyForUser(user.id, query);
+    return this.projectsService.findManyForUser(user, query);
   }
 
   @Get(':id')
@@ -66,7 +65,7 @@ export class ProjectsController {
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
   ): Promise<ProjectView> {
-    return this.projectsService.findDetailById(params.id, user.id);
+    return this.projectsService.findDetailById(params.id, user);
   }
 
   @Patch(':id')
@@ -76,7 +75,7 @@ export class ProjectsController {
     @Param() params: ProjectIdParamDto,
     @Body() body: UpdateProjectDto,
   ): Promise<ProjectView> {
-    return this.projectsService.update(params.id, user.id, body);
+    return this.projectsService.update(params.id, user, body);
   }
 
   @Patch(':id/archive')
@@ -85,7 +84,7 @@ export class ProjectsController {
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
   ): Promise<ProjectView> {
-    return this.projectsService.archive(params.id, user.id);
+    return this.projectsService.archive(params.id, user);
   }
 
   @Patch(':id/unarchive')
@@ -94,7 +93,7 @@ export class ProjectsController {
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
   ): Promise<ProjectView> {
-    return this.projectsService.unarchive(params.id, user.id);
+    return this.projectsService.unarchive(params.id, user);
   }
 
   @Get(':id/members')
@@ -102,7 +101,7 @@ export class ProjectsController {
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
   ): Promise<ProjectMembersView> {
-    return this.projectMembersService.getMembers(params.id, user.id);
+    return this.projectMembersService.getMembers(params.id, user);
   }
 
   @Post(':id/members')
@@ -112,7 +111,7 @@ export class ProjectsController {
     @Param() params: ProjectIdParamDto,
     @Body() body: AddProjectMemberDto,
   ): Promise<ProjectMemberView> {
-    return this.projectMembersService.addMember(params.id, user.id, body);
+    return this.projectMembersService.addMember(params.id, user, body);
   }
 
   @Patch(':id/members/:userId')
@@ -124,7 +123,7 @@ export class ProjectsController {
   ): Promise<ProjectMemberView> {
     return this.projectMembersService.updateMemberRole(
       params.id,
-      user.id,
+      user,
       params.userId,
       body,
     );
@@ -139,7 +138,7 @@ export class ProjectsController {
   ): Promise<void> {
     return this.projectMembersService.removeMember(
       params.id,
-      user.id,
+      user,
       params.userId,
     );
   }
@@ -153,7 +152,7 @@ export class ProjectsController {
   ): Promise<ProjectView> {
     return this.projectOwnershipService.transferOwnership(
       params.id,
-      user.id,
+      user,
       body,
     );
   }
@@ -165,6 +164,6 @@ export class ProjectsController {
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
   ): Promise<void> {
-    return this.projectsService.delete(params.id, user.id);
+    return this.projectsService.delete(params.id, user);
   }
 }

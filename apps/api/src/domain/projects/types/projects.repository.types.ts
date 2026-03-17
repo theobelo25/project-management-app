@@ -5,12 +5,14 @@ export type ProjectWithRole = Project & {
 };
 
 export type CreateProjectWithOwnerInput = {
+  orgId: string;
   ownerId: string;
   name: string;
   description?: string;
 };
 
 export type FindManyForUserInput = {
+  orgId: string;
   userId: string;
   page: number;
   pageSize: number;

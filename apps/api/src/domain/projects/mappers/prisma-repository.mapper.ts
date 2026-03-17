@@ -3,6 +3,7 @@ import { ProjectWithRole } from '../types/projects.repository.types';
 
 type PrismaProjectWithMemberRole = {
   id: string;
+  organizationId: string;
   name: string;
   description: string | null;
   ownerId: string;
@@ -18,6 +19,7 @@ export function toProjectWithRole(
 ): ProjectWithRole {
   return {
     id: project.id,
+    organizationId: project.organizationId,
     name: project.name,
     description: project.description,
     ownerId: project.ownerId,

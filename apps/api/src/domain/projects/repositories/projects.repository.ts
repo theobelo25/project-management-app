@@ -28,12 +28,14 @@ export abstract class ProjectsRepository {
   abstract findAuthorizedById(
     projectId: string,
     userId: string,
+    orgId: string,
     db?: Db,
   ): Promise<ProjectWithRole | null>;
 
   abstract findByIdWithMemberRole(
     projectId: string,
     userId: string,
+    orgId: string,
     db?: Db,
   ): Promise<ProjectWithRole | null>;
 

@@ -8,11 +8,11 @@ import {
   PaginatedTasksResult,
   TaskAssigneeWithUser,
   taskWithAssigneesInclude,
+  TaskAccessContext,
 } from '../types/tasks.repository.types';
 import { TasksRepository } from './tasks.repository';
 import { Inject, Injectable } from '@nestjs/common';
 import { buildPaginationResult, getPaginationParams } from '@api/common';
-import { TaskAccessContext } from '../types/tasks.repository.types';
 
 type FindByIdWithAccessContextPayload = Prisma.TaskGetPayload<{
   select: {
@@ -22,6 +22,7 @@ type FindByIdWithAccessContextPayload = Prisma.TaskGetPayload<{
     assignees: { select: { userId: true } };
     project: {
       select: {
+        organizationId: true;
         ownerId: true;
         members: { select: { role: true }; take: 1 };
       };
@@ -82,8 +83,10 @@ export class PrismaTasksRepository extends TasksRepository {
   ): Promise<PaginatedTasksResult> {
     const prisma = db ?? this.prisma;
     const { skip, take, page, limit } = getPaginationParams(input);
+
     const where: Prisma.TaskWhereInput = {
       projectId: input.projectId,
+      project: { organizationId: input.orgId },
       ...(input.status && { status: input.status }),
       ...(input.priority && { priority: input.priority }),
       ...(input.assigneeId && {
@@ -92,12 +95,11 @@ export class PrismaTasksRepository extends TasksRepository {
       ...(input.search && {
         OR: [
           { title: { contains: input.search, mode: 'insensitive' } },
-          {
-            description: { contains: input.search, mode: 'insensitive' },
-          },
+          { description: { contains: input.search, mode: 'insensitive' } },
         ],
       }),
     };
+
     const orderBy: Prisma.TaskOrderByWithRelationInput[] =
       input.sort === 'created-desc'
         ? [{ createdAt: 'desc' }, { id: 'asc' }]
@@ -105,16 +107,16 @@ export class PrismaTasksRepository extends TasksRepository {
           ? [{ title: 'asc' }, { id: 'asc' }]
           : input.sort === 'status-asc'
             ? [{ status: 'asc' }, { position: 'asc' }, { id: 'asc' }]
-            : [{ updatedAt: 'desc' }, { id: 'asc' }]; // default "updated-desc"
+            : [{ updatedAt: 'desc' }, { id: 'asc' }];
 
-    let data;
-    let total;
+    let data: TaskWithAssignees[];
+    let total: number;
 
     if (db) {
       data = await prisma.task.findMany({
         where,
         include: taskWithAssigneesInclude,
-        orderBy: orderBy,
+        orderBy,
         skip,
         take,
       });
@@ -124,7 +126,7 @@ export class PrismaTasksRepository extends TasksRepository {
         this.prisma.task.findMany({
           where,
           include: taskWithAssigneesInclude,
-          orderBy: orderBy,
+          orderBy,
           skip,
           take,
         }),
@@ -150,12 +152,11 @@ export class PrismaTasksRepository extends TasksRepository {
           createdById: true,
           projectId: true,
           assignees: {
-            select: {
-              userId: true,
-            },
+            select: { userId: true },
           },
           project: {
             select: {
+              organizationId: true,
               ownerId: true,
               members: {
                 where: { userId },
@@ -168,13 +169,13 @@ export class PrismaTasksRepository extends TasksRepository {
       })
       .then((task: FindByIdWithAccessContextPayload | null) => {
         if (!task) return null;
-
         return {
           id: task.id,
           createdById: task.createdById,
           projectId: task.projectId,
           assignees: task.assignees,
           project: {
+            orgId: task.project.organizationId, // DB -> app alias
             ownerId: task.project.ownerId,
             currentUserRole: task.project.members[0]?.role ?? null,
           },

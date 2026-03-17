@@ -35,6 +35,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
 
     const project = await prisma.project.create({
       data: {
+        organizationId: input.orgId,
         name: input.name,
         description: input.description,
         ownerId: input.ownerId,
@@ -68,6 +69,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
     const skip = (input.page - 1) * input.pageSize;
 
     const baseWhere: Prisma.ProjectWhereInput = {
+      organizationId: input.orgId,
       OR: [
         { ownerId: input.userId },
         { members: { some: { userId: input.userId } } },
@@ -128,7 +130,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
 
     return {
       items: items.map((project: Project) =>
-        toProjectWithRole(project, input.userId),
+        toProjectWithRole(project as any, input.userId),
       ),
       total,
       page: input.page,
@@ -139,6 +141,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
   async findAuthorizedById(
     projectId: string,
     userId: string,
+    orgId: string,
     db?: Db,
   ): Promise<ProjectWithRole | null> {
     const prisma = db ?? this.prisma;
@@ -146,6 +149,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
     const project = await prisma.project.findFirst({
       where: {
         id: projectId,
+        organizationId: orgId,
         OR: [
           { ownerId: userId },
           {
@@ -166,20 +170,22 @@ export class PrismaProjectsRepository extends ProjectsRepository {
 
     if (!project) return null;
 
-    return toProjectWithRole(project, userId);
+    return toProjectWithRole(project as any, userId);
   }
 
   async findByIdWithMemberRole(
     projectId: string,
     userId: string,
+    orgId: string,
     db?: Db,
   ): Promise<ProjectWithRole | null> {
     const prisma = db ?? this.prisma;
 
-    const project = await prisma.project.findUnique({
-      where: { id: projectId },
+    const project = await prisma.project.findFirst({
+      where: { id: projectId, organizationId: orgId },
       select: {
         id: true,
+        organizationId: true,
         name: true,
         description: true,
         ownerId: true,
@@ -332,7 +338,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
       },
     });
 
-    return toProjectWithRole(project, userId);
+    return toProjectWithRole(project as any, userId);
   }
 
   async archiveForUser(
@@ -356,7 +362,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
       },
     });
 
-    return toProjectWithRole(project, userId);
+    return toProjectWithRole(project as any, userId);
   }
 
   async unarchiveForUser(
@@ -380,7 +386,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
       },
     });
 
-    return toProjectWithRole(project, userId);
+    return toProjectWithRole(project as any, userId);
   }
 
   async delete(id: string, db?: Db): Promise<Project> {

@@ -42,6 +42,7 @@ export type UpdateTaskInput = {
 };
 
 export type FindTasksInput = {
+  orgId: string;
   projectId: string;
   status?: TaskStatus;
   priority?: TaskPriority;
@@ -58,6 +59,7 @@ export type TaskAccessContext = {
   projectId: string;
   assignees: { userId: string }[];
   project: {
+    orgId: string;
     ownerId: string;
     currentUserRole?: ProjectRole | null;
   };

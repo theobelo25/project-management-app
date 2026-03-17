@@ -3,14 +3,14 @@ import {
   Get,
   NotFoundException,
   Param,
-  ParseUUIDPipe,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { JwtAuthGuard } from '@api/common';
+import { CurrentUser, JwtAuthGuard } from '@api/common';
 import { UserIdParamDto } from './dto/user-id-param.dto';
 import { GetUsersQueryDto } from './dto';
+import { AuthUser } from '@repo/types';
 
 @Controller('users')
 export class UsersController {
@@ -18,8 +18,11 @@ export class UsersController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async getUsers(@Query() query: GetUsersQueryDto) {
-    return this.usersService.getUsers(query.search);
+  async getUsers(
+    @CurrentUser() user: AuthUser,
+    @Query() query: GetUsersQueryDto,
+  ) {
+    return this.usersService.getUsersForOrg(user.orgId, query.search);
   }
 
   @Get(':id')

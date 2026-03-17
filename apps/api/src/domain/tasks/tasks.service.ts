@@ -1,10 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { TasksRepository } from './repositories/tasks.repository';
 import {
-  CreateTaskInput,
-  FindTasksInput,
-  UpdateTaskInput,
-} from './types/tasks.repository.types';
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { TasksRepository } from './repositories/tasks.repository';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { PinoLogger } from 'nestjs-pino';
@@ -14,26 +13,30 @@ import {
   toTaskViews,
   toUpdateTaskInput,
 } from './mappers/tasks.mapper';
-import { TaskView, PaginationResult, TaskAssignmentView } from '@repo/types';
+import {
+  AuthUser,
+  TaskView,
+  PaginationResult,
+  TaskAssignmentView,
+} from '@repo/types';
 import { toTaskAssignmentView } from './mappers/task-assignment.mapper';
 import { TaskAccessService } from './policies/task-access.service';
+import { FindTasksQueryDto } from './dto/find-tasks-query.dto';
+import { UsersRepository } from '../users/repositories/users.repository';
 
 @Injectable()
 export class TasksService {
   constructor(
     private readonly taskAccessService: TaskAccessService,
     private readonly tasksRepository: TasksRepository,
+    private readonly usersRepository: UsersRepository,
     private readonly logger: PinoLogger,
   ) {}
 
-  async create(userId: string, dto: CreateTaskDto): Promise<TaskView> {
-    await this.taskAccessService.assertCanCreateInProject(
-      userId,
-      dto.projectId,
-    );
+  async create(user: AuthUser, dto: CreateTaskDto): Promise<TaskView> {
+    await this.taskAccessService.assertCanCreateInProject(user, dto.projectId);
 
-    const input = toCreateTaskInput(dto, userId);
-
+    const input = toCreateTaskInput(dto, user.id);
     const task = await this.tasksRepository.create(input);
 
     this.logger.info(
@@ -51,20 +54,19 @@ export class TasksService {
 
   async update(
     taskId: string,
-    userId: string,
+    user: AuthUser,
     dto: UpdateTaskDto,
   ): Promise<TaskView> {
-    await this.taskAccessService.assertCanUpdate(taskId, userId);
+    await this.taskAccessService.assertCanUpdate(taskId, user);
 
     const input = toUpdateTaskInput(dto);
-
     const task = await this.tasksRepository.update(taskId, input);
 
     this.logger.info(
       {
         event: 'task.updated',
         taskId: task.id,
-        updatedById: userId,
+        updatedById: user.id,
         projectId: task.projectId,
       },
       'Task updated successfully',
@@ -73,19 +75,22 @@ export class TasksService {
     return toTaskView(task);
   }
 
-  async findById(taskId: string, userId: string): Promise<TaskView> {
-    await this.taskAccessService.assertCanRead(taskId, userId);
+  async findById(taskId: string, user: AuthUser): Promise<TaskView> {
+    await this.taskAccessService.assertCanRead(taskId, user);
     const task = await this.tasksRepository.findByIdOrThrow(taskId);
     return toTaskView(task);
   }
 
   async findMany(
-    userId: string,
-    input: FindTasksInput,
+    user: AuthUser,
+    query: FindTasksQueryDto,
   ): Promise<PaginationResult<TaskView>> {
-    await this.taskAccessService.assertCanReadProject(userId, input.projectId);
+    await this.taskAccessService.assertCanReadProject(user, query.projectId);
 
-    const result = await this.tasksRepository.findMany(input);
+    const result = await this.tasksRepository.findMany({
+      orgId: user.orgId,
+      ...query,
+    });
 
     return {
       ...result,
@@ -93,8 +98,8 @@ export class TasksService {
     };
   }
 
-  async delete(taskId: string, userId: string): Promise<void> {
-    await this.taskAccessService.assertCanDelete(taskId, userId);
+  async delete(taskId: string, user: AuthUser): Promise<void> {
+    await this.taskAccessService.assertCanDelete(taskId, user);
 
     await this.tasksRepository.delete(taskId);
 
@@ -102,7 +107,7 @@ export class TasksService {
       {
         event: 'task.deleted',
         taskId,
-        deletedById: userId,
+        deletedById: user.id,
       },
       'Task deleted successfully',
     );
@@ -111,9 +116,18 @@ export class TasksService {
   async assignUser(
     taskId: string,
     assigneeUserId: string,
-    currentUserId: string,
+    currentUser: AuthUser,
   ): Promise<TaskAssignmentView> {
-    await this.taskAccessService.assertCanAssign(taskId, currentUserId);
+    await this.taskAccessService.assertCanAssign(taskId, currentUser);
+
+    const assignee = await this.usersRepository.findById(assigneeUserId);
+    if (!assignee) throw new NotFoundException('User not found');
+
+    if (assignee.orgId !== currentUser.orgId) {
+      throw new ForbiddenException(
+        'Cannot assign users from another organization',
+      );
+    }
 
     const assignment = await this.tasksRepository.assignUser(
       taskId,
@@ -125,7 +139,7 @@ export class TasksService {
         event: 'task.assignee.added',
         taskId,
         userId: assigneeUserId,
-        updatedById: currentUserId,
+        updatedById: currentUser.id,
       },
       'Task assignee added successfully',
     );
@@ -136,9 +150,9 @@ export class TasksService {
   async unassignUser(
     taskId: string,
     assigneeUserId: string,
-    currentUserId: string,
+    currentUser: AuthUser,
   ): Promise<void> {
-    await this.taskAccessService.assertCanAssign(taskId, currentUserId);
+    await this.taskAccessService.assertCanAssign(taskId, currentUser);
 
     await this.tasksRepository.unassignUser(taskId, assigneeUserId);
 
@@ -147,7 +161,7 @@ export class TasksService {
         event: 'task.assignee.removed',
         taskId,
         userId: assigneeUserId,
-        updatedById: currentUserId,
+        updatedById: currentUser.id,
       },
       'Task assignee removed successfully',
     );

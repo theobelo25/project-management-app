@@ -8,6 +8,7 @@ import {
 import { ProjectRole } from '@repo/database';
 import { TaskAccessContext } from '../types/tasks.repository.types';
 import { PinoLogger } from 'nestjs-pino';
+import { AuthUser } from '@repo/types';
 
 @Injectable()
 export class TaskAccessService {
@@ -18,275 +19,100 @@ export class TaskAccessService {
   ) {}
 
   async assertCanCreateInProject(
-    userId: string,
+    user: AuthUser,
     projectId: string,
   ): Promise<void> {
     const project = await this.projectsRepository.findByIdWithMemberRole(
       projectId,
-      userId,
+      user.id,
+      user.orgId,
     );
 
     if (!project) {
-      this.logger.warn(
-        {
-          event: 'task.access.create_project.not_found',
-          projectId,
-          userId,
-        },
-        'Project not found during task create access check',
-      );
-
       throw new NotFoundException('Project not found');
     }
 
     const role =
-      project.ownerId === userId ? ProjectRole.OWNER : project.currentUserRole;
+      project.ownerId === user.id ? ProjectRole.OWNER : project.currentUserRole;
 
     if (!role) {
-      this.logger.warn(
-        {
-          event: 'task.access.create_project.forbidden',
-          projectId,
-          userId,
-        },
-        'Task create access denied: user has no project access',
-      );
-
       throw new ForbiddenException('You do not have access to the project');
     }
 
     if (
       ![ProjectRole.OWNER, ProjectRole.ADMIN, ProjectRole.MEMBER].includes(role)
     ) {
-      this.logger.warn(
-        {
-          event: 'task.access.create_project.forbidden',
-          projectId,
-          userId,
-          role,
-        },
-        'Task create access denied: insufficient project role',
-      );
-
       throw new ForbiddenException(
         'You do not have permission to create tasks in this project',
       );
     }
-
-    this.logger.debug(
-      {
-        event: 'task.access.create_project.allowed',
-        projectId,
-        userId,
-        role,
-      },
-      'Task create access granted',
-    );
   }
 
-  async assertCanReadProject(userId: string, projectId: string): Promise<void> {
+  async assertCanReadProject(user: AuthUser, projectId: string): Promise<void> {
     const project = await this.projectsRepository.findByIdWithMemberRole(
       projectId,
-      userId,
+      user.id,
+      user.orgId,
     );
 
-    if (!project) {
-      this.logger.warn(
-        {
-          event: 'task.access.read_project.not_found',
-          projectId,
-          userId,
-        },
-        'Project not found during task project read access check',
-      );
-
-      throw new NotFoundException('Project not found');
-    }
+    if (!project) throw new NotFoundException('Project not found');
 
     if (!project.currentUserRole) {
-      this.logger.warn(
-        {
-          event: 'task.access.read_project.forbidden',
-          projectId,
-          userId,
-        },
-        'Task project read access denied',
-      );
-
       throw new ForbiddenException('You do not have access to this project');
     }
-
-    this.logger.debug(
-      {
-        event: 'task.access.read_project.allowed',
-        projectId,
-        userId,
-        role: project.currentUserRole,
-      },
-      'Task project read access granted',
-    );
   }
 
   async getAccessibleTaskOrThrow(
     taskId: string,
-    userId: string,
+    user: AuthUser,
   ): Promise<TaskAccessContext> {
     const task = await this.tasksRepository.findByIdWithAccessContext(
       taskId,
-      userId,
+      user.id,
     );
 
-    if (!task) {
-      this.logger.warn(
-        {
-          event: 'task.access.read.not_found',
-          taskId,
-          userId,
-        },
-        'Task not found during access check',
-      );
+    if (!task) throw new NotFoundException('Task not found');
 
-      throw new NotFoundException('Task not found');
-    }
-
-    const canRead = this.canReadTask(task, userId);
-
-    if (!canRead) {
-      this.logger.warn(
-        {
-          event: 'task.access.read.forbidden',
-          taskId,
-          userId,
-          projectId: task.projectId,
-          currentUserRole: task.project.currentUserRole,
-          ownerId: task.project.ownerId,
-        },
-        'Task read access denied',
-      );
-
+    if (task.project.orgId !== user.orgId) {
       throw new ForbiddenException('You do not have access to this task');
     }
 
-    this.logger.debug(
-      {
-        event: 'task.access.read.allowed',
-        taskId,
-        userId,
-        projectId: task.projectId,
-        currentUserRole: task.project.currentUserRole,
-      },
-      'Task read access granted',
-    );
+    if (!this.canReadTask(task, user.id)) {
+      throw new ForbiddenException('You do not have access to this task');
+    }
 
     return task;
   }
 
-  async assertCanRead(taskId: string, userId: string): Promise<void> {
-    await this.getAccessibleTaskOrThrow(taskId, userId);
+  async assertCanRead(taskId: string, user: AuthUser): Promise<void> {
+    await this.getAccessibleTaskOrThrow(taskId, user);
   }
 
-  async assertCanUpdate(taskId: string, userId: string): Promise<void> {
-    const task = await this.getAccessibleTaskOrThrow(taskId, userId);
-
-    const canUpdate = this.canUpdateTask(task, userId);
-
-    if (!canUpdate) {
-      this.logger.warn(
-        {
-          event: 'task.access.update.forbidden',
-          taskId,
-          userId,
-          projectId: task.projectId,
-          currentUserRole: task.project.currentUserRole,
-          createdById: task.createdById,
-        },
-        'Task update access denied',
-      );
-
+  async assertCanUpdate(taskId: string, user: AuthUser): Promise<void> {
+    const task = await this.getAccessibleTaskOrThrow(taskId, user);
+    if (!this.canUpdateTask(task, user.id)) {
       throw new ForbiddenException(
         'You do not have permission to update this task',
       );
     }
-
-    this.logger.debug(
-      {
-        event: 'task.access.update.allowed',
-        taskId,
-        userId,
-        projectId: task.projectId,
-        currentUserRole: task.project.currentUserRole,
-      },
-      'Task update access granted',
-    );
   }
 
-  async assertCanDelete(taskId: string, userId: string): Promise<void> {
-    const task = await this.getAccessibleTaskOrThrow(taskId, userId);
-
-    const canDelete = this.canDeleteTask(task, userId);
-
-    if (!canDelete) {
-      this.logger.warn(
-        {
-          event: 'task.access.delete.forbidden',
-          taskId,
-          userId,
-          projectId: task.projectId,
-          currentUserRole: task.project.currentUserRole,
-          createdById: task.createdById,
-        },
-        'Task delete access denied',
-      );
-
+  async assertCanDelete(taskId: string, user: AuthUser): Promise<void> {
+    const task = await this.getAccessibleTaskOrThrow(taskId, user);
+    if (!this.canDeleteTask(task, user.id)) {
       throw new ForbiddenException(
         'You do not have permission to delete this task',
       );
     }
-
-    this.logger.debug(
-      {
-        event: 'task.access.delete.allowed',
-        taskId,
-        userId,
-        projectId: task.projectId,
-        currentUserRole: task.project.currentUserRole,
-      },
-      'Task delete access granted',
-    );
   }
 
-  async assertCanAssign(taskId: string, userId: string): Promise<void> {
-    const task = await this.getAccessibleTaskOrThrow(taskId, userId);
-
-    const canAssign = this.canManageTask(task, userId);
-
-    if (!canAssign) {
-      this.logger.warn(
-        {
-          event: 'task.access.assign.forbidden',
-          taskId,
-          userId,
-          projectId: task.projectId,
-          currentUserRole: task.project.currentUserRole,
-        },
-        'Task assignment access denied',
-      );
-
+  async assertCanAssign(taskId: string, user: AuthUser): Promise<void> {
+    const task = await this.getAccessibleTaskOrThrow(taskId, user);
+    if (!this.canManageTask(task, user.id)) {
       throw new ForbiddenException(
         'You do not have permission to assign this task',
       );
     }
-
-    this.logger.debug(
-      {
-        event: 'task.access.assign.allowed',
-        taskId,
-        userId,
-        projectId: task.projectId,
-        currentUserRole: task.project.currentUserRole,
-      },
-      'Task assignment access granted',
-    );
   }
 
   private canReadTask(task: TaskAccessContext, userId: string): boolean {
@@ -296,28 +122,21 @@ export class TaskAccessService {
 
   private canUpdateTask(task: TaskAccessContext, userId: string): boolean {
     if (task.project.ownerId === userId) return true;
-
     if (task.project.currentUserRole === ProjectRole.ADMIN) return true;
-
     if (task.assignees.some((assignee) => assignee.userId === userId))
       return true;
-
     return false;
   }
 
   private canDeleteTask(task: TaskAccessContext, userId: string): boolean {
     if (task.project.ownerId === userId) return true;
-
     if (task.project.currentUserRole === ProjectRole.ADMIN) return true;
-
     if (task.createdById === userId) return true;
-
     return false;
   }
 
   private canManageTask(task: TaskAccessContext, userId: string): boolean {
     if (task.project.ownerId === userId) return true;
-
     return task.project.currentUserRole === ProjectRole.ADMIN;
   }
 }

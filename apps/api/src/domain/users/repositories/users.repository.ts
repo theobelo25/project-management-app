@@ -21,6 +21,13 @@ export abstract class UsersRepository {
 
   abstract getAllUsers(tx?: Db): Promise<UserView[]>;
 
+  abstract getUsersByOrgId(orgId: string, tx?: Db): Promise<UserView[]>;
+  abstract searchUsersByOrgId(
+    orgId: string,
+    search: string,
+    tx?: Db,
+  ): Promise<UserView[]>;
+
   abstract create(dto: CreateUserDto, tx?: Db): Promise<UserView>;
 
   abstract update(
