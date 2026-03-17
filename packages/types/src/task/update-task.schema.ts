@@ -11,10 +11,24 @@ export const UpdateTaskSchema = z.object({
 
   priority: TaskPrioritySchema.optional(),
 
-  dueDate: z.iso
-    .datetime()
-    .transform((val) => new Date(val))
-    .optional(),
+  dueDate: z
+    .union([
+      z.string().datetime(),
+      z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      z.literal(""),
+      z.coerce.date(), // accepts Date or string that can be parsed to Date
+    ])
+    .optional()
+    .nullable()
+    .transform((val) => {
+      if (val == null) return undefined;
+      if (typeof val === "string" && val === "") return undefined;
+      const date =
+        val instanceof Date
+          ? val
+          : new Date(val.length === 10 ? `${val}T12:00:00.000Z` : val);
+      return Number.isNaN(date.getTime()) ? undefined : date;
+    }),
 
   position: z.number().int().nonnegative().optional(),
 });

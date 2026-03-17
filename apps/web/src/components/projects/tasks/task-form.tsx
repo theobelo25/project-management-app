@@ -39,7 +39,7 @@ export function TaskForm<TValues extends FieldValues>({
       ...(defaultValues ?? {}),
       projectId,
     } as never,
-    mode: "onBlur",
+    mode: "onSubmit",
   });
 
   useEffect(() => {
@@ -81,6 +81,21 @@ export function TaskForm<TValues extends FieldValues>({
         {(errors as any).description && (
           <p className="text-sm text-destructive">
             {(errors as any).description.message}
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="dueDate">Due date</Label>
+        <Input
+          id="dueDate"
+          type="date"
+          aria-invalid={!!(errors as any).dueDate}
+          {...register("dueDate" as never)}
+        />
+        {(errors as any).dueDate && (
+          <p className="text-sm text-destructive">
+            {(errors as any).dueDate.message}
           </p>
         )}
       </div>

@@ -1,4 +1,4 @@
-import { Circle, User, Hash } from "lucide-react";
+import { Calendar, Circle, User, Hash } from "lucide-react";
 
 import {
   Card,
@@ -11,8 +11,14 @@ import type { TaskView } from "@repo/types";
 
 import { formatTaskStatus } from "../utils/format";
 
+function formatDueDate(iso: string | null): string {
+  if (!iso) return "No due date";
+  const d = new Date(iso);
+  return new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(d);
+}
+
 type TaskDetailsCardProps = {
-  task: Pick<TaskView, "id" | "description" | "status">;
+  task: Pick<TaskView, "id" | "description" | "status" | "dueDate">;
   assignee?: {
     name: string;
   } | null;
@@ -40,7 +46,7 @@ export function TaskDetailsCard({ task, assignee }: TaskDetailsCardProps) {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border p-4">
             <div className="mb-2 flex items-center gap-2 text-muted-foreground">
               <Circle className="h-4 w-4" />
@@ -55,6 +61,14 @@ export function TaskDetailsCard({ task, assignee }: TaskDetailsCardProps) {
               <span className="text-sm">Assignee</span>
             </div>
             <p className="font-medium">{assignee?.name || "Unassigned"}</p>
+          </div>
+
+          <div className="rounded-xl border p-4">
+            <div className="mb-2 flex items-center gap-2 text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span className="text-sm">Due date</span>
+            </div>
+            <p className="font-medium">{formatDueDate(task.dueDate ?? null)}</p>
           </div>
 
           <div className="rounded-xl border p-4">

@@ -22,6 +22,7 @@ type EditTaskDialogProps = {
     id: string;
     title: string;
     description: string | null;
+    dueDate?: string | null;
   };
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -63,7 +64,7 @@ export function EditTaskDialog({
         <DialogHeader>
           <DialogTitle>Edit task</DialogTitle>
           <DialogDescription>
-            Update this task’s title and description.
+            Update this task’s title, description, and due date.
           </DialogDescription>
         </DialogHeader>
 
@@ -73,12 +74,16 @@ export function EditTaskDialog({
           submitLabel="Save Changes"
           isLoading={updateTaskMutation.isPending}
           errorMessage={updateTaskMutation.error?.message ?? null}
-          defaultValues={{
-            title: task.title,
-            description: task.description ?? "",
-          }}
+          defaultValues={
+            {
+              title: task.title,
+              description: task.description ?? "",
+              dueDate: task.dueDate ? task.dueDate.slice(0, 10) : "",
+            } as unknown as Partial<UpdateTaskInput>
+          }
           onSubmit={async (values) => {
-            await updateTaskMutation.mutateAsync(values);
+            const payload = UpdateTaskSchema.parse(values) as UpdateTaskInput;
+            await updateTaskMutation.mutateAsync(payload);
           }}
         />
       </DialogContent>

@@ -17,6 +17,8 @@ type CreateEntityDialogProps = {
   triggerLabel: string;
   dialogTitle: string;
   dialogDescription: string;
+  /** When provided, used as the dialog trigger instead of the default button. */
+  trigger?: React.ReactNode;
   children: (props: { onSuccess: () => void }) => React.ReactNode;
 };
 
@@ -24,6 +26,7 @@ export function CreateEntityDialog({
   triggerLabel,
   dialogTitle,
   dialogDescription,
+  trigger,
   children,
 }: CreateEntityDialogProps) {
   const [open, setOpen] = useState(false);
@@ -31,10 +34,12 @@ export function CreateEntityDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          {triggerLabel}
-        </Button>
+        {trigger ?? (
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            {triggerLabel}
+          </Button>
+        )}
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-lg">

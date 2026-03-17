@@ -17,6 +17,7 @@ type TaskRowActionsProps = {
     id: string;
     title: string;
     description: string | null;
+    dueDate?: string | null;
   };
   onDelete?: (taskId: string) => void;
 };

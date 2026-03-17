@@ -3,7 +3,7 @@ import { ProjectRole } from "@repo/types";
 export type ProjectTask = {
   id: string;
   title: string;
-  status: "TODO" | "IN_PROGRESS" | "DONE";
+  status: "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE";
 };
 
 export type MemberWithRole = {

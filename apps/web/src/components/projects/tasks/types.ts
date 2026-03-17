@@ -1,4 +1,4 @@
-export type TaskStatus = "TODO" | "IN_PROGRESS" | "DONE";
+export type TaskStatus = "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE";
 
 export type TaskAssignee = {
   id: string;
@@ -13,4 +13,5 @@ export type TaskListItem = {
   status: TaskStatus;
   assignee: TaskAssignee | null;
   updatedAt: string | Date;
+  dueDate: string | null;
 };

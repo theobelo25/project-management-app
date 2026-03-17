@@ -22,6 +22,8 @@ export function formatTaskStatus(status: ProjectTask["status"]) {
       return "Todo";
     case "IN_PROGRESS":
       return "In Progress";
+    case "REVIEW":
+      return "Review";
     case "DONE":
       return "Done";
     default:
