@@ -97,6 +97,7 @@ export function TasksTable({
                       id: task.id,
                       title: task.title,
                       description: task.description,
+                      dueDate: task.dueDate ?? null,
                     }}
                     onDelete={onDelete}
                   />
@@ -131,6 +132,7 @@ export function TasksTable({
                     id: task.id,
                     title: task.title,
                     description: task.description,
+                    dueDate: task.dueDate ?? null,
                   }}
                   onDelete={onDelete}
                 />

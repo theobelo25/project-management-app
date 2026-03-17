@@ -82,6 +82,7 @@ export function TaskDetailPageContent({
           id: task.id,
           title: task.title,
           description: task.description ?? null,
+          dueDate: task.dueDate ?? null,
         }}
         open={editOpen}
         onOpenChange={setEditOpen}

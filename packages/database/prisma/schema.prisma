@@ -94,6 +94,7 @@ model ProjectMember {
 enum TaskStatus {
     TODO
     IN_PROGRESS
+    REVIEW
     DONE
 }
 

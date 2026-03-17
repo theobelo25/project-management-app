@@ -369,7 +369,7 @@ export async function updateTask(
   taskId: string,
   payload: UpdateTaskInput,
 ): Promise<TaskView> {
-  const response = await fetch(`/api/projects/${projectId}/tasks/${taskId}`, {
+  const response = await fetchWithAuth(`${API_BASE}/api/tasks/${taskId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",

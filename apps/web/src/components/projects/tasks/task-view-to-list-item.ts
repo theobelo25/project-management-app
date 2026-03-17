@@ -16,5 +16,6 @@ export function taskViewToListItem(task: TaskView): TaskListItem {
         }
       : null,
     updatedAt: task.updatedAt,
+    dueDate: task.dueDate ?? null,
   };
 }
