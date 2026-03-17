@@ -1,5 +1,8 @@
 export interface PrivateUser {
   id: string;
+  orgId: string;
+  organizationName: string;
+
   email: string;
   name: string;
   passwordHash: string;
@@ -9,6 +12,9 @@ export interface PrivateUser {
 
 export interface UserView {
   id: string;
+  orgId: string;
+  organizationName: string;
+
   email: string;
   name: string;
   createdAt: Date;
@@ -19,7 +25,7 @@ export interface UserAuthResponseDto {
   user: string;
 }
 
-export type AuthUser = { id: string };
+export type AuthUser = { id: string; orgId: string };
 
 export type RefreshAuthUser = {
   user: UserView;
@@ -27,6 +33,7 @@ export type RefreshAuthUser = {
 };
 
 export type CreateUserDto = {
+  orgId: string;
   email: string;
   name: string;
   passwordHash: string;

@@ -5,9 +5,10 @@ import { TasksService } from './tasks.service';
 import { TasksController } from './tasks.controller';
 import { TaskAccessService } from './policies/task-access.service';
 import { ProjectsModule } from '../projects/projects.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [ProjectsModule],
+  imports: [ProjectsModule, UsersModule],
   controllers: [TasksController],
   providers: [
     TasksService,

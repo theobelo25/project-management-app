@@ -17,28 +17,48 @@ export class PrismaUsersRepository implements UsersRepository {
   async findById(id: string, tx?: Db): Promise<UserView | null> {
     const prisma = tx ?? this.prisma;
 
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: { organization: true },
+    });
 
     if (!user) return null;
-    return toUserView(user);
+    return toUserView(user as any);
   }
 
   async findByEmail(email: string, tx?: Db): Promise<UserView | null> {
     const prisma = tx ?? this.prisma;
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: { organization: true },
+    });
 
     if (!user) return null;
-    return toUserView(user);
+    return toUserView(user as any);
   }
 
   async findPrivateUserById(id: string, tx?: Db): Promise<PrivateUser | null> {
     const prisma = tx ?? this.prisma;
 
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: { organization: true },
+    });
 
     if (!user) return null;
-    return user;
+
+    // Return shape expected by PrivateUser (includes orgId + org name)
+    return {
+      id: user.id,
+      orgId: user.organizationId,
+      organizationName: user.organization?.name ?? '(unknown organization)',
+      email: user.email,
+      name: user.name,
+      passwordHash: user.passwordHash,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   async findPrivateUserByEmail(
@@ -47,26 +67,58 @@ export class PrismaUsersRepository implements UsersRepository {
   ): Promise<PrivateUser | null> {
     const prisma = tx ?? this.prisma;
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: { organization: true },
+    });
 
     if (!user) return null;
-    return user;
+
+    return {
+      id: user.id,
+      orgId: user.organizationId,
+      organizationName: user.organization?.name ?? '(unknown organization)',
+      email: user.email,
+      name: user.name,
+      passwordHash: user.passwordHash,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   async getAllUsers(tx?: Db): Promise<UserView[]> {
     const prisma = tx ?? this.prisma;
+    const users = await prisma.user.findMany({
+      include: { organization: true },
+    });
+    return users.map((user: any) => toUserView(user));
+  }
 
-    const users = await prisma.user.findMany();
+  async getUsersByOrgId(orgId: string, tx?: Db): Promise<UserView[]> {
+    const prisma = tx ?? this.prisma;
 
-    return users.map((user: PrivateUser) => toUserView(user));
+    const users = await prisma.user.findMany({
+      where: { organizationId: orgId },
+      include: { organization: true },
+    });
+
+    return users.map((user: any) => toUserView(user));
   }
 
   async create(dto: CreateUserDto, tx?: Db): Promise<UserView> {
     const prisma = tx ?? this.prisma;
 
-    const user = await prisma.user.create({ data: dto });
+    const user = await prisma.user.create({
+      data: {
+        email: dto.email,
+        name: dto.name,
+        passwordHash: dto.passwordHash,
+        organizationId: dto.orgId,
+      },
+      include: { organization: true },
+    });
 
-    return toUserView(user);
+    return toUserView(user as any);
   }
 
   async update(
@@ -76,15 +128,20 @@ export class PrismaUsersRepository implements UsersRepository {
   ): Promise<UserView> {
     const prisma = tx ?? this.prisma;
 
-    const updatedUser = await prisma.user.update({ where: { id }, data: dto });
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: dto as any,
+      include: { organization: true },
+    });
 
-    return toUserView(updatedUser);
+    return toUserView(updatedUser as any);
   }
 
   async searchUsers(search: string, tx?: Db): Promise<UserView[]> {
     const prisma = tx ?? this.prisma;
     const term = search.trim();
     if (!term) return this.getAllUsers(tx);
+
     const users = await prisma.user.findMany({
       where: {
         OR: [
@@ -92,7 +149,32 @@ export class PrismaUsersRepository implements UsersRepository {
           { email: { contains: term, mode: 'insensitive' } },
         ],
       },
+      include: { organization: true },
     });
-    return users.map((user) => toUserView(user));
+
+    return users.map((user: any) => toUserView(user));
+  }
+
+  async searchUsersByOrgId(
+    orgId: string,
+    search: string,
+    tx?: Db,
+  ): Promise<UserView[]> {
+    const prisma = tx ?? this.prisma;
+    const term = search.trim();
+    if (!term) return this.getUsersByOrgId(orgId, tx);
+
+    const users = await prisma.user.findMany({
+      where: {
+        organizationId: orgId,
+        OR: [
+          { name: { contains: term, mode: 'insensitive' } },
+          { email: { contains: term, mode: 'insensitive' } },
+        ],
+      },
+      include: { organization: true },
+    });
+
+    return users.map((user: any) => toUserView(user));
   }
 }

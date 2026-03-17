@@ -40,9 +40,14 @@ export function SecondaryNav({ variant = "bar" }: SecondaryNavProps) {
         {isPending ? (
           <div className="h-10 animate-pulse rounded-lg bg-muted" />
         ) : isAuthenticated ? (
-          <Button type="button" onClick={() => handleLogoutClick()}>
-            Logout
-          </Button>
+          <div className="flex flex-col gap-3">
+            <div className="truncate text-sm font-medium">
+              {user.organizationName}
+            </div>
+            <Button type="button" onClick={() => handleLogoutClick()}>
+              Logout
+            </Button>
+          </div>
         ) : (
           <div className="flex flex-col gap-2 border-t border-border pt-4">
             {authItems.map(({ href, label, primary }) => (
@@ -69,9 +74,14 @@ export function SecondaryNav({ variant = "bar" }: SecondaryNavProps) {
       {isPending ? (
         <div className="h-8 w-24 animate-pulse rounded bg-muted" />
       ) : isAuthenticated ? (
-        <Button type="button" onClick={() => handleLogoutClick()}>
-          Logout
-        </Button>
+        <>
+          <div className="max-w-[240px] truncate text-sm font-medium text-muted-foreground">
+            {user.organizationName}
+          </div>
+          <Button type="button" onClick={() => handleLogoutClick()}>
+            Logout
+          </Button>
+        </>
       ) : (
         authItems.map(({ href, label, primary }) =>
           primary ? (

@@ -1,7 +1,6 @@
 import {
   ConflictException,
   ForbiddenException,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -10,16 +9,18 @@ import {
   toProjectMemberView,
 } from '../mappers/project-member.mapper';
 import { AddProjectMemberDto, UpdateProjectMemberRoleDto } from '../dto';
-import { ProjectMembersView, ProjectMemberView } from '@repo/types';
+import { ProjectMembersView, ProjectMemberView, AuthUser } from '@repo/types';
 import { ProjectAccessService } from '../policies/project-access.service';
 import { ProjectsRepository } from '../repositories/projects.repository';
 import { PinoLogger } from 'nestjs-pino';
+import { UsersRepository } from '@api/domain/users/repositories/users.repository';
 
 @Injectable()
 export class ProjectMembersService {
   constructor(
     private readonly projectsRepository: ProjectsRepository,
     private readonly projectAccessService: ProjectAccessService,
+    private readonly usersRepository: UsersRepository,
     private readonly logger: PinoLogger,
   ) {
     this.logger.setContext(ProjectMembersService.name);
@@ -27,26 +28,29 @@ export class ProjectMembersService {
 
   async getMembers(
     projectId: string,
-    userId: string,
+    user: AuthUser,
   ): Promise<ProjectMembersView> {
-    await this.projectAccessService.requireMember(projectId, userId);
+    await this.projectAccessService.requireMember(projectId, user);
 
     const members =
       await this.projectsRepository.findMembersByProjectId(projectId);
 
-    this.logger.debug({ projectId, userId }, 'Fetched project members');
+    this.logger.debug(
+      { projectId, userId: user.id },
+      'Fetched project members',
+    );
 
     return toProjectMembersView(members);
   }
 
   async addMember(
     projectId: string,
-    actorUserId: string,
+    actor: AuthUser,
     dto: AddProjectMemberDto,
   ): Promise<ProjectMemberView> {
     const project = await this.projectAccessService.requireOwner(
       projectId,
-      actorUserId,
+      actor,
     );
 
     if (project.archivedAt) {
@@ -55,8 +59,17 @@ export class ProjectMembersService {
       );
     }
 
-    if (dto.userId === actorUserId) {
+    if (dto.userId === actor.id) {
       throw new ConflictException('Owner is already a member of this project');
+    }
+
+    const targetUser = await this.usersRepository.findById(dto.userId);
+    if (!targetUser) throw new NotFoundException('User not found');
+
+    if (targetUser.orgId !== actor.orgId) {
+      throw new ForbiddenException(
+        'Cannot add users from another organization',
+      );
     }
 
     const existingMember = await this.projectsRepository.findMembership(
@@ -78,7 +91,7 @@ export class ProjectMembersService {
       {
         event: 'project.member.added',
         projectId,
-        actorUserId,
+        actorUserId: actor.id,
         addedUserId: dto.userId,
         role: dto.role,
       },
@@ -90,13 +103,13 @@ export class ProjectMembersService {
 
   async updateMemberRole(
     projectId: string,
-    actorUserId: string,
+    actor: AuthUser,
     memberUserId: string,
     dto: UpdateProjectMemberRoleDto,
   ): Promise<ProjectMemberView> {
     const project = await this.projectAccessService.requireOwner(
       projectId,
-      actorUserId,
+      actor,
     );
 
     if (project.archivedAt) {
@@ -105,7 +118,7 @@ export class ProjectMembersService {
       );
     }
 
-    if (memberUserId === actorUserId) {
+    if (memberUserId === actor.id) {
       throw new ForbiddenException(
         'Owner role must be changed via ownership transfer',
       );
@@ -130,7 +143,7 @@ export class ProjectMembersService {
       {
         event: 'project.member.role.updated',
         projectId,
-        actorUserId,
+        actorUserId: actor.id,
         memberUserId,
         newRole: dto.role,
       },
@@ -142,12 +155,12 @@ export class ProjectMembersService {
 
   async removeMember(
     projectId: string,
-    actorUserId: string,
+    actor: AuthUser,
     memberUserId: string,
   ): Promise<void> {
     const project = await this.projectAccessService.requireOwner(
       projectId,
-      actorUserId,
+      actor,
     );
 
     if (project.archivedAt) {
@@ -156,7 +169,7 @@ export class ProjectMembersService {
       );
     }
 
-    if (memberUserId === actorUserId) {
+    if (memberUserId === actor.id) {
       throw new ForbiddenException('Project owner cannot be removed');
     }
 
@@ -175,7 +188,7 @@ export class ProjectMembersService {
       {
         event: 'project.member.removed',
         projectId,
-        actorUserId,
+        actorUserId: actor.id,
         removedUserId: memberUserId,
       },
       'Project member removed',

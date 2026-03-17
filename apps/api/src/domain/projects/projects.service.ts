@@ -1,17 +1,16 @@
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateProjectWithOwnerInput } from './types/projects.repository.types';
 import {
+  AuthUser,
   CreateProjectDto,
   GetProjectsQueryDto,
   PaginatedProjectsListView,
-  PaginatedProjectsView,
   ProjectDetailView,
   ProjectView,
   UpdateProjectDto,
 } from '@repo/types';
 import {
   toPaginatedProjectListView,
-  toPaginatedProjectsView,
   toProjectDetailView,
   toProjectView,
 } from './mappers/project.mapper';
@@ -32,9 +31,10 @@ export class ProjectsService {
     this.logger.setContext(ProjectsService.name);
   }
 
-  async create(ownerId: string, dto: CreateProjectDto): Promise<ProjectView> {
+  async create(user: AuthUser, dto: CreateProjectDto): Promise<ProjectView> {
     const input: CreateProjectWithOwnerInput = {
-      ownerId,
+      orgId: user.orgId,
+      ownerId: user.id,
       name: dto.name,
       description: dto.description,
     };
@@ -42,7 +42,7 @@ export class ProjectsService {
     const project = await this.projectsRepository.createWithOwner(input);
 
     this.logger.info(
-      { event: 'project.created', ownerId, projectId: project.id },
+      { event: 'project.created', ownerId: user.id, projectId: project.id },
       'Project created successfully',
     );
 
@@ -50,11 +50,12 @@ export class ProjectsService {
   }
 
   async findManyForUser(
-    userId: string,
+    user: AuthUser,
     query: GetProjectsQueryDto,
   ): Promise<PaginatedProjectsListView> {
     const result = await this.projectsRepository.findManyForUser({
-      userId,
+      orgId: user.orgId,
+      userId: user.id,
       page: query.page,
       pageSize: query.pageSize,
       includeArchived: query.includeArchived,
@@ -72,10 +73,10 @@ export class ProjectsService {
     return toPaginatedProjectListView(result, taskCountsMap, membersMap);
   }
 
-  async findById(projectId: string, userId: string): Promise<ProjectView> {
+  async findById(projectId: string, user: AuthUser): Promise<ProjectView> {
     const project = await this.projectAccessService.requireMember(
       projectId,
-      userId,
+      user,
     );
 
     return toProjectView(project);
@@ -83,12 +84,12 @@ export class ProjectsService {
 
   async update(
     projectId: string,
-    userId: string,
+    user: AuthUser,
     dto: UpdateProjectDto,
   ): Promise<ProjectView> {
     const project = await this.projectAccessService.requireRole(
       projectId,
-      userId,
+      user,
       ProjectRole.ADMIN,
     );
 
@@ -97,7 +98,7 @@ export class ProjectsService {
 
     const updatedProject = await this.projectsRepository.updateForUser(
       projectId,
-      userId,
+      user.id,
       {
         ...(dto.name !== undefined ? { name: dto.name } : {}),
         ...(dto.description !== undefined
@@ -107,17 +108,17 @@ export class ProjectsService {
     );
 
     this.logger.info(
-      { event: 'project.updated', userId, projectId },
+      { event: 'project.updated', userId: user.id, projectId },
       'Project updated successfully',
     );
 
     return toProjectView(updatedProject);
   }
 
-  async archive(projectId: string, userId: string): Promise<ProjectView> {
+  async archive(projectId: string, user: AuthUser): Promise<ProjectView> {
     const project = await this.projectAccessService.requireOwner(
       projectId,
-      userId,
+      user,
     );
 
     if (project.archivedAt)
@@ -125,21 +126,21 @@ export class ProjectsService {
 
     const archivedProject = await this.projectsRepository.archiveForUser(
       projectId,
-      userId,
+      user.id,
     );
 
     this.logger.info(
-      { event: 'project.archived', userId, projectId },
+      { event: 'project.archived', userId: user.id, projectId },
       'Project archived successfully',
     );
 
     return toProjectView(archivedProject);
   }
 
-  async unarchive(projectId: string, userId: string): Promise<ProjectView> {
+  async unarchive(projectId: string, user: AuthUser): Promise<ProjectView> {
     const project = await this.projectAccessService.requireOwner(
       projectId,
-      userId,
+      user,
     );
 
     if (!project.archivedAt)
@@ -147,11 +148,11 @@ export class ProjectsService {
 
     const unarchivedProject = await this.projectsRepository.unarchiveForUser(
       projectId,
-      userId,
+      user.id,
     );
 
     this.logger.info(
-      { event: 'project.unarchived', userId, projectId },
+      { event: 'project.unarchived', userId: user.id, projectId },
       'Project unarchived successfully',
     );
 
@@ -160,27 +161,31 @@ export class ProjectsService {
 
   async findDetailById(
     projectId: string,
-    userId: string,
+    user: AuthUser,
   ): Promise<ProjectDetailView> {
     const project = await this.projectAccessService.requireMember(
       projectId,
-      userId,
+      user,
     );
+
     const [countsMap, members, recentTasks] = await Promise.all([
       this.taskRepository.getTaskCountsByProjectIds([projectId]),
       this.projectsRepository.findMembersWithUserByProjectIds([projectId]),
       this.taskRepository.findRecentByProjectId(projectId, 10),
     ]);
+
     const counts = countsMap.get(projectId) ?? { total: 0, completed: 0 };
     const membersList = members.get(projectId) ?? [];
+
     return toProjectDetailView(project, counts, membersList, recentTasks);
   }
 
-  async delete(projectId: string, userId: string): Promise<void> {
-    await this.projectAccessService.requireOwner(projectId, userId);
+  async delete(projectId: string, user: AuthUser): Promise<void> {
+    await this.projectAccessService.requireOwner(projectId, user);
     await this.projectsRepository.delete(projectId);
+
     this.logger.info(
-      { event: 'project.deleted', userId, projectId },
+      { event: 'project.deleted', userId: user.id, projectId },
       'Project deleted successfully',
     );
   }

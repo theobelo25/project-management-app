@@ -41,7 +41,14 @@ export class AuthService {
     return this.uow.transaction(async (tx) => {
       await this.assertEmailAvailable(dto.email, tx);
 
-      const newUser = await this.createUserWithHashedPassword(dto, tx);
+      // Portfolio-friendly: each signup gets its own org/workspace.
+      const org = await tx.organization.create({
+        data: {
+          name: `${dto.name}'s Workspace`,
+        },
+      });
+
+      const newUser = await this.createUserWithHashedPassword(dto, org.id, tx);
       if (!newUser) throw new BadRequestException('Problem creating user');
 
       const { accessToken, refreshToken } = await this.createSession(
@@ -49,7 +56,10 @@ export class AuthService {
         tx,
       );
 
-      this.logger.info({ userId: newUser.id }, 'User signed up successfully');
+      this.logger.info(
+        { userId: newUser.id, organizationId: org.id },
+        'User signed up successfully',
+      );
 
       return {
         user: newUser,
@@ -82,7 +92,7 @@ export class AuthService {
     }
 
     this.logger.debug({ userId: user.id }, 'User credentials authenticated');
-    return toUserView(user);
+    return toUserView(user as any);
   }
 
   async issueSession(user: UserView): Promise<AuthSession> {
@@ -143,10 +153,13 @@ export class AuthService {
 
   private async createUserWithHashedPassword(
     dto: SignupInputDto,
+    orgId: string,
     tx?: Db,
   ): Promise<UserView> {
     const hashedPassword = await this.hashingService.hash(dto.password);
+
     const createUserDto: CreateUserDto = {
+      orgId,
       email: dto.email,
       name: dto.name,
       passwordHash: hashedPassword,

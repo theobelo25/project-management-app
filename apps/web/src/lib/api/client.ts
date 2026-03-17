@@ -17,6 +17,7 @@ import {
   ProjectMemberView,
   UpdateProjectMemberRoleDto,
   UpdateTaskInput,
+  TaskAssignmentView,
 } from "@repo/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -394,5 +395,40 @@ export async function deleteProject(projectId: string): Promise<void> {
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
     throw new Error(error.message ?? "Failed to delete project");
+  }
+}
+
+export async function assignTaskUser(
+  taskId: string,
+  userId: string,
+): Promise<TaskAssignmentView> {
+  const res = await fetchWithAuth(
+    `${API_BASE}/api/tasks/${taskId}/assignees/${userId}`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to assign user to task");
+  }
+  return res.json();
+}
+
+export async function unassignTaskUser(
+  taskId: string,
+  userId: string,
+): Promise<void> {
+  const res = await fetchWithAuth(
+    `${API_BASE}/api/tasks/${taskId}/assignees/${userId}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    },
+  );
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to unassign user from task");
   }
 }

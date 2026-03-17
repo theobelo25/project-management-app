@@ -1,6 +1,5 @@
 import {
   ForbiddenException,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,6 +7,7 @@ import { ProjectsRepository } from '../repositories/projects.repository';
 import { ProjectRole } from '@repo/database';
 import { Db } from '@api/prisma';
 import { ProjectWithRole } from '../types/projects.repository.types';
+import { AuthUser } from '@repo/types';
 
 @Injectable()
 export class ProjectAccessService {
@@ -28,12 +28,13 @@ export class ProjectAccessService {
 
   async getAuthorizedProject(
     projectId: string,
-    userId: string,
+    user: AuthUser,
     db?: Db,
   ): Promise<ProjectWithRole> {
     const project = await this.projectsRepository.findAuthorizedById(
       projectId,
-      userId,
+      user.id,
+      user.orgId,
       db,
     );
 
@@ -50,28 +51,28 @@ export class ProjectAccessService {
 
   async getUserRole(
     projectId: string,
-    userId: string,
+    user: AuthUser,
     db?: Db,
   ): Promise<ProjectRole | null> {
-    const project = await this.getAuthorizedProject(projectId, userId, db);
+    const project = await this.getAuthorizedProject(projectId, user, db);
     return project.currentUserRole ?? null;
   }
 
   async requireMember(
     projectId: string,
-    userId: string,
+    user: AuthUser,
     db?: Db,
   ): Promise<ProjectWithRole> {
-    return this.getAuthorizedProject(projectId, userId, db);
+    return this.getAuthorizedProject(projectId, user, db);
   }
 
   async requireRole(
     projectId: string,
-    userId: string,
+    user: AuthUser,
     minimumRole: ProjectRole,
     db?: Db,
   ): Promise<ProjectWithRole> {
-    const project = await this.getAuthorizedProject(projectId, userId, db);
+    const project = await this.getAuthorizedProject(projectId, user, db);
     const role = project.currentUserRole;
 
     if (!role)
@@ -85,10 +86,10 @@ export class ProjectAccessService {
 
   async requireOwner(
     projectId: string,
-    userId: string,
+    user: AuthUser,
     db?: Db,
   ): Promise<ProjectWithRole> {
-    const project = await this.getAuthorizedProject(projectId, userId, db);
+    const project = await this.getAuthorizedProject(projectId, user, db);
 
     if (project.currentUserRole !== ProjectRole.OWNER) {
       throw new ForbiddenException(

@@ -8,9 +8,9 @@ import {
   useTaskDetail,
 } from "@web/components/projects/task-detail";
 import { EditTaskDialog } from "@web/components/projects/tasks";
-import { useTaskQuery } from "@web/lib/api/queries";
+import { useProjectQuery, useTaskQuery } from "@web/lib/api/queries";
 import { useEffect } from "react";
-import type { TaskView } from "@repo/types";
+import type { ProjectRole, TaskView } from "@repo/types";
 
 type TaskDetailPageContentProps = {
   projectId: string;
@@ -18,7 +18,7 @@ type TaskDetailPageContentProps = {
 };
 
 type TaskDetailData = TaskView & {
-  assignees?: { user: { name: string; email: string } }[];
+  assignees?: { user: { id: string; name: string; email: string } }[];
 };
 
 export function TaskDetailPageContent({
@@ -36,6 +36,8 @@ export function TaskDetailPageContent({
   }
 
   const { data: task, isLoading, isError, error } = useTaskQuery(taskId);
+  const { data: project } = useProjectQuery(projectId);
+
   const { setTaskForHeader, setEditOpen, editOpen } = useTaskDetail();
 
   useEffect(() => {
@@ -44,8 +46,6 @@ export function TaskDetailPageContent({
     }
     return () => setTaskForHeader(null, null);
   }, [projectId, task, setTaskForHeader]);
-
-  if (!taskId || !projectId) return null;
 
   if (isLoading && !task) {
     return (
@@ -56,6 +56,7 @@ export function TaskDetailPageContent({
       </div>
     );
   }
+
   if (isError || !task) {
     return (
       <div className="flex flex-col gap-8">
@@ -66,16 +67,31 @@ export function TaskDetailPageContent({
     );
   }
 
-  const assignee = task.assignees?.[0]?.user ?? null;
+  const role = project?.currentUserRole as ProjectRole | undefined;
+  const canEditAssignee = role === "OWNER" || role === "ADMIN";
+
+  const taskData = task as TaskDetailData;
+  const assigneeUser = taskData.assignees?.[0]?.user ?? null;
+  const assigneeUserId = taskData.assignees?.[0]?.user?.id ?? null;
 
   return (
     <>
       <section className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
-        <TaskDetailsCard task={task} assignee={assignee} />
-        <TaskAssigneeCard assignee={assignee} />
+        <TaskDetailsCard task={task} assignee={assigneeUser} />
+
+        <TaskAssigneeCard
+          projectId={projectId}
+          taskId={task.id}
+          assignee={assigneeUser}
+          assigneeUserId={assigneeUserId}
+          canEdit={canEditAssignee}
+          members={project?.members ?? []}
+        />
+
         <TaskActivityCard task={task} />
         <TaskQuickActionsCard projectId={projectId} setEditOpen={setEditOpen} />
       </section>
+
       <EditTaskDialog
         projectId={projectId}
         task={{

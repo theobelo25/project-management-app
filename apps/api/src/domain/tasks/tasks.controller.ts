@@ -34,7 +34,7 @@ export class TasksController {
     @CurrentUser() user: AuthUser,
     @Body() body: CreateTaskDto,
   ): Promise<TaskView> {
-    return this.tasksService.create(user.id, body);
+    return this.tasksService.create(user, body);
   }
 
   @Get(':taskId')
@@ -42,7 +42,7 @@ export class TasksController {
     @CurrentUser() user: AuthUser,
     @Param() params: TaskIdParamDto,
   ): Promise<TaskView> {
-    return this.tasksService.findById(params.taskId, user.id);
+    return this.tasksService.findById(params.taskId, user);
   }
 
   @Get()
@@ -50,7 +50,7 @@ export class TasksController {
     @CurrentUser() user: AuthUser,
     @Query() query: FindTasksQueryDto,
   ): Promise<PaginationResult<TaskView>> {
-    return this.tasksService.findMany(user.id, query);
+    return this.tasksService.findMany(user, query);
   }
 
   @Patch(':taskId')
@@ -59,7 +59,7 @@ export class TasksController {
     @Param() params: TaskIdParamDto,
     @Body() body: UpdateTaskDto,
   ): Promise<TaskView> {
-    return this.tasksService.update(params.taskId, user.id, body);
+    return this.tasksService.update(params.taskId, user, body);
   }
 
   @Delete(':taskId')
@@ -68,7 +68,7 @@ export class TasksController {
     @CurrentUser() user: AuthUser,
     @Param() params: TaskIdParamDto,
   ): Promise<void> {
-    await this.tasksService.delete(params.taskId, user.id);
+    await this.tasksService.delete(params.taskId, user);
   }
 
   @Post(':taskId/assignees/:userId')
@@ -76,7 +76,7 @@ export class TasksController {
     @CurrentUser() user: AuthUser,
     @Param() params: TaskAssigneeParamsDto,
   ): Promise<TaskAssignmentView> {
-    return this.tasksService.assignUser(params.taskId, params.userId, user.id);
+    return this.tasksService.assignUser(params.taskId, params.userId, user);
   }
 
   @Delete(':taskId/assignees/:userId')
@@ -85,6 +85,6 @@ export class TasksController {
     @CurrentUser() user: AuthUser,
     @Param() params: TaskAssigneeParamsDto,
   ): Promise<void> {
-    await this.tasksService.unassignUser(params.taskId, params.userId, user.id);
+    await this.tasksService.unassignUser(params.taskId, params.userId, user);
   }
 }

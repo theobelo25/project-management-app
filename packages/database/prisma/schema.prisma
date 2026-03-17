@@ -26,9 +26,11 @@ model User {
     ownedProjects  Project[]       @relation("OwnedProjects")
     projectMembers ProjectMember[] @relation("ProjectMemberships")
 
-    createdTasks  Task[]         @relation("TaskCreator")
-    taskAssignees TaskAssignee[]
-    tasks         Task[]
+    createdTasks   Task[]         @relation("TaskCreator")
+    taskAssignees  TaskAssignee[]
+    tasks          Task[]
+    organization   Organization   @relation(fields: [organizationId], references: [id])
+    organizationId String         @db.Uuid
 }
 
 model RefreshToken {
@@ -65,9 +67,11 @@ model Project {
     createdAt   DateTime  @default(now())
     updatedAt   DateTime  @updatedAt
 
-    owner   User            @relation("OwnedProjects", fields: [ownerId], references: [id], onDelete: Restrict)
-    members ProjectMember[]
-    tasks   Task[]
+    owner          User            @relation("OwnedProjects", fields: [ownerId], references: [id], onDelete: Restrict)
+    members        ProjectMember[]
+    tasks          Task[]
+    organization   Organization    @relation(fields: [organizationId], references: [id])
+    organizationId String          @db.Uuid
 
     @@index([ownerId])
     @@index([archivedAt])
@@ -137,4 +141,15 @@ model TaskAssignee {
 
     @@id([taskId, userId])
     @@index([userId])
+}
+
+model Organization {
+    id        String    @id @default(uuid()) @db.Uuid
+    name      String
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    users     User[]
+    projects  Project[]
+
+    @@index([createdAt])
 }
