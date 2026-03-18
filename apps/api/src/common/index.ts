@@ -8,7 +8,7 @@ export * from './guards/refresh.guard';
 
 // PAGINATION
 export * from './pagination/pagination.util';
+export * from './pagination/pagination-query.dto';
 
 // PIPES
 export * from './pipes/zod-validation.pipe';
-export * from './zod/zod-dto.util';

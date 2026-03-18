@@ -1,5 +1,4 @@
-import { TransferProjectOwnershipSchema } from '@repo/types';
-import { createZodDto } from '@api/common';
+import { TransferProjectOwnershipSchema, createZodDto } from '@repo/types';
 
 export class TransferProjectOwnershipDto extends createZodDto(
   TransferProjectOwnershipSchema,

@@ -7,9 +7,10 @@ import { TaskAccessService } from './policies/task-access.service';
 import { ProjectsModule } from '../projects/projects.module';
 import { UsersModule } from '../users/users.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { PrismaModule } from '@api/prisma';
 
 @Module({
-  imports: [ProjectsModule, UsersModule, NotificationsModule],
+  imports: [ProjectsModule, UsersModule, NotificationsModule, PrismaModule],
   controllers: [TasksController],
   providers: [
     TasksService,

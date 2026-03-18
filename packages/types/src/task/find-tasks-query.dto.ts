@@ -4,10 +4,10 @@ import { TaskPrioritySchema } from "./task-priority.schema";
 import { TaskStatusSchema } from "./task-status.schema";
 
 export const FindTasksQuerySchema = PaginationQuerySchema.extend({
-  projectId: z.string().uuid(),
+  projectId: z.uuid(),
   status: TaskStatusSchema.optional(),
   priority: TaskPrioritySchema.optional(),
-  assigneeId: z.string().uuid().optional(),
+  assigneeId: z.uuid().optional(),
   search: z.string().trim().min(1).optional(),
   sort: z
     .enum(["updated-desc", "created-desc", "title-asc", "status-asc"])

@@ -3,6 +3,7 @@ export const ROUTES = {
   signin: "/signin",
   signup: "/signup",
   projects: "/projects",
+  organizations: "/organizations",
   dashboard: "/dashboard",
 } as const;
 

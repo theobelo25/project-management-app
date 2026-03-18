@@ -1,6 +1,7 @@
 "use client";
 
 import { useDeferredValue, useId, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 
 import { getInitials } from "@web/components/projects/utils";
@@ -18,7 +19,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@web/components/ui/popover";
-import { useUsersSearchQuery } from "@web/lib/api/queries";
+import { fetchAllUsers, fetchUsers } from "@web/lib/api/client";
 import { cn } from "@web/lib/utils";
 
 export type UserSearchResult = {
@@ -27,6 +28,8 @@ export type UserSearchResult = {
   email: string;
 };
 
+type UserSearchScope = "org" | "global";
+
 type UserSearchComboboxProps = {
   id?: string;
   value?: string;
@@ -34,6 +37,7 @@ type UserSearchComboboxProps = {
   disabled?: boolean;
   excludeUserIds?: string[];
   selectedUserDisplay?: UserSearchResult | null;
+  scope?: UserSearchScope;
 };
 
 export function UserSearchCombobox({
@@ -43,6 +47,7 @@ export function UserSearchCombobox({
   disabled = false,
   excludeUserIds,
   selectedUserDisplay = null,
+  scope = "org",
 }: UserSearchComboboxProps) {
   const generatedId = useId();
   const id = idProp ?? generatedId;
@@ -50,21 +55,46 @@ export function UserSearchCombobox({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
+  const searchTerm = deferredSearch.trim();
+
+  const usersQuery = useQuery<UserSearchResult[]>({
+    queryKey: ["users", scope, searchTerm] as const,
+    queryFn: async () => {
+      const users =
+        scope === "global"
+          ? await fetchAllUsers(searchTerm)
+          : await fetchUsers(searchTerm);
+
+      return users.map((user) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      }));
+    },
+    enabled: searchTerm.length >= 2,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
   const {
     data: searchResults = [],
     isLoading: usersLoading,
     isError: usersError,
-  } = useUsersSearchQuery(deferredSearch);
+  } = usersQuery;
+
   const excludeSet = useMemo(
     () => new Set(excludeUserIds ?? []),
     [excludeUserIds],
   );
+
   const availableUsers = useMemo(
     () => searchResults.filter((u) => !excludeSet.has(u.id)),
     [searchResults, excludeSet],
   );
+
   const selectedUser =
     selectedUserDisplay ?? availableUsers.find((u) => u.id === value);
+
   return (
     <Popover
       open={open}
@@ -95,15 +125,17 @@ export function UserSearchCombobox({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
+
       <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
         <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search by name or email..."
             value={search}
             onValueChange={setSearch}
+            autoComplete="off"
           />
           <CommandList>
-            {search.trim().length < 2 ? (
+            {searchTerm.length < 2 ? (
               <CommandEmpty>Type at least 2 characters to search.</CommandEmpty>
             ) : usersLoading ? (
               <div className="flex items-center gap-2 px-3 py-6 text-sm text-muted-foreground">

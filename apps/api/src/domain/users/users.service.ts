@@ -70,4 +70,8 @@ export class UsersService {
     }
     return this.usersRepository.getUsersByOrgId(orgId, db);
   }
+
+  async searchUsers(search: string, db?: Db): Promise<UserView[]> {
+    return this.usersRepository.searchUsers(search, db);
+  }
 }

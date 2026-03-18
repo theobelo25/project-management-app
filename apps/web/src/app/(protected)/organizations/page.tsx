@@ -1,15 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Building2,
   Crown,
-  Mail,
+  LogOut,
   ShieldCheck,
   Trash2,
-  UserMinus,
+  UserPlus,
   Users,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { Button } from "@web/components/ui/button";
 import {
@@ -30,116 +32,34 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@web/components/ui/dialog";
-import { Textarea } from "@web/components/ui/textarea";
+import { PageHeader } from "@web/components/projects";
+import {
+  UserSearchCombobox,
+  type UserSearchResult,
+} from "@web/components/projects/members";
+import { CreateOrganizationDialog } from "@web/components/organizations/create-organization-dialog";
+import {
+  useDeleteOrganizationMutation,
+  useAddOrganizationMemberMutation,
+  useLeaveOrganizationMutation,
+  useMeQuery,
+  useOrganizationQuery,
+  useOrganizationsQuery,
+  useSwitchOrganizationMutation,
+} from "@web/lib/api/queries";
+import { ROUTES } from "@web/lib/routes";
 
 type OrganizationRole = "OWNER" | "ADMIN" | "MEMBER";
-
-type OrganizationMember = {
-  id: string;
-  name: string;
-  email: string;
-  role: OrganizationRole;
-};
-
-type Organization = {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  role: OrganizationRole;
-  members: OrganizationMember[];
-};
-
-const initialOrganizations: Organization[] = [
-  {
-    id: "org_1",
-    name: "Kenzerama Productions",
-    slug: "kenzerama-productions",
-    description: "Video production, client work, and internal planning.",
-    role: "OWNER",
-    members: [
-      {
-        id: "user_1",
-        name: "Theo Belo",
-        email: "theo@example.com",
-        role: "OWNER",
-      },
-      {
-        id: "user_2",
-        name: "Kenzie Malone",
-        email: "kenzie@example.com",
-        role: "ADMIN",
-      },
-      {
-        id: "user_3",
-        name: "Joel",
-        email: "joel@example.com",
-        role: "MEMBER",
-      },
-    ],
-  },
-  {
-    id: "org_2",
-    name: "Client Success Team",
-    slug: "client-success-team",
-    description: "Shared workspace for production coordination.",
-    role: "ADMIN",
-    members: [
-      {
-        id: "user_1",
-        name: "Theo Belo",
-        email: "theo@example.com",
-        role: "ADMIN",
-      },
-      {
-        id: "user_4",
-        name: "Sarah Ahmed",
-        email: "sarah@example.com",
-        role: "OWNER",
-      },
-      {
-        id: "user_5",
-        name: "Alex Kim",
-        email: "alex@example.com",
-        role: "MEMBER",
-      },
-    ],
-  },
-  {
-    id: "org_3",
-    name: "Open Source Guild",
-    slug: "open-source-guild",
-    description: "A shared org for side projects and experiments.",
-    role: "MEMBER",
-    members: [
-      {
-        id: "user_1",
-        name: "Theo Belo",
-        email: "theo@example.com",
-        role: "MEMBER",
-      },
-      {
-        id: "user_6",
-        name: "Priya Patel",
-        email: "priya@example.com",
-        role: "OWNER",
-      },
-    ],
-  },
-];
 
 function getRoleBadgeVariant(role: OrganizationRole) {
   switch (role) {
     case "OWNER":
-      return "default";
+      return "default" as const;
     case "ADMIN":
-      return "secondary";
+      return "secondary" as const;
     case "MEMBER":
-      return "outline";
-    default:
-      return "outline";
+      return "outline" as const;
   }
 }
 
@@ -151,99 +71,17 @@ function getRoleIcon(role: OrganizationRole) {
       return <ShieldCheck className="h-4 w-4" />;
     case "MEMBER":
       return <Users className="h-4 w-4" />;
-    default:
-      return <Users className="h-4 w-4" />;
   }
 }
 
-function canInvite(role: OrganizationRole) {
-  return role === "OWNER" || role === "ADMIN";
+function formatJoinedAt(joinedAt: string) {
+  const date = new Date(joinedAt);
+  if (Number.isNaN(date.getTime())) return "Unknown date";
+
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+  }).format(date);
 }
-
-function canDelete(role: OrganizationRole) {
-  return role === "OWNER";
-}
-
-type InviteDialogProps = {
-  organization: Organization;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onInvite: (organizationId: string, email: string, message: string) => void;
-};
-
-function InviteMemberDialog({
-  organization,
-  open,
-  onOpenChange,
-  onInvite,
-}: InviteDialogProps) {
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
-    const trimmedEmail = email.trim();
-    if (!trimmedEmail) return;
-
-    onInvite(organization.id, trimmedEmail, message.trim());
-    setEmail("");
-    setMessage("");
-    onOpenChange(false);
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Invite member</DialogTitle>
-          <DialogDescription>
-            Invite someone to join {organization.name}.
-          </DialogDescription>
-        </DialogHeader>
-
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <Label htmlFor={`invite-email-${organization.id}`}>Email</Label>
-            <Input
-              id={`invite-email-${organization.id}`}
-              type="email"
-              placeholder="name@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor={`invite-message-${organization.id}`}>
-              Message <span className="text-muted-foreground">(optional)</span>
-            </Label>
-            <Textarea
-              id={`invite-message-${organization.id}`}
-              placeholder="Join us in this organization..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-            />
-          </div>
-
-          <DialogFooter>
-            <Button type="submit">Send invite</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-type ConfirmDialogProps = {
-  title: string;
-  description: string;
-  confirmLabel: string;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
-  variant?: "default" | "destructive";
-};
 
 function ConfirmDialog({
   title,
@@ -253,7 +91,17 @@ function ConfirmDialog({
   onOpenChange,
   onConfirm,
   variant = "default",
-}: ConfirmDialogProps) {
+  isPending = false,
+}: {
+  title: string;
+  description: string;
+  confirmLabel: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => Promise<void>;
+  variant?: "default" | "destructive";
+  isPending?: boolean;
+}) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -263,17 +111,22 @@ function ConfirmDialog({
         </DialogHeader>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
             Cancel
           </Button>
           <Button
             variant={variant === "destructive" ? "destructive" : "default"}
-            onClick={() => {
-              onConfirm();
-              onOpenChange(false);
+            onClick={async () => {
+              try {
+                await onConfirm();
+                onOpenChange(false);
+              } catch {
+                // Caller handles the error state and toast.
+              }
             }}
+            disabled={isPending}
           >
-            {confirmLabel}
+            {isPending ? `${confirmLabel}...` : confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -281,269 +134,518 @@ function ConfirmDialog({
   );
 }
 
-export default function OrganizationsPage() {
-  const [organizations, setOrganizations] =
-    useState<Organization[]>(initialOrganizations);
+function OrganizationDetailDialog({
+  organizationId,
+  open,
+  onOpenChange,
+  activeOrganizationId,
+}: {
+  organizationId: string | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  activeOrganizationId: string | null;
+}) {
+  const detailQuery = useOrganizationQuery(
+    organizationId,
+    open && !!organizationId,
+  );
+  const addMemberMutation = useAddOrganizationMemberMutation();
+  const leaveOrganizationMutation = useLeaveOrganizationMutation();
+  const deleteOrganizationMutation = useDeleteOrganizationMutation();
 
+  const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(
+    null,
+  );
+
+  const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
+  useEffect(() => {
+    setSelectedUser(null);
+    setLeaveConfirmOpen(false);
+    setDeleteConfirmOpen(false);
+  }, [organizationId]);
+
+  const organization = detailQuery.data ?? null;
+  const isActiveOrganization =
+    !!organization && activeOrganizationId === organization.id;
+
+  const canAddMembers =
+    organization?.role === "OWNER" || organization?.role === "ADMIN";
+  const canDelete = organization?.role === "OWNER";
+
+  async function handleLeaveOrganization() {
+    if (!organization) return;
+
+    try {
+      await leaveOrganizationMutation.mutateAsync(organization.id);
+      toast.success(`Left ${organization.name}`);
+      onOpenChange(false);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to leave organization",
+      );
+      throw error;
+    }
+  }
+
+  async function handleDeleteOrganization() {
+    if (!organization) return;
+
+    try {
+      await deleteOrganizationMutation.mutateAsync(organization.id);
+      toast.success(`Deleted ${organization.name}`);
+      onOpenChange(false);
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to delete organization",
+      );
+      throw error;
+    }
+  }
+
+  async function handleAddMember(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (!organization || !selectedUser) return;
+
+    try {
+      await addMemberMutation.mutateAsync({
+        organizationId: organization.id,
+        userId: selectedUser.id,
+      });
+      toast.success("Member added");
+      setSelectedUser(null);
+      onOpenChange(false);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to add member",
+      );
+    }
+  }
+
+  return (
+    <>
+      <Dialog
+        open={open}
+        onOpenChange={(nextOpen) => {
+          onOpenChange(nextOpen);
+          if (!nextOpen) {
+            setSelectedUser(null);
+            setLeaveConfirmOpen(false);
+            setDeleteConfirmOpen(false);
+          }
+        }}
+      >
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Organization details</DialogTitle>
+            <DialogDescription>
+              View members and add existing users to this organization.
+            </DialogDescription>
+          </DialogHeader>
+
+          {detailQuery.isPending ? (
+            <div className="rounded-lg border p-6 text-sm text-muted-foreground">
+              Loading organization details...
+            </div>
+          ) : detailQuery.isError || !organization ? (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 text-sm text-destructive">
+              Failed to load organization details.
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1">
+                  <h2 className="text-xl font-semibold">{organization.name}</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Joined {formatJoinedAt(organization.joinedAt)}
+                  </p>
+                </div>
+
+                <Badge
+                  variant={getRoleBadgeVariant(organization.role)}
+                  className="inline-flex items-center gap-1"
+                >
+                  {getRoleIcon(organization.role)}
+                  {organization.role}
+                </Badge>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium">Members</h3>
+                  <Badge variant="outline">{organization.members.length}</Badge>
+                </div>
+
+                <div className="space-y-3">
+                  {organization.members.map((member) => (
+                    <div
+                      key={member.id}
+                      className="flex items-center justify-between gap-4 rounded-lg border p-3"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">
+                          {member.name}
+                        </p>
+                        <p className="truncate text-sm text-muted-foreground">
+                          {member.email}
+                        </p>
+                      </div>
+
+                      <Badge variant={getRoleBadgeVariant(member.role)}>
+                        {member.role}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-4">
+                  <h3 className="text-sm font-medium">Add existing user</h3>
+                  {canAddMembers ? (
+                    <Badge variant="outline">Members can be added</Badge>
+                  ) : (
+                    <Badge variant="outline">Read only</Badge>
+                  )}
+                </div>
+
+                {canAddMembers ? (
+                  isActiveOrganization ? (
+                    <form className="space-y-3" onSubmit={handleAddMember}>
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor={`organization-user-search-${organization.id}`}
+                        >
+                          User
+                        </Label>
+
+                        <UserSearchCombobox
+                          key={organization.id}
+                          id={`organization-user-search-${organization.id}`}
+                          scope="global"
+                          value={selectedUser?.id}
+                          onChange={(user) => {
+                            setSelectedUser(user);
+                          }}
+                          selectedUserDisplay={selectedUser}
+                          excludeUserIds={organization.members.map(
+                            (member) => member.id,
+                          )}
+                          disabled={addMemberMutation.isPending}
+                        />
+
+                        {selectedUser ? (
+                          <p className="text-sm text-muted-foreground">
+                            Selected: {selectedUser.name} ({selectedUser.email})
+                          </p>
+                        ) : null}
+                      </div>
+
+                      <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={addMemberMutation.isPending || !selectedUser}
+                      >
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        Add member
+                      </Button>
+                    </form>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Switch to this organization first to add members to it.
+                    </p>
+                  )
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Only owners and admins can add members.
+                  </p>
+                )}
+              </div>
+
+              <Separator />
+
+              <div className="space-y-3 rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-medium">Danger zone</h3>
+                  <p className="text-xs text-muted-foreground">
+                    {canDelete
+                      ? "Delete this organization permanently. This cannot be undone."
+                      : "Leave this organization and remove your membership."}
+                  </p>
+                </div>
+
+                {canDelete ? (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() => setDeleteConfirmOpen(true)}
+                    disabled={deleteOrganizationMutation.isPending}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete organization
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() => setLeaveConfirmOpen(true)}
+                    disabled={leaveOrganizationMutation.isPending}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Leave organization
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog
+        open={leaveConfirmOpen}
+        onOpenChange={setLeaveConfirmOpen}
+        title="Leave organization"
+        description={
+          organization
+            ? `Are you sure you want to leave ${organization.name}?`
+            : "Are you sure you want to leave this organization?"
+        }
+        confirmLabel="Leave organization"
+        variant="destructive"
+        isPending={leaveOrganizationMutation.isPending}
+        onConfirm={handleLeaveOrganization}
+      />
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="Delete organization"
+        description={
+          organization
+            ? `This will permanently delete ${organization.name}. This action cannot be undone.`
+            : "This will permanently delete the organization. This action cannot be undone."
+        }
+        confirmLabel="Delete organization"
+        variant="destructive"
+        isPending={deleteOrganizationMutation.isPending}
+        onConfirm={handleDeleteOrganization}
+      />
+    </>
+  );
+}
+
+export default function OrganizationsPage() {
+  const router = useRouter();
   const [search, setSearch] = useState("");
-  const [inviteOrgId, setInviteOrgId] = useState<string | null>(null);
-  const [leaveOrgId, setLeaveOrgId] = useState<string | null>(null);
-  const [deleteOrgId, setDeleteOrgId] = useState<string | null>(null);
+  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+
+  const { data: me, isPending: isMePending } = useMeQuery();
+  const organizationsQuery = useOrganizationsQuery(!!me);
+  const switchOrganizationMutation = useSwitchOrganizationMutation();
+
+  const activeOrganizationId = me?.orgId ?? null;
 
   const filteredOrganizations = useMemo(() => {
+    const organizations = organizationsQuery.data ?? [];
     const q = search.trim().toLowerCase();
 
     if (!q) return organizations;
 
-    return organizations.filter((org) => {
+    return organizations.filter((organization) => {
       return (
-        org.name.toLowerCase().includes(q) ||
-        org.slug.toLowerCase().includes(q) ||
-        org.description?.toLowerCase().includes(q)
+        organization.name.toLowerCase().includes(q) ||
+        organization.role.toLowerCase().includes(q)
       );
     });
-  }, [organizations, search]);
+  }, [organizationsQuery.data, search]);
 
-  function handleInvite(
-    organizationId: string,
-    email: string,
-    _message: string,
-  ) {
-    const newMember: OrganizationMember = {
-      id: crypto.randomUUID(),
-      name: email.split("@")[0],
-      email,
-      role: "MEMBER",
-    };
-
-    setOrganizations((current) =>
-      current.map((org) =>
-        org.id === organizationId
-          ? {
-              ...org,
-              members: [...org.members, newMember],
-            }
-          : org,
-      ),
-    );
+  async function handleSwitch(organizationId: string) {
+    try {
+      await switchOrganizationMutation.mutateAsync(organizationId);
+      toast.success("Organization switched");
+      router.push(ROUTES.dashboard);
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to switch organization",
+      );
+    }
   }
 
-  function handleLeave(organizationId: string) {
-    setOrganizations((current) =>
-      current.filter((org) => org.id !== organizationId),
-    );
-  }
-
-  function handleDelete(organizationId: string) {
-    setOrganizations((current) =>
-      current.filter((org) => org.id !== organizationId),
-    );
-  }
-
-  const inviteOrganization =
-    organizations.find((org) => org.id === inviteOrgId) ?? null;
-  const leaveOrganization =
-    organizations.find((org) => org.id === leaveOrgId) ?? null;
-  const deleteOrganization =
-    organizations.find((org) => org.id === deleteOrgId) ?? null;
+  const isLoading = isMePending || organizationsQuery.isPending;
+  const isError = organizationsQuery.isError;
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Organizations
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Manage the organizations you belong to, invite members, and leave or
-            delete organizations.
-          </p>
-        </div>
+    <>
+      <PageHeader
+        backHref={ROUTES.dashboard}
+        backLabel="Back to Dashboard"
+        title="Organizations"
+        description="Manage the organizations you belong to and add existing users to them."
+        actions={
+          <div className="flex w-full flex-col gap-2 sm:flex-row md:w-[420px]">
+            <Label htmlFor="organization-search" className="sr-only">
+              Search organizations
+            </Label>
+            <Input
+              id="organization-search"
+              placeholder="Search organizations..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <CreateOrganizationDialog />
+          </div>
+        }
+      />
 
-        <div className="w-full md:max-w-sm">
-          <Label htmlFor="organization-search" className="sr-only">
-            Search organizations
-          </Label>
-          <Input
-            id="organization-search"
-            placeholder="Search organizations..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+      <div className="space-y-6">
+        {isLoading ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+              <Building2 className="h-10 w-10 text-muted-foreground" />
+              <div className="space-y-1">
+                <h2 className="text-lg font-medium">Loading organizations</h2>
+                <p className="text-sm text-muted-foreground">
+                  Fetching your organization list...
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : isError ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+              <Building2 className="h-10 w-10 text-muted-foreground" />
+              <div className="space-y-1">
+                <h2 className="text-lg font-medium">
+                  Unable to load organizations
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Try refreshing the page or signing in again.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : filteredOrganizations.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+              <Building2 className="h-10 w-10 text-muted-foreground" />
+              <div className="space-y-1">
+                <h2 className="text-lg font-medium">No organizations found</h2>
+                <p className="text-sm text-muted-foreground">
+                  Try a different search or create a new organization.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-6 xl:grid-cols-2">
+            {filteredOrganizations.map((organization) => {
+              const isCurrent = activeOrganizationId === organization.id;
+              const isSwitching =
+                switchOrganizationMutation.isPending &&
+                switchOrganizationMutation.variables === organization.id;
+              const canAddMembers =
+                organization.role === "OWNER" || organization.role === "ADMIN";
+
+              return (
+                <Card
+                  key={organization.id}
+                  className={isCurrent ? "border-primary/40" : undefined}
+                >
+                  <CardHeader className="gap-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="space-y-1">
+                        <CardTitle className="flex items-center gap-2">
+                          <Building2 className="h-5 w-5" />
+                          <span>{organization.name}</span>
+                        </CardTitle>
+                        <CardDescription>
+                          Joined {formatJoinedAt(organization.joinedAt)}
+                        </CardDescription>
+                      </div>
+
+                      <Badge
+                        variant={getRoleBadgeVariant(
+                          organization.role as OrganizationRole,
+                        )}
+                        className="inline-flex items-center gap-1"
+                      >
+                        {getRoleIcon(organization.role as OrganizationRole)}
+                        {organization.role}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between rounded-lg border p-3">
+                      <div>
+                        <p className="text-sm font-medium">
+                          {isCurrent
+                            ? "Active organization"
+                            : "Inactive organization"}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {isCurrent
+                            ? "This is your current workspace."
+                            : "Switch to make this your current workspace."}
+                        </p>
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={() => handleSwitch(organization.id)}
+                        disabled={isCurrent || isSwitching}
+                      >
+                        {isCurrent
+                          ? "Current"
+                          : isSwitching
+                            ? "Switching..."
+                            : "Switch"}
+                      </Button>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setSelectedOrgId(organization.id)}
+                      >
+                        View details
+                      </Button>
+
+                      {canAddMembers ? (
+                        <Button
+                          type="button"
+                          onClick={() => setSelectedOrgId(organization.id)}
+                        >
+                          <UserPlus className="mr-2 h-4 w-4" />
+                          Add member
+                        </Button>
+                      ) : null}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {filteredOrganizations.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-            <Building2 className="h-10 w-10 text-muted-foreground" />
-            <div className="space-y-1">
-              <h2 className="text-lg font-medium">No organizations found</h2>
-              <p className="text-sm text-muted-foreground">
-                Try a different search or create your first organization later.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-6 xl:grid-cols-2">
-          {filteredOrganizations.map((organization) => {
-            const canManageInvites = canInvite(organization.role);
-            const canOwnerDelete = canDelete(organization.role);
-
-            return (
-              <Card key={organization.id} className="h-full">
-                <CardHeader className="gap-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1">
-                      <CardTitle className="flex items-center gap-2">
-                        <Building2 className="h-5 w-5" />
-                        <span>{organization.name}</span>
-                      </CardTitle>
-                      <CardDescription>@{organization.slug}</CardDescription>
-                    </div>
-
-                    <Badge
-                      variant={getRoleBadgeVariant(organization.role)}
-                      className="inline-flex items-center gap-1"
-                    >
-                      {getRoleIcon(organization.role)}
-                      {organization.role}
-                    </Badge>
-                  </div>
-
-                  {organization.description ? (
-                    <p className="text-sm text-muted-foreground">
-                      {organization.description}
-                    </p>
-                  ) : null}
-                </CardHeader>
-
-                <CardContent className="space-y-5">
-                  <div className="flex items-center justify-between rounded-lg border p-3">
-                    <div>
-                      <p className="text-sm font-medium">Members</p>
-                      <p className="text-sm text-muted-foreground">
-                        {organization.members.length} total members
-                      </p>
-                    </div>
-
-                    <Badge variant="outline">
-                      {organization.members.length}
-                    </Badge>
-                  </div>
-
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-medium">Member list</h3>
-
-                    <div className="space-y-3">
-                      {organization.members.map((member) => (
-                        <div
-                          key={member.id}
-                          className="flex items-center justify-between gap-4 rounded-lg border p-3"
-                        >
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-medium">
-                              {member.name}
-                            </p>
-                            <p className="truncate text-sm text-muted-foreground">
-                              {member.email}
-                            </p>
-                          </div>
-
-                          <Badge variant={getRoleBadgeVariant(member.role)}>
-                            {member.role}
-                          </Badge>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div className="flex flex-wrap gap-2">
-                    {canManageInvites ? (
-                      <Button onClick={() => setInviteOrgId(organization.id)}>
-                        <Mail className="mr-2 h-4 w-4" />
-                        Invite member
-                      </Button>
-                    ) : null}
-
-                    <Button
-                      variant="outline"
-                      onClick={() => setLeaveOrgId(organization.id)}
-                    >
-                      <UserMinus className="mr-2 h-4 w-4" />
-                      Leave organization
-                    </Button>
-
-                    {canOwnerDelete ? (
-                      <Button
-                        variant="destructive"
-                        onClick={() => setDeleteOrgId(organization.id)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete organization
-                      </Button>
-                    ) : null}
-                  </div>
-
-                  {!canManageInvites ? (
-                    <p className="text-xs text-muted-foreground">
-                      Only organization owners and admins can invite members.
-                    </p>
-                  ) : null}
-
-                  {!canOwnerDelete ? (
-                    <p className="text-xs text-muted-foreground">
-                      Only organization owners can delete an organization.
-                    </p>
-                  ) : null}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-
-      {inviteOrganization ? (
-        <InviteMemberDialog
-          organization={inviteOrganization}
-          open={true}
-          onOpenChange={(open) => {
-            if (!open) setInviteOrgId(null);
-          }}
-          onInvite={handleInvite}
-        />
-      ) : null}
-
-      {leaveOrganization ? (
-        <ConfirmDialog
-          open={true}
-          onOpenChange={(open) => {
-            if (!open) setLeaveOrgId(null);
-          }}
-          title="Leave organization"
-          description={`Are you sure you want to leave ${leaveOrganization.name}?`}
-          confirmLabel="Leave"
-          variant="destructive"
-          onConfirm={() => handleLeave(leaveOrganization.id)}
-        />
-      ) : null}
-
-      {deleteOrganization ? (
-        <ConfirmDialog
-          open={true}
-          onOpenChange={(open) => {
-            if (!open) setDeleteOrgId(null);
-          }}
-          title="Delete organization"
-          description={`This will permanently delete ${deleteOrganization.name}. This action cannot be undone.`}
-          confirmLabel="Delete"
-          variant="destructive"
-          onConfirm={() => handleDelete(deleteOrganization.id)}
-        />
-      ) : null}
-    </div>
+      <OrganizationDetailDialog
+        organizationId={selectedOrgId}
+        open={!!selectedOrgId}
+        onOpenChange={(open) => {
+          if (!open) setSelectedOrgId(null);
+        }}
+        activeOrganizationId={activeOrganizationId}
+      />
+    </>
   );
 }

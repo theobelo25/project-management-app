@@ -33,35 +33,33 @@ enum OrganizationRole {
 }
 
 model User {
-    id           String   @id @default(uuid()) @db.Uuid
-    email        String   @unique
-    name         String
-    passwordHash String
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @updatedAt
-
-    refreshTokens RefreshToken[]
-
-    ownedProjects  Project[]       @relation("OwnedProjects")
-    projectMembers ProjectMember[] @relation("ProjectMemberships")
-
-    createdTasks  Task[]         @relation("TaskCreator")
-    taskAssignees TaskAssignee[]
-    tasks         Task[]
-
+    id                      String                   @id @default(uuid()) @db.Uuid
+    email                   String                   @unique
+    name                    String
+    passwordHash            String
+    createdAt               DateTime                 @default(now())
+    updatedAt               DateTime                 @updatedAt
+    refreshTokens           RefreshToken[]
+    ownedProjects           Project[]                @relation("OwnedProjects")
+    projectMembers          ProjectMember[]          @relation("ProjectMemberships")
+    createdTasks            Task[]                   @relation("TaskCreator")
+    taskAssignees           TaskAssignee[]
+    tasks                   Task[]
     // Multi-org:
     organizationMemberships OrganizationMembership[]
-
+    // Default org used when we need to restore a user after an org deletion.
+    defaultOrganizationId   String?                  @db.Uuid
+    defaultOrganization     Organization?            @relation("DefaultOrganization", fields: [defaultOrganizationId], references: [id], onDelete: SetNull)
     // Active org pointer used for scoping queries (required at runtime)
-    activeOrganizationId String       @db.Uuid
-    activeOrganization   Organization @relation("ActiveOrganization", fields: [activeOrganizationId], references: [id], onDelete: Restrict)
-
+    activeOrganizationId    String                   @db.Uuid
+    activeOrganization      Organization             @relation("ActiveOrganization", fields: [activeOrganizationId], references: [id], onDelete: Restrict)
     // Invites
-    createdInvites      OrganizationInvite[] @relation("InviteCreator")
-    organizationInvites OrganizationInvite[]
-
+    createdInvites          OrganizationInvite[]     @relation("InviteCreator")
+    organizationInvites     OrganizationInvite[]
     // Notifications
-    userNotifications UserNotification[]
+    userNotifications       UserNotification[]
+
+    @@index([defaultOrganizationId])
 }
 
 model RefreshToken {
@@ -162,17 +160,16 @@ model TaskAssignee {
 }
 
 model Organization {
-    id        String   @id @default(uuid()) @db.Uuid
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
+    id                      String                   @id @default(uuid()) @db.Uuid
+    name                    String
+    createdAt               DateTime                 @default(now())
+    updatedAt               DateTime                 @updatedAt
     projects                Project[]
     organizationInvites     OrganizationInvite[]
     organizationMemberships OrganizationMembership[]
-
     // Active-org pointer backref
-    activeUsers User[] @relation("ActiveOrganization")
+    defaultUsers            User[]                   @relation("DefaultOrganization")
+    activeUsers             User[]                   @relation("ActiveOrganization")
 
     @@index([createdAt])
 }

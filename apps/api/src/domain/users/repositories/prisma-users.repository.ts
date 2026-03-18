@@ -123,13 +123,14 @@ export class PrismaUsersRepository implements UsersRepository {
   async create(dto: CreateUserDto, tx?: Db): Promise<UserView> {
     const prisma = (tx ?? this.prisma) as PrismaClient;
 
-    // Create user with initial active org
+    // Create user with initial active org and default org
     const user = await prisma.user.create({
       data: {
         email: dto.email,
         name: dto.name,
         passwordHash: dto.passwordHash,
         activeOrganizationId: dto.orgId,
+        defaultOrganizationId: dto.orgId,
         organizationMemberships: {
           create: { organizationId: dto.orgId, role: 'OWNER' },
         },

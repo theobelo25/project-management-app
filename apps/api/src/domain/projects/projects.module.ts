@@ -10,9 +10,10 @@ import { ProjectsRepository } from './repositories/projects.repository';
 import { TasksRepository } from '../tasks/repositories/tasks.repository';
 import { PrismaTasksRepository } from '../tasks/repositories/prisma-tasks.repository';
 import { UsersModule } from '../users/users.module';
+import { PrismaModule } from '@api/prisma';
 
 @Module({
-  imports: [UsersModule],
+  imports: [UsersModule, PrismaModule],
   controllers: [ProjectsController],
   providers: [
     ProjectsService,

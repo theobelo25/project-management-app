@@ -23,6 +23,11 @@ import {
   ClearNotificationResponse,
   OrganizationView,
   CreateOrganizationDto,
+  CreateOrganizationInviteDto,
+  OrganizationDetailView,
+  OrganizationInviteView,
+  AddOrganizationMemberDto,
+  OrganizationMemberView,
 } from "@repo/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -535,6 +540,97 @@ export async function switchOrganization(
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
     throw new Error(error.message ?? "Failed to switch organization");
+  }
+  return res.json();
+}
+
+export async function fetchOrganization(
+  organizationId: string,
+): Promise<OrganizationDetailView> {
+  const res = await fetchWithAuth(
+    `${API_BASE}/api/organizations/${organizationId}`,
+    {
+      credentials: "include",
+    },
+  );
+  if (!res.ok) {
+    if (res.status === 404) throw new Error("Organization not found");
+    throw new Error("Failed to fetch organization");
+  }
+  return res.json();
+}
+export async function createOrganizationInvite(
+  dto: CreateOrganizationInviteDto,
+): Promise<OrganizationInviteView> {
+  const res = await fetchWithAuth(`${API_BASE}/api/organizations/invites`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dto),
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to create invite");
+  }
+  return res.json();
+}
+export async function leaveOrganization(
+  organizationId: string,
+): Promise<{ success: true }> {
+  const res = await fetchWithAuth(
+    `${API_BASE}/api/organizations/${organizationId}/leave`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to leave organization");
+  }
+  return res.json();
+}
+export async function deleteOrganization(
+  organizationId: string,
+): Promise<{ success: true }> {
+  const res = await fetchWithAuth(
+    `${API_BASE}/api/organizations/${organizationId}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    },
+  );
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to delete organization");
+  }
+  return res.json();
+}
+
+export async function fetchAllUsers(search?: string): Promise<UserView[]> {
+  const url = search?.trim()
+    ? `${API_BASE}/api/users/search?search=${encodeURIComponent(search.trim())}`
+    : `${API_BASE}/api/users/search`;
+  const res = await fetchWithAuth(url, { credentials: "include" });
+  if (!res.ok) throw new Error("Failed to fetch users");
+  return res.json();
+}
+export async function addOrganizationMember(
+  organizationId: string,
+  dto: AddOrganizationMemberDto,
+): Promise<OrganizationMemberView> {
+  const res = await fetchWithAuth(
+    `${API_BASE}/api/organizations/${organizationId}/members`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto),
+      credentials: "include",
+    },
+  );
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to add member");
   }
   return res.json();
 }

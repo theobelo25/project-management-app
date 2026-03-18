@@ -1,6 +1,6 @@
-import { ZodType } from 'zod';
+import type { ZodType } from "zod";
 
-type ZodDtoClass<TOutput extends object = object> = {
+export type ZodDtoClass<TOutput extends object = object> = {
   new (): TOutput;
   schema: ZodType<TOutput>;
 };
@@ -11,14 +11,9 @@ export function createZodDto<TOutput extends object>(
   abstract class ZodDto {
     static schema = schema;
   }
-
   return ZodDto as unknown as ZodDtoClass<TOutput>;
 }
 
 export function isZodDto(metatype: unknown): metatype is ZodDtoClass {
-  if (typeof metatype !== 'function') {
-    return false;
-  }
-
-  return 'schema' in metatype;
+  return typeof metatype === "function" && "schema" in metatype;
 }

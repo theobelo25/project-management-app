@@ -13,7 +13,7 @@ type Props = { projects: ProjectListItemView[] };
 
 export function DashboardProjectsCard({ projects }: Props) {
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader>
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -28,8 +28,7 @@ export function DashboardProjectsCard({ projects }: Props) {
           </Button>
         </div>
       </CardHeader>
-
-      <CardContent className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <CardContent className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 flex-1">
         {projects.map((project) => (
           <Link key={project.id} href={`/projects/${project.id}`}>
             <div className="rounded-xl border p-4 transition-colors hover:bg-accent/30">

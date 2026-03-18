@@ -11,3 +11,7 @@ export const CreateOrganizationInviteSchema = z.object({
 export const AcceptOrganizationInviteSchema = z.object({
   token: z.string().min(1, "Token is required"),
 });
+
+export const AddOrganizationMemberSchema = z.object({
+  userId: z.string().trim().min(1, "User is required"),
+});

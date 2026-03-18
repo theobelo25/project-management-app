@@ -13,8 +13,8 @@ export const TaskAssigneeViewSchema = z.object({
 });
 
 export const TaskAssignmentViewSchema = z.object({
-  taskId: z.string().uuid(),
-  userId: z.string().uuid(),
+  taskId: z.uuid(),
+  userId: z.uuid(),
   assignedAt: z.string().datetime(),
 });
 

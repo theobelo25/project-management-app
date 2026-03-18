@@ -4,26 +4,29 @@ import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
 import { AppExceptionFilter } from './common/filters/app-exception.filter';
 import { ZodValidationPipe } from './common';
+import { getCorsOptions } from './config';
+import { getAppOptions } from './config/app.options';
+import { Logger as PinoNestLogger } from 'nestjs-pino';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+
+  app.useLogger(app.get(PinoNestLogger));
 
   app.use(cookieParser());
   app.setGlobalPrefix('api');
 
   const configService = app.get(ConfigService);
+  const appOpts = getAppOptions(configService);
+  const cors = getCorsOptions(configService);
 
   app.enableCors({
-    origin: configService.get<string[]>('cors.origins'),
-    credentials: configService.get<boolean>('cors.credentials'),
+    origin: cors.origins,
+    credentials: cors.credentials,
   });
-
   app.useGlobalPipes(new ZodValidationPipe());
-  app.useGlobalFilters(new AppExceptionFilter());
+  app.useGlobalFilters(app.get(AppExceptionFilter));
 
-  const port = configService.get<number>('app.port', 3333);
-  const host = configService.get<string>('app.host', '0.0.0.0');
-
-  await app.listen(port, host);
+  await app.listen(appOpts.port, appOpts.host);
 }
 bootstrap();

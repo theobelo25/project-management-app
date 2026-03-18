@@ -1,4 +1,3 @@
-import { PaginationQuerySchema } from '@repo/types';
-import { createZodDto } from '../zod/zod-dto.util';
+import { PaginationQuerySchema, createZodDto } from '@repo/types';
 
 export class PaginationQueryDto extends createZodDto(PaginationQuerySchema) {}

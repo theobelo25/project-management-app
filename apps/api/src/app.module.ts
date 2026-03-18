@@ -11,6 +11,7 @@ import { ProjectsModule } from './domain/projects/projects.module';
 import { TasksModule } from './domain/tasks/tasks.module';
 import { OrganizationsModule } from './domain/organizations/organizations.module';
 import { NotificationsModule } from './domain/notifications/notifications.module';
+import { AppExceptionFilter } from './common/filters/app-exception.filter';
 
 @Module({
   imports: [
@@ -30,6 +31,6 @@ import { NotificationsModule } from './domain/notifications/notifications.module
     NotificationsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, AppExceptionFilter],
 })
 export class AppModule {}

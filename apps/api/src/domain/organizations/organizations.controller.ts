@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   InternalServerErrorException,
   Param,
@@ -11,7 +12,9 @@ import {
 import { CurrentUser, JwtAuthGuard } from '@api/common';
 import {
   AuthUser,
+  OrganizationDetailView,
   OrganizationInviteView,
+  OrganizationMemberView,
   PendingInviteView,
   SuccessResponse,
   UserView,
@@ -20,6 +23,8 @@ import { OrganizationInvitesService } from './organization-invites.service';
 import {
   AcceptOrganizationInviteDto,
   CreateOrganizationInviteDto,
+  AddOrganizationMemberDto,
+  OrganizationParamsDto,
 } from './dto';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { OrganizationMembershipsService } from './organization-memberships.service';
@@ -42,7 +47,20 @@ export class OrganizationsController {
     private readonly cookiesService: CookiesService,
   ) {}
 
-  // List orgs current user belongs to
+  private async refreshAccessCookie(
+    userId: string,
+    response: Response,
+    errorMessage: string,
+  ) {
+    const updatedUser = await this.usersService.findById(userId);
+    if (!updatedUser) {
+      throw new InternalServerErrorException(errorMessage);
+    }
+
+    const { accessToken } = this.accessTokensService.sign(updatedUser);
+    this.cookiesService.setAccessCookie(response, accessToken);
+  }
+
   @Get()
   async listMyOrganizations(@CurrentUser() user: AuthUser) {
     return this.organizationMembershipsService.listOrganizationsForUser(
@@ -50,7 +68,17 @@ export class OrganizationsController {
     );
   }
 
-  // Create a new org, make it active, and re-issue the access cookie
+  @Get(':id')
+  async getOrganizationDetails(
+    @CurrentUser() user: AuthUser,
+    @Param() params: OrganizationParamsDto,
+  ): Promise<OrganizationDetailView> {
+    return this.organizationMembershipsService.getOrganizationDetails(
+      user.id,
+      params.id,
+    );
+  }
+
   @Post()
   async createOrganization(
     @CurrentUser() user: AuthUser,
@@ -58,21 +86,28 @@ export class OrganizationsController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<SuccessResponse> {
     await this.organizationsService.createOrganization(user.id, dto.name);
-
-    const updatedUser = await this.usersService.findById(user.id);
-    if (!updatedUser) {
-      throw new InternalServerErrorException(
-        'User not found after creating organization',
-      );
-    }
-
-    const { accessToken } = this.accessTokensService.sign(updatedUser);
-    this.cookiesService.setAccessCookie(response, accessToken);
+    await this.refreshAccessCookie(
+      user.id,
+      response,
+      'User not found after creating organization',
+    );
 
     return { success: true };
   }
 
-  // Switch active org (re-issue access token cookie with orgId claim)
+  @Post(':id/members')
+  async addOrganizationMember(
+    @CurrentUser() user: AuthUser,
+    @Param() params: OrganizationParamsDto,
+    @Body() body: AddOrganizationMemberDto,
+  ): Promise<OrganizationMemberView> {
+    return this.organizationMembershipsService.addMember(
+      user.id,
+      params.id,
+      body.userId,
+    );
+  }
+
   @Post(':id/switch')
   async switchOrganization(
     @CurrentUser() user: AuthUser,
@@ -83,18 +118,47 @@ export class OrganizationsController {
       user.id,
       params.id,
     );
-
-    // Fetch user and re-issue access cookie for new active org
-    const updatedUser = await this.usersService.findById(user.id);
-    if (!updatedUser) throw new Error('User not found after switch');
-
-    const { accessToken } = this.accessTokensService.sign(updatedUser);
-    this.cookiesService.setAccessCookie(response, accessToken);
+    await this.refreshAccessCookie(
+      user.id,
+      response,
+      'User not found after switch',
+    );
 
     return { success: true };
   }
 
-  // INVITES
+  @Post(':id/leave')
+  async leaveOrganization(
+    @CurrentUser() user: AuthUser,
+    @Param() params: OrganizationParamsDto,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<{ success: true }> {
+    await this.organizationsService.leaveOrganization(user.id, params.id);
+    await this.refreshAccessCookie(
+      user.id,
+      response,
+      'User not found after leaving organization',
+    );
+
+    return { success: true };
+  }
+
+  @Delete(':id')
+  async deleteOrganization(
+    @CurrentUser() user: AuthUser,
+    @Param() params: OrganizationParamsDto,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<{ success: true }> {
+    await this.organizationsService.deleteOrganization(user.id, params.id);
+    await this.refreshAccessCookie(
+      user.id,
+      response,
+      'User not found after deleting organization',
+    );
+
+    return { success: true };
+  }
+
   @Post('invites')
   async createInvite(
     @CurrentUser() user: AuthUser,

@@ -25,6 +25,12 @@ export class UsersController {
     return this.usersService.getUsersForOrg(user.orgId, query.search);
   }
 
+  @Get('search')
+  @UseGuards(JwtAuthGuard)
+  async searchAllUsers(@Query() query: GetUsersQueryDto) {
+    return this.usersService.searchUsers(query.search ?? '');
+  }
+
   @Get(':id')
   async findById(@Param() params: UserIdParamDto) {
     const user = await this.usersService.findById(params.id);
