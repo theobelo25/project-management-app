@@ -52,6 +52,6 @@ import { AuthRepository } from './repositories/auth.repository';
     RefreshTokensService,
     CookiesService,
   ],
-  exports: [AuthService],
+  exports: [AuthService, AccessTokensService, CookiesService],
 })
 export class AuthModule {}

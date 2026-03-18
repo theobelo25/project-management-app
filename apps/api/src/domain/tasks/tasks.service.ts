@@ -23,6 +23,7 @@ import { toTaskAssignmentView } from './mappers/task-assignment.mapper';
 import { TaskAccessService } from './policies/task-access.service';
 import { FindTasksQueryDto } from './dto/find-tasks-query.dto';
 import { UsersRepository } from '../users/repositories/users.repository';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class TasksService {
@@ -30,6 +31,7 @@ export class TasksService {
     private readonly taskAccessService: TaskAccessService,
     private readonly tasksRepository: TasksRepository,
     private readonly usersRepository: UsersRepository,
+    private readonly notificationsService: NotificationsService,
     private readonly logger: PinoLogger,
   ) {}
 
@@ -133,6 +135,17 @@ export class TasksService {
       taskId,
       assigneeUserId,
     );
+
+    // Create a notification for the assignee (skip self-assignment noise)
+    if (assigneeUserId !== currentUser.id) {
+      const task = await this.tasksRepository.findByIdOrThrow(taskId);
+      await this.notificationsService.notifyTaskAssigned(assigneeUserId, {
+        taskId,
+        taskTitle: task.title,
+        projectId: task.projectId,
+        assignedById: currentUser.id,
+      });
+    }
 
     this.logger.info(
       {

@@ -53,7 +53,17 @@ export type TaskAssignee = Prisma.TaskAssigneeModel
  */
 export type Organization = Prisma.OrganizationModel
 /**
+ * Model OrganizationMembership
+ * 
+ */
+export type OrganizationMembership = Prisma.OrganizationMembershipModel
+/**
  * Model OrganizationInvite
  * 
  */
 export type OrganizationInvite = Prisma.OrganizationInviteModel
+/**
+ * Model UserNotification
+ * 
+ */
+export type UserNotification = Prisma.UserNotificationModel

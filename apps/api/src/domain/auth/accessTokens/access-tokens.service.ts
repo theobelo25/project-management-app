@@ -18,6 +18,7 @@ export class AccessTokensService {
   private mapTokenPayload(user: UserView) {
     const tokenPayload: TokenPayload = {
       sub: user.id,
+      orgId: user.orgId,
     };
 
     return tokenPayload;

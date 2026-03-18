@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Plus } from "lucide-react";
+import { CreateProjectDialog } from "@web/components/projects";
+import { CreateTaskDialog } from "../projects/tasks";
 
 export function DashboardWelcome() {
   return (
@@ -16,19 +18,7 @@ export function DashboardWelcome() {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <Button asChild>
-            <Link href="/projects/new">
-              <Plus className="mr-2 h-4 w-4" />
-              New Project
-            </Link>
-          </Button>
-
-          <Button asChild variant="outline">
-            <Link href="/tasks/new">
-              <Plus className="mr-2 h-4 w-4" />
-              New Task
-            </Link>
-          </Button>
+          <CreateProjectDialog />
         </div>
       </div>
     </section>

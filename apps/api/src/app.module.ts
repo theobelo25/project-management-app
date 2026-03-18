@@ -10,6 +10,7 @@ import { LoggerModule } from './logger/logger.module';
 import { ProjectsModule } from './domain/projects/projects.module';
 import { TasksModule } from './domain/tasks/tasks.module';
 import { OrganizationsModule } from './domain/organizations/organizations.module';
+import { NotificationsModule } from './domain/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { OrganizationsModule } from './domain/organizations/organizations.module
     ProjectsModule,
     TasksModule,
     OrganizationsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

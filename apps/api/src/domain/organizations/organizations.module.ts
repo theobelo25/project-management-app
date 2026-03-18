@@ -3,19 +3,27 @@ import { OrganizationsController } from './organizations.controller';
 import { OrganizationInvitesService } from './organization-invites.service';
 import { OrganizationInvitesRepository } from './repositories/organization-invites.repository';
 import { PrismaOrganizationInvitesRepository } from './repositories/prisma-organization-invites.repository';
-import { PRISMA } from '@api/prisma';
 import { UsersModule } from '../users/users.module';
+import { OrganizationMembershipsService } from './organization-memberships.service';
+import { AuthModule } from '../auth/auth.module';
+import { OrganizationsService } from './organizations.service';
 
 @Module({
-  imports: [UsersModule],
+  imports: [UsersModule, AuthModule],
   controllers: [OrganizationsController],
   providers: [
+    OrganizationsService,
     OrganizationInvitesService,
+    OrganizationMembershipsService,
     {
       provide: OrganizationInvitesRepository,
       useClass: PrismaOrganizationInvitesRepository,
     },
   ],
-  exports: [OrganizationInvitesService],
+  exports: [
+    OrganizationsService,
+    OrganizationInvitesService,
+    OrganizationMembershipsService,
+  ],
 })
 export class OrganizationsModule {}

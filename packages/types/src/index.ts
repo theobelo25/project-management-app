@@ -7,6 +7,9 @@ export * from "./common";
 // ORGANIZATION
 export * from "./organization";
 
+// NOTIFICATION
+export * from "./notification";
+
 // PAGINATION
 export * from "./pagination";
 

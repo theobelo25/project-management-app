@@ -19,6 +19,10 @@ import {
   UpdateTaskInput,
   TaskAssignmentView,
   PendingInviteView,
+  NotificationView,
+  ClearNotificationResponse,
+  OrganizationView,
+  CreateOrganizationDto,
 } from "@repo/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -144,6 +148,7 @@ export async function fetchMe(): Promise<UserView | null> {
   return res.json();
 }
 
+/** Invites (for org switching) */
 export async function fetchPendingInvites(): Promise<PendingInviteView[]> {
   const res = await fetchWithAuth(`${API_BASE}/api/organizations/invites`, {
     credentials: "include",
@@ -176,6 +181,29 @@ export async function declineInviteById(
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
     throw new Error(error.message ?? "Failed to decline invite");
+  }
+  return res.json();
+}
+
+/** Notifications (task assigned, etc.) */
+export async function fetchNotifications(): Promise<NotificationView[]> {
+  const res = await fetchWithAuth(`${API_BASE}/api/notifications`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to fetch notifications");
+  return res.json();
+}
+
+export async function clearNotification(
+  notificationId: string,
+): Promise<ClearNotificationResponse> {
+  const res = await fetchWithAuth(
+    `${API_BASE}/api/notifications/${notificationId}/clear`,
+    { method: "POST", credentials: "include" },
+  );
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to clear notification");
   }
   return res.json();
 }
@@ -468,4 +496,45 @@ export async function unassignTaskUser(
     const error = await res.json().catch(() => ({}));
     throw new Error(error.message ?? "Failed to unassign user from task");
   }
+}
+
+export async function fetchOrganizations(): Promise<OrganizationView[]> {
+  const res = await fetchWithAuth(`${API_BASE}/api/organizations`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to fetch organizations");
+  return res.json();
+}
+
+export async function createOrganization(
+  dto: CreateOrganizationDto,
+): Promise<{ success: true }> {
+  const res = await fetchWithAuth(`${API_BASE}/api/organizations`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dto),
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to create organization");
+  }
+  return res.json();
+}
+
+export async function switchOrganization(
+  organizationId: string,
+): Promise<{ success: true }> {
+  const res = await fetchWithAuth(
+    `${API_BASE}/api/organizations/${organizationId}/switch`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? "Failed to switch organization");
+  }
+  return res.json();
 }

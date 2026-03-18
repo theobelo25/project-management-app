@@ -19,6 +19,7 @@ import {
   inviteTokenPrefix,
 } from './utils/invite-token.util';
 import { PinoLogger } from 'nestjs-pino';
+import { OrganizationMembershipsService } from './organization-memberships.service';
 
 const INVITE_EXPIRY_DAYS = 7;
 
@@ -31,6 +32,7 @@ export class OrganizationInvitesService {
   constructor(
     private readonly invitesRepository: OrganizationInvitesRepository,
     private readonly usersRepository: UsersRepository,
+    private readonly organizationMembershipsService: OrganizationMembershipsService,
     private readonly configService: ConfigService,
     private readonly logger: PinoLogger,
   ) {
@@ -170,16 +172,21 @@ export class OrganizationInvitesService {
         'This invite was sent to a different email address',
       );
 
-    if (currentUser.orgId === invite.organizationId) {
-      await this.invitesRepository.markAccepted(inviteId, db);
-      return;
-    }
+    // Add membership (do NOT remove existing orgs)
+    await this.organizationMembershipsService.addMembershipIfMissing(
+      currentUser.id,
+      invite.organizationId,
+      'MEMBER',
+      db,
+    );
 
+    // Switch active org to the invited org (so user immediately sees it)
     await this.usersRepository.updateOrganization(
       currentUser.id,
       invite.organizationId,
       db,
     );
+
     await this.invitesRepository.markAccepted(inviteId, db);
 
     this.logger.info(
