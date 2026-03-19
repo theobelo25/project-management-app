@@ -2,27 +2,28 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { UserView } from '@repo/types';
+import { AuthUser, UserView } from '@repo/types';
 import { NotFoundException } from '@nestjs/common';
+import { GetUsersQueryDto } from './dto';
 
 describe('UsersController', () => {
   let controller: UsersController;
 
   let usersService: {
-    getAllUsers: jest.Mock;
+    getUsersForOrg: jest.Mock;
+    searchUsers: jest.Mock;
     findById: jest.Mock;
   };
 
-  const currentUser: UserView = {
+  const authUser: AuthUser = {
     id: '1415c2fc-4067-4c4f-a7e1-748afc4e9b71',
-    email: 'current@example.com',
-    name: 'Current User',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    orgId: '0415c2fc-4067-4c4f-a7e1-748afc4e9b70',
   };
 
   const userView: UserView = {
     id: '2415c2fc-4067-4c4f-a7e1-748afc4e9b72',
+    orgId: authUser.orgId,
+    organizationName: 'Acme',
     email: 'test@example.com',
     name: 'Theo',
     createdAt: new Date(),
@@ -31,7 +32,8 @@ describe('UsersController', () => {
 
   beforeEach(async () => {
     usersService = {
-      getAllUsers: jest.fn(),
+      getUsersForOrg: jest.fn(),
+      searchUsers: jest.fn(),
       findById: jest.fn(),
     };
 
@@ -53,13 +55,50 @@ describe('UsersController', () => {
   });
 
   describe('getUsers', () => {
-    it('returns all users from the service', async () => {
-      usersService.getAllUsers.mockResolvedValue([userView]);
+    it('returns org users from the service', async () => {
+      usersService.getUsersForOrg.mockResolvedValue([userView]);
 
-      const result = await controller.getUsers();
+      const result = await controller.getUsers(authUser, {
+        search: 'te',
+      } as GetUsersQueryDto);
 
-      expect(usersService.getAllUsers).toHaveBeenCalledTimes(1);
+      expect(usersService.getUsersForOrg).toHaveBeenCalledWith(
+        authUser.orgId,
+        'te',
+      );
       expect(result).toEqual([userView]);
+    });
+
+    it('passes undefined search when omitted', async () => {
+      usersService.getUsersForOrg.mockResolvedValue([userView]);
+
+      await controller.getUsers(authUser, {} as GetUsersQueryDto);
+
+      expect(usersService.getUsersForOrg).toHaveBeenCalledWith(
+        authUser.orgId,
+        undefined,
+      );
+    });
+  });
+
+  describe('searchAllUsers', () => {
+    it('delegates to searchUsers with trimmed query', async () => {
+      usersService.searchUsers.mockResolvedValue([userView]);
+
+      const result = await controller.searchAllUsers({
+        search: 'bob',
+      } as GetUsersQueryDto);
+
+      expect(usersService.searchUsers).toHaveBeenCalledWith('bob');
+      expect(result).toEqual([userView]);
+    });
+
+    it('passes empty string when search is missing', async () => {
+      usersService.searchUsers.mockResolvedValue([]);
+
+      await controller.searchAllUsers({} as GetUsersQueryDto);
+
+      expect(usersService.searchUsers).toHaveBeenCalledWith('');
     });
   });
 

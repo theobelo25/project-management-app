@@ -1,4 +1,4 @@
-import { UserView } from '@repo/types';
+import { PrivateUser, UserView } from '@repo/types';
 
 type UserLike = {
   id: string;
@@ -16,9 +16,10 @@ type UserLike = {
   activeOrganizationId?: string | null;
   activeOrganization?: { name?: string | null } | null;
 
-  // private-user shape already includes these
   organizationName?: string;
 };
+
+const NO_ORG_LABEL = '(no active organization)';
 
 export function toUserView(user: UserLike): UserView {
   const orgId =
@@ -28,7 +29,7 @@ export function toUserView(user: UserLike): UserView {
     user.organizationName ??
     user.activeOrganization?.name ??
     user.organization?.name ??
-    '(unknown organization)';
+    NO_ORG_LABEL;
 
   return {
     id: user.id,
@@ -38,5 +39,14 @@ export function toUserView(user: UserLike): UserView {
     name: user.name,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+  };
+}
+
+export function toPrivateUser(
+  user: UserLike & { passwordHash: string },
+): PrivateUser {
+  return {
+    ...toUserView(user),
+    passwordHash: user.passwordHash,
   };
 }

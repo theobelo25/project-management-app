@@ -7,24 +7,24 @@ import {
   UserView,
 } from '@repo/types';
 import { PRISMA, Db } from '@api/prisma';
-import { PrismaClient } from '@repo/database';
+import { Prisma, PrismaClient } from '@repo/database';
+import { toPrivateUser, toUserView } from '../mappers/user.mapper';
+
+type UserWithActiveOrg = Prisma.UserGetPayload<{
+  include: { activeOrganization: true };
+}>;
+
+function toPrismaUserUpdate(dto: UpdateUserInputDto): Prisma.UserUpdateInput {
+  const data: Prisma.UserUpdateInput = {};
+  if (dto.email !== undefined) data.email = dto.email;
+  if (dto.name !== undefined) data.name = dto.name;
+  if (dto.passwordHash !== undefined) data.passwordHash = dto.passwordHash;
+  return data;
+}
 
 @Injectable()
 export class PrismaUsersRepository implements UsersRepository {
   constructor(@Inject(PRISMA) private readonly prisma: PrismaClient) {}
-
-  private toUserView(row: any): UserView {
-    return {
-      id: row.id,
-      orgId: row.activeOrganizationId,
-      organizationName:
-        row.activeOrganization?.name ?? '(no active organization)',
-      email: row.email,
-      name: row.name,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-    };
-  }
 
   async findById(id: string, tx?: Db): Promise<UserView | null> {
     const prisma = (tx ?? this.prisma) as PrismaClient;
@@ -35,7 +35,7 @@ export class PrismaUsersRepository implements UsersRepository {
     });
 
     if (!user) return null;
-    return this.toUserView(user);
+    return toUserView(user);
   }
 
   async findByEmail(email: string, tx?: Db): Promise<UserView | null> {
@@ -47,7 +47,7 @@ export class PrismaUsersRepository implements UsersRepository {
     });
 
     if (!user) return null;
-    return this.toUserView(user);
+    return toUserView(user);
   }
 
   async findPrivateUserById(id: string, tx?: Db): Promise<PrivateUser | null> {
@@ -60,17 +60,7 @@ export class PrismaUsersRepository implements UsersRepository {
 
     if (!user) return null;
 
-    return {
-      id: user.id,
-      orgId: user.activeOrganizationId,
-      organizationName:
-        user.activeOrganization?.name ?? '(no active organization)',
-      email: user.email,
-      name: user.name,
-      passwordHash: user.passwordHash,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
+    return toPrivateUser(user);
   }
 
   async findPrivateUserByEmail(
@@ -86,17 +76,7 @@ export class PrismaUsersRepository implements UsersRepository {
 
     if (!user) return null;
 
-    return {
-      id: user.id,
-      orgId: user.activeOrganizationId,
-      organizationName:
-        user.activeOrganization?.name ?? '(no active organization)',
-      email: user.email,
-      name: user.name,
-      passwordHash: user.passwordHash,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
+    return toPrivateUser(user);
   }
 
   async getAllUsers(tx?: Db): Promise<UserView[]> {
@@ -104,7 +84,7 @@ export class PrismaUsersRepository implements UsersRepository {
     const users = await prisma.user.findMany({
       include: { activeOrganization: true },
     });
-    return users.map((u) => this.toUserView(u));
+    return users.map((u: UserWithActiveOrg) => toUserView(u));
   }
 
   // Now org filtering is "users whose ACTIVE org matches"
@@ -117,13 +97,12 @@ export class PrismaUsersRepository implements UsersRepository {
       include: { activeOrganization: true },
     });
 
-    return users.map((u) => this.toUserView(u));
+    return users.map((u: UserWithActiveOrg) => toUserView(u));
   }
 
   async create(dto: CreateUserDto, tx?: Db): Promise<UserView> {
     const prisma = (tx ?? this.prisma) as PrismaClient;
 
-    // Create user with initial active org and default org
     const user = await prisma.user.create({
       data: {
         email: dto.email,
@@ -138,7 +117,7 @@ export class PrismaUsersRepository implements UsersRepository {
       include: { activeOrganization: true },
     });
 
-    return this.toUserView(user);
+    return toUserView(user);
   }
 
   async update(
@@ -150,11 +129,11 @@ export class PrismaUsersRepository implements UsersRepository {
 
     const updatedUser = await prisma.user.update({
       where: { id },
-      data: dto as any,
+      data: toPrismaUserUpdate(dto),
       include: { activeOrganization: true },
     });
 
-    return this.toUserView(updatedUser);
+    return toUserView(updatedUser);
   }
 
   async searchUsers(search: string, tx?: Db): Promise<UserView[]> {
@@ -172,7 +151,7 @@ export class PrismaUsersRepository implements UsersRepository {
       include: { activeOrganization: true },
     });
 
-    return users.map((u) => this.toUserView(u));
+    return users.map((u: UserWithActiveOrg) => toUserView(u));
   }
 
   async searchUsersByOrgId(
@@ -195,7 +174,7 @@ export class PrismaUsersRepository implements UsersRepository {
       include: { activeOrganization: true },
     });
 
-    return users.map((u) => this.toUserView(u));
+    return users.map((u: UserWithActiveOrg) => toUserView(u));
   }
 
   async updateOrganization(
@@ -281,10 +260,9 @@ export class PrismaUsersRepository implements UsersRepository {
     }>,
     tx?: Db,
   ): Promise<void> {
-    // Persistence stays in repository; caller stays orchestration-only.
-    await Promise.all(
-      updates.map((u) =>
-        this.updateUserOrganizationIds(
+    const run = async (client: Db) => {
+      for (const u of updates) {
+        await this.updateUserOrganizationIds(
           u.userId,
           {
             activeOrganizationId: u.activeOrganizationId,
@@ -292,9 +270,18 @@ export class PrismaUsersRepository implements UsersRepository {
               ? { defaultOrganizationId: u.defaultOrganizationId }
               : {}),
           },
-          tx,
-        ),
-      ),
-    );
+          client,
+        );
+      }
+    };
+
+    if (tx) {
+      await run(tx);
+      return;
+    }
+
+    await this.prisma.$transaction(async (inner) => {
+      await run(inner as Db);
+    });
   }
 }
