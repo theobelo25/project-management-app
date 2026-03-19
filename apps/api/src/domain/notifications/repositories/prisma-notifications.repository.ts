@@ -6,6 +6,7 @@ import {
   NotificationRecord,
   NotificationsRepository,
 } from './notifications.repository';
+import { isNotificationType } from '../utils/notification-type-guard';
 
 @Injectable()
 export class PrismaNotificationsRepository extends NotificationsRepository {
@@ -18,15 +19,21 @@ export class PrismaNotificationsRepository extends NotificationsRepository {
     db?: Db,
   ): Promise<NotificationRecord> {
     const prisma = db ?? this.prisma;
+
     const row = await prisma.userNotification.create({
       data: {
         userId: input.userId,
         type: input.type,
         title: input.title,
         body: input.body ?? null,
-        meta: (input.meta as any) ?? null,
+        meta: input.meta ?? undefined,
       },
     });
+
+    if (!isNotificationType(row.type)) {
+      // Data corruption / unexpected DB value
+      throw new Error(`Unknown notification type: ${row.type}`);
+    }
 
     return {
       id: row.id,
@@ -34,7 +41,7 @@ export class PrismaNotificationsRepository extends NotificationsRepository {
       type: row.type,
       title: row.title,
       body: row.body,
-      meta: row.meta as unknown,
+      meta: row.meta,
       createdAt: row.createdAt,
       clearedAt: row.clearedAt,
     };
@@ -45,29 +52,43 @@ export class PrismaNotificationsRepository extends NotificationsRepository {
     db?: Db,
   ): Promise<NotificationRecord[]> {
     const prisma = db ?? this.prisma;
+
     const rows = await prisma.userNotification.findMany({
       where: { userId, clearedAt: null },
       orderBy: { createdAt: 'desc' },
       take: 50,
     });
 
-    return rows.map((row) => ({
-      id: row.id,
-      userId: row.userId,
-      type: row.type,
-      title: row.title,
-      body: row.body,
-      meta: row.meta as unknown,
-      createdAt: row.createdAt,
-      clearedAt: row.clearedAt,
-    }));
+    return rows.map((row) => {
+      if (!isNotificationType(row.type)) {
+        throw new Error(`Unknown notification type: ${row.type}`);
+      }
+
+      return {
+        id: row.id,
+        userId: row.userId,
+        type: row.type,
+        title: row.title,
+        body: row.body,
+        meta: row.meta,
+        createdAt: row.createdAt,
+        clearedAt: row.clearedAt,
+      };
+    });
   }
 
-  async clear(notificationId: string, userId: string, db?: Db): Promise<void> {
+  async clear(
+    notificationId: string,
+    userId: string,
+    db?: Db,
+  ): Promise<number> {
     const prisma = db ?? this.prisma;
-    await prisma.userNotification.updateMany({
+
+    const result = await prisma.userNotification.updateMany({
       where: { id: notificationId, userId, clearedAt: null },
       data: { clearedAt: new Date() },
     });
+
+    return result.count;
   }
 }

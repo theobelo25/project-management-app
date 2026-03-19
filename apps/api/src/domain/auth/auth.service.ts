@@ -23,7 +23,7 @@ import { Db } from '@api/prisma';
 import { toUserView } from '../users/mappers/user.mapper';
 import { UsersRepository } from '../users/repositories/users.repository';
 import { PinoLogger } from 'nestjs-pino';
-import { OrganizationsService } from '../organizations/organizations.service';
+import { OrganizationWorkspacesService } from '../organizations/services/organization-workspaces.service';
 
 @Injectable()
 export class AuthService {
@@ -34,7 +34,7 @@ export class AuthService {
     private readonly refreshTokenService: RefreshTokensService,
     @Inject(UNIT_OF_WORK) private readonly uow: UnitOfWork,
     private readonly logger: PinoLogger,
-    private readonly organizationsService: OrganizationsService,
+    private readonly organizationWorkspacesService: OrganizationWorkspacesService,
   ) {
     this.logger.setContext(AuthService.name);
   }
@@ -45,7 +45,7 @@ export class AuthService {
 
       // Naming policy lives in organizations domain
       const org =
-        await this.organizationsService.createInitialWorkspaceForUserName(
+        await this.organizationWorkspacesService.createInitialOrganizationForUserName(
           dto.name,
           tx,
         );

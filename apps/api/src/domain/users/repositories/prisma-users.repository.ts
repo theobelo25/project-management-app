@@ -198,17 +198,103 @@ export class PrismaUsersRepository implements UsersRepository {
     return users.map((u) => this.toUserView(u));
   }
 
-  // Legacy method name kept; now it sets the ACTIVE org
   async updateOrganization(
     userId: string,
     organizationId: string,
+    tx?: Db,
+  ): Promise<void> {
+    await this.updateUserOrganizationIds(
+      userId,
+      { activeOrganizationId: organizationId },
+      tx,
+    );
+  }
+
+  async findUserOrganizationIds(
+    userId: string,
+    tx?: Db,
+  ): Promise<{
+    id: string;
+    activeOrganizationId: string;
+    defaultOrganizationId: string | null;
+  } | null> {
+    const prisma = (tx ?? this.prisma) as PrismaClient;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        activeOrganizationId: true,
+        defaultOrganizationId: true,
+      },
+    });
+
+    if (!user) return null;
+
+    return {
+      id: user.id,
+      activeOrganizationId: user.activeOrganizationId,
+      defaultOrganizationId: user.defaultOrganizationId,
+    };
+  }
+
+  async getUsersWithActiveOrganization(
+    organizationId: string,
+    tx?: Db,
+  ): Promise<Array<{ id: string; defaultOrganizationId: string | null }>> {
+    const prisma = (tx ?? this.prisma) as PrismaClient;
+
+    const users = await prisma.user.findMany({
+      where: { activeOrganizationId: organizationId },
+      select: { id: true, defaultOrganizationId: true },
+    });
+
+    return users.map((u) => ({
+      id: u.id,
+      defaultOrganizationId: u.defaultOrganizationId,
+    }));
+  }
+
+  async updateUserOrganizationIds(
+    userId: string,
+    data: { activeOrganizationId: string; defaultOrganizationId?: string },
     tx?: Db,
   ): Promise<void> {
     const prisma = (tx ?? this.prisma) as PrismaClient;
 
     await prisma.user.update({
       where: { id: userId },
-      data: { activeOrganizationId: organizationId },
+      data: {
+        activeOrganizationId: data.activeOrganizationId,
+        ...(data.defaultOrganizationId
+          ? { defaultOrganizationId: data.defaultOrganizationId }
+          : {}),
+      },
     });
+  }
+
+  async updateUsersOrganizationIds(
+    updates: Array<{
+      userId: string;
+      activeOrganizationId: string;
+      defaultOrganizationId?: string;
+    }>,
+    tx?: Db,
+  ): Promise<void> {
+    // Persistence stays in repository; caller stays orchestration-only.
+    await Promise.all(
+      updates.map((u) =>
+        this.updateUserOrganizationIds(
+          u.userId,
+          {
+            activeOrganizationId: u.activeOrganizationId,
+            ...(u.defaultOrganizationId
+              ? { defaultOrganizationId: u.defaultOrganizationId }
+              : {}),
+          },
+          tx,
+        ),
+      ),
+    );
   }
 }

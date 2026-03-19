@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { NotificationsRepository } from './repositories/notifications.repository';
-import { Db } from '@api/prisma';
 import { NotificationView } from '@repo/types';
+import type { Prisma } from '@repo/database';
+import { TaskAssignedNotificationPayload } from './notifications.payloads';
+import { toNotificationViews } from './mappers/notification.mapper';
+import { NOTIFICATION_TEMPLATES } from './notifications.templates';
 
 @Injectable()
 export class NotificationsService {
@@ -9,48 +12,31 @@ export class NotificationsService {
     private readonly notificationsRepository: NotificationsRepository,
   ) {}
 
-  async listForUser(userId: string, db?: Db): Promise<NotificationView[]> {
-    const rows = await this.notificationsRepository.findActiveByUserId(
-      userId,
-      db,
-    );
-    return rows.map((n) => ({
-      id: n.id,
-      type: n.type as any,
-      title: n.title,
-      body: n.body,
-      meta: (n.meta as any) ?? null,
-      createdAt: n.createdAt.toISOString(),
-    }));
+  async listForUser(userId: string): Promise<NotificationView[]> {
+    const rows = await this.notificationsRepository.findActiveByUserId(userId);
+
+    return toNotificationViews(rows);
   }
 
-  async clearForUser(
-    userId: string,
-    notificationId: string,
-    db?: Db,
-  ): Promise<void> {
-    await this.notificationsRepository.clear(notificationId, userId, db);
+  async clearForUser(userId: string, notificationId: string): Promise<boolean> {
+    const clearedCount = await this.notificationsRepository.clear(
+      notificationId,
+      userId,
+    );
+
+    return clearedCount > 0;
   }
 
   async notifyTaskAssigned(
     userId: string,
-    payload: {
-      taskId: string;
-      taskTitle: string;
-      projectId: string;
-      assignedById: string;
-    },
-    db?: Db,
+    payload: TaskAssignedNotificationPayload,
   ): Promise<void> {
-    await this.notificationsRepository.create(
-      {
-        userId,
-        type: 'task_assigned',
-        title: 'You were assigned a task',
-        body: payload.taskTitle,
-        meta: payload,
-      },
-      db,
-    );
+    await this.notificationsRepository.create({
+      userId,
+      type: 'task_assigned',
+      title: NOTIFICATION_TEMPLATES.task_assigned.title,
+      body: NOTIFICATION_TEMPLATES.task_assigned.getBody(payload),
+      meta: payload as Prisma.InputJsonValue,
+    });
   }
 }

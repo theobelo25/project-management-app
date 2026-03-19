@@ -3,63 +3,48 @@ import {
   Controller,
   Delete,
   Get,
-  InternalServerErrorException,
   Param,
+  Patch,
   Post,
-  Res,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard } from '@api/common';
 import {
   AuthUser,
   OrganizationDetailView,
+  OrganizationInviteAdminView,
   OrganizationInviteView,
   OrganizationMemberView,
+  OrganizationSummaryView,
+  PaginatedOrganizationMembersView,
   PendingInviteView,
   SuccessResponse,
-  UserView,
 } from '@repo/types';
-import { OrganizationInvitesService } from './organization-invites.service';
+import { OrganizationInvitesService } from './services/organization-invites.service';
 import {
   AcceptOrganizationInviteDto,
   CreateOrganizationInviteDto,
   AddOrganizationMemberDto,
+  CreateOrganizationDto,
   OrganizationParamsDto,
+  SwitchOrganizationParamsDto,
+  InviteIdParamsDto,
+  OrganizationMemberParamsDto,
+  UpdateOrganizationMemberRoleDto,
 } from './dto';
-import { CreateOrganizationDto } from './dto/create-organization.dto';
-import { OrganizationMembershipsService } from './organization-memberships.service';
-import { SwitchOrganizationParamsDto } from './dto/switch-organization-params.dto';
-import { Response } from 'express';
-import { CookiesService } from '../auth/cookies/cookies.service';
-import { UsersService } from '../users/users.service';
-import { AccessTokensService } from '../auth/accessTokens/access-tokens.service';
-import { OrganizationsService } from './organizations.service';
+import { OrganizationMembershipsService } from './services/organization-memberships.service';
+import { OrganizationsApplicationService } from './services/organizations-app.service';
+import { RefreshOrganizationsAccessCookie } from './decorators/refresh-organizations-access-cookie.decorator';
 
 @Controller('organizations')
 @UseGuards(JwtAuthGuard)
 export class OrganizationsController {
   constructor(
-    private readonly organizationsService: OrganizationsService,
-    private readonly organizationInvitesService: OrganizationInvitesService,
+    private readonly organizationsAppService: OrganizationsApplicationService,
     private readonly organizationMembershipsService: OrganizationMembershipsService,
-    private readonly usersService: UsersService,
-    private readonly accessTokensService: AccessTokensService,
-    private readonly cookiesService: CookiesService,
+    private readonly organizationInvitesService: OrganizationInvitesService,
   ) {}
-
-  private async refreshAccessCookie(
-    userId: string,
-    response: Response,
-    errorMessage: string,
-  ) {
-    const updatedUser = await this.usersService.findById(userId);
-    if (!updatedUser) {
-      throw new InternalServerErrorException(errorMessage);
-    }
-
-    const { accessToken } = this.accessTokensService.sign(updatedUser);
-    this.cookiesService.setAccessCookie(response, accessToken);
-  }
 
   @Get()
   async listMyOrganizations(@CurrentUser() user: AuthUser) {
@@ -67,6 +52,76 @@ export class OrganizationsController {
       user.id,
     );
   }
+
+  // ---- Invites ----
+
+  @Post('invites')
+  async createInvite(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: CreateOrganizationInviteDto,
+  ): Promise<OrganizationInviteView> {
+    return this.organizationInvitesService.createInvite(user, dto.email);
+  }
+
+  // New: list invites created for the current org (admin/owner)
+  @Get('invites/sent')
+  async listSentInvites(
+    @CurrentUser() user: AuthUser,
+  ): Promise<OrganizationInviteAdminView[]> {
+    return this.organizationInvitesService.listInvitesForOrg(user);
+  }
+
+  // Existing: invites pending for the current user email
+  @Get('invites')
+  async getPendingInvites(
+    @CurrentUser() user: AuthUser,
+  ): Promise<PendingInviteView[]> {
+    return this.organizationInvitesService.getPendingInvitesForUser(user.id);
+  }
+
+  // Existing: accept by token
+  @RefreshOrganizationsAccessCookie()
+  @Post('invites/accept')
+  async acceptInvite(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: AcceptOrganizationInviteDto,
+  ): Promise<SuccessResponse> {
+    await this.organizationInvitesService.acceptInvite(user.id, dto.token);
+    return { success: true };
+  }
+
+  // Existing: accept by id
+  @RefreshOrganizationsAccessCookie()
+  @Post('invites/:id/accept')
+  async acceptInviteById(
+    @CurrentUser() user: AuthUser,
+    @Param() params: InviteIdParamsDto,
+  ): Promise<SuccessResponse> {
+    await this.organizationInvitesService.acceptInviteById(user.id, params.id);
+    return { success: true };
+  }
+
+  // Existing: decline by id
+  @Post('invites/:id/decline')
+  async declineInviteById(
+    @CurrentUser() user: AuthUser,
+    @Param() params: InviteIdParamsDto,
+  ): Promise<SuccessResponse> {
+    await this.organizationInvitesService.declineInviteById(user.id, params.id);
+    return { success: true };
+  }
+
+  // New: revoke invite by id (admin/owner)
+  @Post('invites/:id/revoke')
+  async revokeInviteById(
+    @CurrentUser() user: AuthUser,
+    @Param() params: InviteIdParamsDto,
+  ): Promise<SuccessResponse> {
+    await this.organizationInvitesService.revokeInvite(user, params.id);
+    return { success: true };
+  }
+
+  // ---- Orgs ----
 
   @Get(':id')
   async getOrganizationDetails(
@@ -79,20 +134,51 @@ export class OrganizationsController {
     );
   }
 
+  // New: summary endpoint (no members list)
+  @Get(':id/summary')
+  async getOrganizationSummary(
+    @CurrentUser() user: AuthUser,
+    @Param() params: OrganizationParamsDto,
+  ): Promise<OrganizationSummaryView> {
+    return this.organizationMembershipsService.getOrganizationSummary(
+      user.id,
+      params.id,
+    );
+  }
+
+  // New: members list paginated
+  @Get(':id/members')
+  async listMembers(
+    @CurrentUser() user: AuthUser,
+    @Param() params: OrganizationParamsDto,
+    @Query('page') pageRaw?: string,
+    @Query('limit') limitRaw?: string,
+  ): Promise<PaginatedOrganizationMembersView> {
+    // Keep it simple: coerce in controller (matches your PaginationQuerySchema defaults if you prefer DTO)
+    const page = Math.max(1, Number(pageRaw ?? 1) || 1);
+    const limit = Math.max(1, Math.min(100, Number(limitRaw ?? 20) || 20));
+
+    // membership check is effectively enforced by repo/service behavior,
+    // but if you want explicit auth, call assertMembership(user.id, params.id) first.
+    await this.organizationMembershipsService.assertMembership(
+      user.id,
+      params.id,
+    );
+
+    return this.organizationMembershipsService.listMembers(
+      params.id,
+      page,
+      limit,
+    );
+  }
+
+  @RefreshOrganizationsAccessCookie()
   @Post()
   async createOrganization(
     @CurrentUser() user: AuthUser,
     @Body() dto: CreateOrganizationDto,
-    @Res({ passthrough: true }) response: Response,
   ): Promise<SuccessResponse> {
-    await this.organizationsService.createOrganization(user.id, dto.name);
-    await this.refreshAccessCookie(
-      user.id,
-      response,
-      'User not found after creating organization',
-    );
-
-    return { success: true };
+    return this.organizationsAppService.createOrganization(user, dto);
   }
 
   @Post(':id/members')
@@ -108,96 +194,60 @@ export class OrganizationsController {
     );
   }
 
+  // New: remove member
+  @Delete(':id/members/:memberId')
+  async removeMember(
+    @CurrentUser() user: AuthUser,
+    @Param() params: OrganizationMemberParamsDto,
+  ): Promise<SuccessResponse> {
+    await this.organizationMembershipsService.removeMember(
+      user.id,
+      params.id,
+      params.memberId,
+    );
+    return { success: true };
+  }
+
+  // New: change member role
+  @Patch(':id/members/:memberId/role')
+  async updateMemberRole(
+    @CurrentUser() user: AuthUser,
+    @Param() params: OrganizationMemberParamsDto,
+    @Body() body: UpdateOrganizationMemberRoleDto,
+  ): Promise<SuccessResponse> {
+    await this.organizationMembershipsService.updateMemberRole(
+      user.id,
+      params.id,
+      params.memberId,
+      body.role,
+    );
+    return { success: true };
+  }
+
+  @RefreshOrganizationsAccessCookie()
   @Post(':id/switch')
   async switchOrganization(
     @CurrentUser() user: AuthUser,
     @Param() params: SwitchOrganizationParamsDto,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<{ success: true }> {
-    await this.organizationMembershipsService.setActiveOrganization(
-      user.id,
-      params.id,
-    );
-    await this.refreshAccessCookie(
-      user.id,
-      response,
-      'User not found after switch',
-    );
-
-    return { success: true };
+  ): Promise<SuccessResponse> {
+    return this.organizationsAppService.switchOrganization(user, params);
   }
 
+  @RefreshOrganizationsAccessCookie()
   @Post(':id/leave')
   async leaveOrganization(
     @CurrentUser() user: AuthUser,
     @Param() params: OrganizationParamsDto,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<{ success: true }> {
-    await this.organizationsService.leaveOrganization(user.id, params.id);
-    await this.refreshAccessCookie(
-      user.id,
-      response,
-      'User not found after leaving organization',
-    );
-
-    return { success: true };
+  ): Promise<SuccessResponse> {
+    return this.organizationsAppService.leaveOrganization(user, params);
   }
 
+  @RefreshOrganizationsAccessCookie()
   @Delete(':id')
   async deleteOrganization(
     @CurrentUser() user: AuthUser,
     @Param() params: OrganizationParamsDto,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<{ success: true }> {
-    await this.organizationsService.deleteOrganization(user.id, params.id);
-    await this.refreshAccessCookie(
-      user.id,
-      response,
-      'User not found after deleting organization',
-    );
-
-    return { success: true };
-  }
-
-  @Post('invites')
-  async createInvite(
-    @CurrentUser() user: AuthUser,
-    @Body() dto: CreateOrganizationInviteDto,
-  ): Promise<OrganizationInviteView> {
-    return this.organizationInvitesService.createInvite(user, dto.email);
-  }
-
-  @Get('invites')
-  async getPendingInvites(
-    @CurrentUser() user: UserView,
-  ): Promise<PendingInviteView[]> {
-    return this.organizationInvitesService.getPendingInvitesForUser(user);
-  }
-
-  @Post('invites/accept')
-  async acceptInvite(
-    @CurrentUser() user: UserView,
-    @Body() dto: AcceptOrganizationInviteDto,
-  ): Promise<{ success: true }> {
-    await this.organizationInvitesService.acceptInvite(user, dto.token);
-    return { success: true };
-  }
-
-  @Post('invites/:id/accept')
-  async acceptInviteById(
-    @CurrentUser() user: UserView,
-    @Param('id') inviteId: string,
-  ): Promise<{ success: true }> {
-    await this.organizationInvitesService.acceptInviteById(user, inviteId);
-    return { success: true };
-  }
-
-  @Post('invites/:id/decline')
-  async declineInviteById(
-    @CurrentUser() user: UserView,
-    @Param('id') inviteId: string,
-  ): Promise<{ success: true }> {
-    await this.organizationInvitesService.declineInviteById(user, inviteId);
-    return { success: true };
+  ): Promise<SuccessResponse> {
+    return this.organizationsAppService.deleteOrganization(user, params);
   }
 }

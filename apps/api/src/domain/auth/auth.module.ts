@@ -1,7 +1,7 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { ConfigModule, ConfigService, ConfigType } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
@@ -36,7 +36,8 @@ import { AuthorizedUserForOrgService } from './authorized-user-for-org.service';
     PassportModule,
     PrismaModule,
 
-    forwardRef(() => OrganizationsModule),
+    // No forwardRef needed anymore (OrganizationsModule doesn't import AuthModule)
+    OrganizationsModule,
 
     JwtModule.registerAsync({
       inject: [ConfigService],

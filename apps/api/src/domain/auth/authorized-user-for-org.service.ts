@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '@api/domain/users/users.service';
-import { OrganizationMembershipsService } from '../organizations/organization-memberships.service';
+import { OrganizationMembershipsService } from '../organizations/services/organization-memberships.service';
 import { TokenPayload } from './types/token-payload.interface';
 import { UserView } from '@repo/types';
 

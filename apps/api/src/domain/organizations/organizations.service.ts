@@ -8,47 +8,57 @@ import {
 import { UNIT_OF_WORK } from '@api/prisma';
 import { UnitOfWork } from '@api/prisma/uow/unit-of-work.interface';
 import { PinoLogger } from 'nestjs-pino';
-import { Db } from '@api/prisma';
-import { PrismaClient } from '@repo/database';
+
+import { OrganizationsRepository } from './repositories/organizations.repository';
+import { OrganizationMembershipsRepository } from './repositories/organization-memberships.repository';
+import { UsersRepository } from '../users/repositories/users.repository';
+
+import { OrganizationErrorMessages } from './constants/error-messages';
+import { OWNER_ROLE } from './constants/organization-roles';
 
 @Injectable()
-export class OrganizationsService {
+export class OrganizationsDomainService {
   constructor(
     @Inject(UNIT_OF_WORK)
     private readonly uow: UnitOfWork,
+
+    private readonly organizationsRepository: OrganizationsRepository,
+    private readonly organizationMembershipsRepository: OrganizationMembershipsRepository,
+    private readonly usersRepository: UsersRepository,
     private readonly logger: PinoLogger,
   ) {
-    this.logger.setContext(OrganizationsService.name);
+    this.logger.setContext(OrganizationsDomainService.name);
   }
 
   async createOrganization(userId: string, name: string) {
     const organizationName = name.trim();
     if (!organizationName) {
-      throw new BadRequestException('Organization name is required');
+      throw new BadRequestException(
+        OrganizationErrorMessages.ORGANIZATION_NAME_REQUIRED,
+      );
     }
 
     return this.uow.transaction(async (db) => {
-      const organization = await db.organization.create({
-        data: {
-          name: organizationName,
-        },
-      });
+      const organization = await this.organizationsRepository.create(
+        { name: organizationName },
+        db,
+      );
 
-      await db.organizationMembership.create({
-        data: {
-          userId,
-          organizationId: organization.id,
-          role: 'OWNER',
-        },
-      });
+      await this.organizationMembershipsRepository.addMembershipIfMissing(
+        userId,
+        organization.id,
+        OWNER_ROLE,
+        db,
+      );
 
-      await db.user.update({
-        where: { id: userId },
-        data: {
+      await this.usersRepository.updateUserOrganizationIds(
+        userId,
+        {
           activeOrganizationId: organization.id,
           defaultOrganizationId: organization.id,
         },
-      });
+        db,
+      );
 
       this.logger.info(
         {
@@ -68,45 +78,37 @@ export class OrganizationsService {
     organizationId: string,
   ): Promise<void> {
     return this.uow.transaction(async (db) => {
-      const user = await db.user.findUnique({
-        where: { id: userId },
-        select: {
-          id: true,
-          activeOrganizationId: true,
-          defaultOrganizationId: true,
-        },
-      });
+      const user = await this.usersRepository.findUserOrganizationIds(
+        userId,
+        db,
+      );
 
       if (!user) {
-        throw new NotFoundException('User not found');
+        throw new NotFoundException(OrganizationErrorMessages.USER_NOT_FOUND);
       }
 
-      const membership = await db.organizationMembership.findUnique({
-        where: {
-          userId_organizationId: { userId, organizationId },
-        },
-        select: { role: true },
-      });
-
-      if (!membership) {
-        throw new ForbiddenException(
-          'You are not a member of this organization',
+      const membershipRole =
+        await this.organizationMembershipsRepository.findMembershipRole(
+          userId,
+          organizationId,
+          db,
         );
+
+      if (!membershipRole) {
+        throw new ForbiddenException(OrganizationErrorMessages.NOT_MEMBER);
       }
 
-      if (membership.role === 'OWNER') {
-        const anotherOwner = await db.organizationMembership.findFirst({
-          where: {
+      if (membershipRole === OWNER_ROLE) {
+        const anotherOwnerExists =
+          await this.organizationMembershipsRepository.findAnotherOwner(
             organizationId,
-            userId: { not: userId },
-            role: 'OWNER',
-          },
-          select: { id: true },
-        });
+            userId,
+            db,
+          );
 
-        if (!anotherOwner) {
+        if (!anotherOwnerExists) {
           throw new BadRequestException(
-            'You cannot leave this organization because you are the last owner',
+            OrganizationErrorMessages.LAST_OWNER_CANNOT_LEAVE,
           );
         }
       }
@@ -115,7 +117,7 @@ export class OrganizationsService {
 
       if (isActiveOrganization) {
         const fallbackOrganizationId =
-          await this.findReassignmentOrganizationId(
+          await this.organizationMembershipsRepository.findReassignmentOrganizationId(
             userId,
             organizationId,
             user.defaultOrganizationId,
@@ -124,32 +126,31 @@ export class OrganizationsService {
 
         if (!fallbackOrganizationId) {
           throw new BadRequestException(
-            'You must belong to at least one other organization before leaving this one',
+            OrganizationErrorMessages.MUST_HAVE_OTHER_ORG_TO_LEAVE,
           );
         }
 
         const updateData: {
           activeOrganizationId: string;
           defaultOrganizationId?: string;
-        } = {
-          activeOrganizationId: fallbackOrganizationId,
-        };
+        } = { activeOrganizationId: fallbackOrganizationId };
 
         if (user.defaultOrganizationId === organizationId) {
           updateData.defaultOrganizationId = fallbackOrganizationId;
         }
 
-        await db.user.update({
-          where: { id: userId },
-          data: updateData,
-        });
+        await this.usersRepository.updateUserOrganizationIds(
+          userId,
+          updateData,
+          db,
+        );
       }
 
-      await db.organizationMembership.delete({
-        where: {
-          userId_organizationId: { userId, organizationId },
-        },
-      });
+      await this.organizationMembershipsRepository.removeMembership(
+        userId,
+        organizationId,
+        db,
+      );
 
       this.logger.info(
         {
@@ -168,139 +169,81 @@ export class OrganizationsService {
     organizationId: string,
   ): Promise<void> {
     return this.uow.transaction(async (db) => {
-      const membership = await db.organizationMembership.findUnique({
-        where: {
-          userId_organizationId: { userId, organizationId },
-        },
-        select: { role: true },
-      });
+      const membershipRole =
+        await this.organizationMembershipsRepository.findMembershipRole(
+          userId,
+          organizationId,
+          db,
+        );
 
-      if (!membership) {
+      if (!membershipRole) {
+        throw new ForbiddenException(OrganizationErrorMessages.NOT_MEMBER);
+      }
+
+      if (membershipRole !== OWNER_ROLE) {
         throw new ForbiddenException(
-          'You are not a member of this organization',
+          OrganizationErrorMessages.ONLY_OWNERS_CAN_DELETE,
         );
       }
 
-      if (membership.role !== 'OWNER') {
-        throw new ForbiddenException(
-          'Only organization owners can delete an organization',
+      const activeUsers =
+        await this.usersRepository.getUsersWithActiveOrganization(
+          organizationId,
+          db,
+        );
+
+      const reassignmentResults =
+        await this.organizationMembershipsRepository.findReassignmentOrganizationIdsForUsers(
+          activeUsers.map((u) => ({
+            userId: u.id,
+            preferredOrganizationId: u.defaultOrganizationId,
+          })),
+          organizationId,
+          db,
+        );
+
+      const reassignmentNull = reassignmentResults.find(
+        (r) => !r.reassignmentOrganizationId,
+      );
+
+      if (reassignmentNull) {
+        throw new BadRequestException(
+          OrganizationErrorMessages.CANNOT_DELETE_MEMBERS_NO_OTHER_ORG,
         );
       }
 
-      const activeUsers = await db.user.findMany({
-        where: { activeOrganizationId: organizationId },
-        select: { id: true, defaultOrganizationId: true },
-      });
+      const activeDefaultByUserId = new Map(
+        activeUsers.map((u) => [u.id, u.defaultOrganizationId]),
+      );
 
-      const reassignments: Array<{
-        userId: string;
-        organizationId: string;
-        updateDefault: boolean;
-      }> = [];
-
-      for (const activeUser of activeUsers) {
+      const updates = reassignmentResults.map((r) => {
         const reassignmentOrganizationId =
-          await this.findReassignmentOrganizationId(
-            activeUser.id,
-            organizationId,
-            activeUser.defaultOrganizationId,
-            db,
-          );
+          r.reassignmentOrganizationId as string;
 
-        if (!reassignmentOrganizationId) {
-          throw new BadRequestException(
-            'Cannot delete this organization because one or more members do not belong to another organization',
-          );
-        }
+        const shouldUpdateDefault =
+          activeDefaultByUserId.get(r.userId) === organizationId;
 
-        reassignments.push({
-          userId: activeUser.id,
-          organizationId: reassignmentOrganizationId,
-          updateDefault: activeUser.defaultOrganizationId === organizationId,
-        });
-      }
-
-      for (const reassignment of reassignments) {
-        await db.user.update({
-          where: { id: reassignment.userId },
-          data: {
-            activeOrganizationId: reassignment.organizationId,
-            ...(reassignment.updateDefault
-              ? { defaultOrganizationId: reassignment.organizationId }
-              : {}),
-          },
-        });
-      }
-
-      await db.organization.delete({
-        where: { id: organizationId },
+        return {
+          userId: r.userId,
+          activeOrganizationId: reassignmentOrganizationId,
+          ...(shouldUpdateDefault
+            ? { defaultOrganizationId: reassignmentOrganizationId }
+            : {}),
+        };
       });
+
+      await this.usersRepository.updateUsersOrganizationIds(updates, db);
+      await this.organizationsRepository.delete(organizationId, db);
 
       this.logger.info(
         {
           event: 'organization.deleted',
           userId,
           organizationId,
-          reassignedUsers: reassignments.length,
+          reassignedUsers: updates.length,
         },
         'Organization deleted successfully',
       );
     });
-  }
-
-  private async findReassignmentOrganizationId(
-    userId: string,
-    excludedOrganizationId: string,
-    preferredOrganizationId: string | null,
-    db: Db,
-  ): Promise<string | null> {
-    const prisma = db as PrismaClient;
-
-    if (
-      preferredOrganizationId &&
-      preferredOrganizationId !== excludedOrganizationId
-    ) {
-      const preferredMembership =
-        await prisma.organizationMembership.findUnique({
-          where: {
-            userId_organizationId: {
-              userId,
-              organizationId: preferredOrganizationId,
-            },
-          },
-          select: { organizationId: true },
-        });
-
-      if (preferredMembership) {
-        return preferredMembership.organizationId;
-      }
-    }
-
-    const fallbackMembership = await prisma.organizationMembership.findFirst({
-      where: {
-        userId,
-        organizationId: { not: excludedOrganizationId },
-      },
-      orderBy: { createdAt: 'desc' },
-      select: { organizationId: true },
-    });
-
-    return fallbackMembership?.organizationId ?? null;
-  }
-
-  async createWorkspaceEntity(name: string, tx: Db) {
-    const organizationName = name.trim();
-    if (!organizationName)
-      throw new BadRequestException('Organization name is required');
-
-    return tx.organization.create({
-      data: { name: organizationName },
-      select: { id: true },
-    });
-  }
-
-  async createInitialWorkspaceForUserName(userName: string, tx: Db) {
-    // Domain-owned naming policy (AuthService shouldn't embed this rule).
-    return this.createWorkspaceEntity(`${userName}'s Workspace`, tx);
   }
 }

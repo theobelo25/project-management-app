@@ -7,3 +7,8 @@ export const OrganizationParamsSchema = z.object({
 export const SwitchOrganizationParamsSchema = z.object({
   id: z.uuid(),
 });
+
+export const OrganizationMemberParamsSchema = z.object({
+  id: z.uuid(),
+  memberId: z.uuid(),
+});

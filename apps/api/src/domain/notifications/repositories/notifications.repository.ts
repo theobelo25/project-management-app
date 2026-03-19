@@ -1,20 +1,22 @@
+import type { Prisma } from '@repo/database';
+import type { NotificationType } from '@repo/types';
 import { Db } from '@api/prisma';
 
 export type CreateNotificationInput = {
   userId: string;
-  type: string;
+  type: NotificationType;
   title: string;
   body?: string | null;
-  meta?: unknown | null;
+  meta?: Prisma.InputJsonValue;
 };
 
 export type NotificationRecord = {
   id: string;
   userId: string;
-  type: string;
+  type: NotificationType;
   title: string;
   body: string | null;
-  meta: unknown | null;
+  meta: Prisma.JsonValue | null;
   createdAt: Date;
   clearedAt: Date | null;
 };
@@ -34,5 +36,5 @@ export abstract class NotificationsRepository {
     notificationId: string,
     userId: string,
     db?: Db,
-  ): Promise<void>;
+  ): Promise<number>;
 }

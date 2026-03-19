@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PRISMA, Db } from '@api/prisma';
 import { PrismaClient } from '@repo/database';
-import { PendingInviteView } from '@repo/types';
+import { OrganizationInviteAdminView, PendingInviteView } from '@repo/types';
 import { OrganizationInvitesRepository } from './organization-invites.repository';
 import {
   CreateOrganizationInviteInput,
@@ -19,6 +19,7 @@ export class PrismaOrganizationInvitesRepository extends OrganizationInvitesRepo
     db?: Db,
   ): Promise<OrganizationInviteRecord> {
     const prisma = db ?? this.prisma;
+
     const invite = await prisma.organizationInvite.create({
       data: {
         organizationId: input.organizationId,
@@ -29,17 +30,21 @@ export class PrismaOrganizationInvitesRepository extends OrganizationInvitesRepo
         createdById: input.createdById,
       },
     });
+
     return this.toRecord(invite);
   }
 
-  async findByTokenHash(
+  async findByTokenHashAndPrefix(
     tokenHash: string,
+    tokenPrefix: string,
     db?: Db,
   ): Promise<OrganizationInviteRecord | null> {
     const prisma = db ?? this.prisma;
-    const invite = await prisma.organizationInvite.findUnique({
-      where: { tokenHash },
+
+    const invite = await prisma.organizationInvite.findFirst({
+      where: { tokenHash, tokenPrefix },
     });
+
     return invite ? this.toRecord(invite) : null;
   }
 
@@ -48,9 +53,11 @@ export class PrismaOrganizationInvitesRepository extends OrganizationInvitesRepo
     db?: Db,
   ): Promise<OrganizationInviteRecord | null> {
     const prisma = db ?? this.prisma;
+
     const invite = await prisma.organizationInvite.findUnique({
       where: { id: inviteId },
     });
+
     return invite ? this.toRecord(invite) : null;
   }
 
@@ -81,27 +88,73 @@ export class PrismaOrganizationInvitesRepository extends OrganizationInvitesRepo
     }));
   }
 
-  async markAccepted(inviteId: string, db?: Db): Promise<void> {
+  async listForOrganization(
+    organizationId: string,
+    db?: Db,
+  ): Promise<OrganizationInviteAdminView[]> {
     const prisma = db ?? this.prisma;
-    await prisma.organizationInvite.update({
-      where: { id: inviteId },
-      data: { acceptedAt: new Date() },
+
+    const invites = await prisma.organizationInvite.findMany({
+      where: { organizationId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        email: true,
+        createdAt: true,
+        expiresAt: true,
+        acceptedAt: true,
+        revokedAt: true,
+        createdById: true,
+      },
     });
+
+    return invites.map((i) => ({
+      id: i.id,
+      email: i.email,
+      createdAt: i.createdAt.toISOString(),
+      expiresAt: i.expiresAt.toISOString(),
+      acceptedAt: i.acceptedAt ? i.acceptedAt.toISOString() : null,
+      revokedAt: i.revokedAt ? i.revokedAt.toISOString() : null,
+      createdById: i.createdById,
+    }));
   }
 
-  async markRevoked(inviteId: string, db?: Db): Promise<void> {
+  async markAccepted(inviteId: string, now: Date, db?: Db): Promise<number> {
     const prisma = db ?? this.prisma;
-    await prisma.organizationInvite.update({
-      where: { id: inviteId },
-      data: { revokedAt: new Date() },
+
+    const res = await prisma.organizationInvite.updateMany({
+      where: {
+        id: inviteId,
+        acceptedAt: null,
+        revokedAt: null,
+        expiresAt: { gt: now },
+      },
+      data: { acceptedAt: now },
     });
+
+    return res.count;
+  }
+
+  async markRevoked(inviteId: string, now: Date, db?: Db): Promise<number> {
+    const prisma = db ?? this.prisma;
+
+    const res = await prisma.organizationInvite.updateMany({
+      where: {
+        id: inviteId,
+        acceptedAt: null,
+        revokedAt: null,
+        expiresAt: { gt: now },
+      },
+      data: { revokedAt: now },
+    });
+
+    return res.count;
   }
 
   private toRecord(invite: {
     id: string;
     organizationId: string;
     email: string;
-    tokenHash: string;
     tokenPrefix: string;
     expiresAt: Date;
     acceptedAt: Date | null;
@@ -113,7 +166,6 @@ export class PrismaOrganizationInvitesRepository extends OrganizationInvitesRepo
       id: invite.id,
       organizationId: invite.organizationId,
       email: invite.email,
-      tokenHash: invite.tokenHash,
       tokenPrefix: invite.tokenPrefix,
       expiresAt: invite.expiresAt,
       acceptedAt: invite.acceptedAt,

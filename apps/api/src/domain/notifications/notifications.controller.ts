@@ -1,10 +1,18 @@
-import { Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard } from '@api/common';
 import {
   AuthUser,
   ClearNotificationResponse,
   NotificationView,
 } from '@repo/types';
+import { NotificationIdParamDto } from './dto/notification-id-param.dto';
 import { NotificationsService } from './notifications.service';
 
 @Controller('notifications')
@@ -20,9 +28,15 @@ export class NotificationsController {
   @Post(':id/clear')
   async clear(
     @CurrentUser() user: AuthUser,
-    @Param('id') id: string,
+    @Param() params: NotificationIdParamDto,
   ): Promise<ClearNotificationResponse> {
-    await this.notificationsService.clearForUser(user.id, id);
+    const cleared = await this.notificationsService.clearForUser(
+      user.id,
+      params.id,
+    );
+
+    if (!cleared) throw new NotFoundException('Notification not found');
+
     return { success: true };
   }
 }
