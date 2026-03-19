@@ -10,7 +10,10 @@ import {
   ProjectDetailView,
   ProjectView,
 } from '@repo/types';
-import { ProjectsRepository } from '../repositories/projects.repository';
+import {
+  PROJECT_QUERY_REPOSITORY,
+  type ProjectQueryRepository,
+} from '../repositories/projects.repository';
 import { ProjectAccessService } from '../policies/project-access.service';
 import {
   toPaginatedProjectListView,
@@ -22,7 +25,8 @@ import { ProjectWithRole } from '../types/projects.repository.types';
 @Injectable()
 export class ProjectsQueriesService {
   constructor(
-    private readonly projectsRepository: ProjectsRepository,
+    @Inject(PROJECT_QUERY_REPOSITORY)
+    private readonly projects: ProjectQueryRepository,
     @Inject(PROJECT_TASK_INFO_PROVIDER)
     private readonly projectTaskInfo: IProjectTaskInfoProvider,
     private readonly projectAccessService: ProjectAccessService,
@@ -32,7 +36,7 @@ export class ProjectsQueriesService {
     user: AuthUser,
     query: GetProjectsQueryDto,
   ): Promise<PaginatedProjectsListView> {
-    const result = await this.projectsRepository.findManyForUser({
+    const result = await this.projects.findManyForUser({
       orgId: user.orgId,
       userId: user.id,
       page: query.page,
@@ -47,7 +51,7 @@ export class ProjectsQueriesService {
 
     const [taskCountsMap, membersMap] = await Promise.all([
       this.projectTaskInfo.getTaskCountsByProjectIds(projectIds),
-      this.projectsRepository.findMembersWithUserByProjectIds(projectIds),
+      this.projects.findMembersWithUserByProjectIds(projectIds),
     ]);
 
     return toPaginatedProjectListView(result, taskCountsMap, membersMap);
@@ -76,7 +80,7 @@ export class ProjectsQueriesService {
 
     const [countsMap, members, recentTasks] = await Promise.all([
       this.projectTaskInfo.getTaskCountsByProjectIds([projectId]),
-      this.projectsRepository.findMembersWithUserByProjectIds([projectId]),
+      this.projects.findMembersWithUserByProjectIds([projectId]),
       this.projectTaskInfo.findRecentByProjectId(projectId, 10),
     ]);
 

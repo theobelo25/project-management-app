@@ -1,9 +1,13 @@
 import {
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ProjectsRepository } from '../repositories/projects.repository';
+import {
+  PROJECT_AUTHORIZATION_REPOSITORY,
+  type ProjectAuthorizationRepository,
+} from '../repositories/projects.repository';
 import { ProjectRole } from '@repo/database';
 import { Db } from '@api/prisma';
 import { ProjectWithRole } from '../types/projects.repository.types';
@@ -11,7 +15,10 @@ import { AuthUser } from '@repo/types';
 
 @Injectable()
 export class ProjectAccessService {
-  constructor(private readonly projectsRepository: ProjectsRepository) {}
+  constructor(
+    @Inject(PROJECT_AUTHORIZATION_REPOSITORY)
+    private readonly projects: ProjectAuthorizationRepository,
+  ) {}
 
   private roleRank(role: ProjectRole): number {
     switch (role) {
@@ -31,7 +38,7 @@ export class ProjectAccessService {
     user: AuthUser,
     db?: Db,
   ): Promise<ProjectWithRole> {
-    const project = await this.projectsRepository.findAuthorizedById(
+    const project = await this.projects.findAuthorizedById(
       projectId,
       user.id,
       user.orgId,
@@ -40,10 +47,7 @@ export class ProjectAccessService {
 
     if (project) return project;
 
-    const existingProject = await this.projectsRepository.findById(
-      projectId,
-      db,
-    );
+    const existingProject = await this.projects.findById(projectId, db);
     if (!existingProject) throw new NotFoundException('Project not found');
 
     throw new ForbiddenException('You do not have access to this project');
@@ -140,10 +144,6 @@ export class ProjectAccessService {
     this.assertArchived(project, 'Project is not archived');
     return project;
   }
-
-  // ----------------------------
-  // Assertions for when a project is already loaded (e.g. by a guard)
-  // ----------------------------
 
   assertRoleAtLeast(project: ProjectWithRole, minimumRole: ProjectRole) {
     const role = project.currentUserRole;

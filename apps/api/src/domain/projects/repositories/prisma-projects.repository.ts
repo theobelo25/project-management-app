@@ -18,17 +18,26 @@ import {
   UpdateProjectInput,
   UpdateProjectMemberRoleInput,
 } from '../types/projects.repository.types';
-import { ProjectsRepository } from './projects.repository';
+import type { ProjectAuthorizationRepository } from './ports/project-authorization.repository';
+import type { ProjectCommandRepository } from './ports/project-command.repository';
+import type { ProjectMemberRepository } from './ports/project-member.repository';
+import type { ProjectQueryRepository } from './ports/project-query.repository';
+import type { ProjectTaskContextRepository } from './ports/project-task-context.repository';
 import {
   PrismaProjectWithMemberRole,
   toProjectWithRole,
 } from '../mappers/prisma-repository.mapper';
 
 @Injectable()
-export class PrismaProjectsRepository extends ProjectsRepository {
-  constructor(@Inject(PRISMA) private readonly prisma: PrismaClient) {
-    super();
-  }
+export class PrismaProjectsRepository
+  implements
+    ProjectAuthorizationRepository,
+    ProjectQueryRepository,
+    ProjectCommandRepository,
+    ProjectMemberRepository,
+    ProjectTaskContextRepository
+{
+  constructor(@Inject(PRISMA) private readonly prisma: PrismaClient) {}
 
   async createWithOwner(
     input: CreateProjectWithOwnerInput,
@@ -77,7 +86,6 @@ export class PrismaProjectsRepository extends ProjectsRepository {
         { members: { some: { userId: input.userId } } },
       ],
     };
-    // Apply archived filtering globally for this query.
     if (input.filter === 'archived') {
       baseWhere.archivedAt = { not: null };
     } else if (!input.includeArchived) {
@@ -90,8 +98,6 @@ export class PrismaProjectsRepository extends ProjectsRepository {
         { members: { some: { userId: input.userId } } },
         { ownerId: { not: input.userId } },
       ];
-      // IMPORTANT: do NOT override baseWhere.archivedAt here.
-      // `includeArchived` (and `filter === 'archived'`) already decided it above.
     }
     if (input.search && input.search.length > 0) {
       const searchCondition: Prisma.ProjectWhereInput = {

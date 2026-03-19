@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { ProjectRole } from '@repo/database';
 import {
@@ -7,7 +7,10 @@ import {
   ProjectView,
   UpdateProjectDto,
 } from '@repo/types';
-import { ProjectsRepository } from '../repositories/projects.repository';
+import {
+  PROJECT_COMMAND_REPOSITORY,
+  type ProjectCommandRepository,
+} from '../repositories/projects.repository';
 import { ProjectAccessService } from '../policies/project-access.service';
 import { toProjectView } from '../mappers/project.mapper';
 import {
@@ -18,10 +21,13 @@ import {
 @Injectable()
 export class ProjectsCommandsService {
   constructor(
-    private readonly projectsRepository: ProjectsRepository,
+    @Inject(PROJECT_COMMAND_REPOSITORY)
+    private readonly projects: ProjectCommandRepository,
     private readonly projectAccessService: ProjectAccessService,
     private readonly logger: PinoLogger,
-  ) {}
+  ) {
+    this.logger.setContext(ProjectsCommandsService.name);
+  }
 
   async create(user: AuthUser, dto: CreateProjectDto): Promise<ProjectView> {
     const input: CreateProjectWithOwnerInput = {
@@ -31,7 +37,7 @@ export class ProjectsCommandsService {
       description: dto.description,
     };
 
-    const project = await this.projectsRepository.createWithOwner(input);
+    const project = await this.projects.createWithOwner(input);
 
     this.logger.info(
       { event: 'project.created', ownerId: user.id, projectId: project.id },
@@ -64,7 +70,7 @@ export class ProjectsCommandsService {
       );
     }
 
-    const updatedProject = await this.projectsRepository.updateForUser(
+    const updatedProject = await this.projects.updateForUser(
       projectId,
       user.id,
       {
@@ -101,7 +107,7 @@ export class ProjectsCommandsService {
       );
     }
 
-    const archivedProject = await this.projectsRepository.archiveForUser(
+    const archivedProject = await this.projects.archiveForUser(
       projectId,
       user.id,
     );
@@ -129,7 +135,7 @@ export class ProjectsCommandsService {
       await this.projectAccessService.requireOwnerAndArchived(projectId, user);
     }
 
-    const unarchivedProject = await this.projectsRepository.unarchiveForUser(
+    const unarchivedProject = await this.projects.unarchiveForUser(
       projectId,
       user.id,
     );
@@ -153,7 +159,7 @@ export class ProjectsCommandsService {
       await this.projectAccessService.requireOwner(projectId, user);
     }
 
-    await this.projectsRepository.delete(projectId);
+    await this.projects.delete(projectId);
 
     this.logger.info(
       { event: 'project.deleted', userId: user.id, projectId },

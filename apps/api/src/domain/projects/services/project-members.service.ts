@@ -1,6 +1,7 @@
 import {
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -11,17 +12,21 @@ import {
 import { AddProjectMemberDto, UpdateProjectMemberRoleDto } from '../dto';
 import { ProjectMembersView, ProjectMemberView, AuthUser } from '@repo/types';
 import { ProjectAccessService } from '../policies/project-access.service';
-import { ProjectsRepository } from '../repositories/projects.repository';
+import {
+  PROJECT_MEMBER_REPOSITORY,
+  type ProjectMemberRepository,
+} from '../repositories/projects.repository';
 import { PinoLogger } from 'nestjs-pino';
-import { UsersRepository } from '@api/domain/users/repositories/users.repository';
+import { UsersService } from '@api/domain/users/users.service';
 import { ProjectWithRole } from '../types/projects.repository.types';
 
 @Injectable()
 export class ProjectMembersService {
   constructor(
-    private readonly projectsRepository: ProjectsRepository,
+    @Inject(PROJECT_MEMBER_REPOSITORY)
+    private readonly projects: ProjectMemberRepository,
     private readonly projectAccessService: ProjectAccessService,
-    private readonly usersRepository: UsersRepository,
+    private readonly usersService: UsersService,
     private readonly logger: PinoLogger,
   ) {
     this.logger.setContext(ProjectMembersService.name);
@@ -36,8 +41,7 @@ export class ProjectMembersService {
       await this.projectAccessService.requireMember(projectId, user);
     }
 
-    const members =
-      await this.projectsRepository.findMembersByProjectId(projectId);
+    const members = await this.projects.findMembersByProjectId(projectId);
 
     this.logger.debug(
       { projectId, userId: user.id },
@@ -83,7 +87,7 @@ export class ProjectMembersService {
       throw new ConflictException('Owner is already a member of this project');
     }
 
-    const targetUser = await this.usersRepository.findById(dto.userId);
+    const targetUser = await this.usersService.findById(dto.userId);
     if (!targetUser) throw new NotFoundException('User not found');
 
     if (targetUser.orgId !== actor.orgId) {
@@ -92,7 +96,7 @@ export class ProjectMembersService {
       );
     }
 
-    const existingMember = await this.projectsRepository.findMembership(
+    const existingMember = await this.projects.findMembership(
       projectId,
       dto.userId,
     );
@@ -101,7 +105,7 @@ export class ProjectMembersService {
       throw new ConflictException('User is already a project member');
     }
 
-    const member = await this.projectsRepository.addMember({
+    const member = await this.projects.addMember({
       projectId,
       userId: dto.userId,
       role: dto.role,
@@ -140,7 +144,7 @@ export class ProjectMembersService {
       );
     }
 
-    const existingMember = await this.projectsRepository.findMembership(
+    const existingMember = await this.projects.findMembership(
       projectId,
       memberUserId,
     );
@@ -149,7 +153,7 @@ export class ProjectMembersService {
       throw new NotFoundException('Project member not found');
     }
 
-    const member = await this.projectsRepository.updateMemberRole({
+    const member = await this.projects.updateMemberRole({
       projectId,
       userId: memberUserId,
       role: dto.role,
@@ -185,7 +189,7 @@ export class ProjectMembersService {
       throw new ForbiddenException('Project owner cannot be removed');
     }
 
-    const existingMember = await this.projectsRepository.findMembership(
+    const existingMember = await this.projects.findMembership(
       projectId,
       memberUserId,
     );
@@ -194,7 +198,7 @@ export class ProjectMembersService {
       throw new NotFoundException('Project member not found');
     }
 
-    await this.projectsRepository.removeMember(projectId, memberUserId);
+    await this.projects.removeMember(projectId, memberUserId);
 
     this.logger.info(
       {

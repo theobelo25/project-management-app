@@ -1,7 +1,11 @@
-import { ProjectsRepository } from '@api/domain/projects/repositories/projects.repository';
+import {
+  PROJECT_TASK_CONTEXT_REPOSITORY,
+  type ProjectTaskContextRepository,
+} from '@api/domain/projects/repositories/projects.repository';
 import { TasksRepository } from '../repositories/tasks.repository';
 import {
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -14,7 +18,8 @@ import { AuthUser } from '@repo/types';
 export class TaskAccessService {
   constructor(
     private readonly tasksRepository: TasksRepository,
-    private readonly projectsRepository: ProjectsRepository,
+    @Inject(PROJECT_TASK_CONTEXT_REPOSITORY)
+    private readonly projectContext: ProjectTaskContextRepository,
     private readonly logger: PinoLogger,
   ) {}
 
@@ -22,7 +27,7 @@ export class TaskAccessService {
     user: AuthUser,
     projectId: string,
   ): Promise<void> {
-    const project = await this.projectsRepository.findByIdWithMemberRole(
+    const project = await this.projectContext.findByIdWithMemberRole(
       projectId,
       user.id,
       user.orgId,
@@ -49,7 +54,7 @@ export class TaskAccessService {
   }
 
   async assertCanReadProject(user: AuthUser, projectId: string): Promise<void> {
-    const project = await this.projectsRepository.findByIdWithMemberRole(
+    const project = await this.projectContext.findByIdWithMemberRole(
       projectId,
       user.id,
       user.orgId,

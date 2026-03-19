@@ -102,11 +102,13 @@ export class ProjectsController {
   }
 
   @Get(':id/members')
+  @RequireProjectRole(ProjectRole.MEMBER)
   async getMembers(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
+    @CurrentProject() project: ProjectWithRole, // no longer optional if guard always runs
   ): Promise<ProjectMembersView> {
-    return this.projectMembersService.getMembers(params.id, user);
+    return this.projectMembersService.getMembers(params.id, user, project);
   }
 
   @Post(':id/members')

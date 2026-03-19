@@ -4,7 +4,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ProjectsRepository } from '../repositories/projects.repository';
+import {
+  PROJECT_AUTHORIZATION_REPOSITORY,
+  PROJECT_MEMBER_REPOSITORY,
+  type ProjectAuthorizationRepository,
+  type ProjectMemberRepository,
+} from '../repositories/projects.repository';
 import {
   AuthUser,
   ProjectView,
@@ -21,7 +26,10 @@ import { ProjectWithRole } from '../types/projects.repository.types';
 @Injectable()
 export class ProjectOwnershipService {
   constructor(
-    private readonly projectsRepository: ProjectsRepository,
+    @Inject(PROJECT_MEMBER_REPOSITORY)
+    private readonly members: ProjectMemberRepository,
+    @Inject(PROJECT_AUTHORIZATION_REPOSITORY)
+    private readonly authProjects: ProjectAuthorizationRepository,
     private readonly projectAccessService: ProjectAccessService,
     @Inject(UNIT_OF_WORK)
     private readonly uow: UnitOfWork,
@@ -38,7 +46,6 @@ export class ProjectOwnershipService {
   ): Promise<ProjectView> {
     return this.uow.transaction(async (db) => {
       if (authorizedProject) {
-        // Guard already verified OWNER; also enforce not-archived.
         this.projectAccessService.assertOwner(authorizedProject);
         this.projectAccessService.assertNotArchived(
           authorizedProject,
@@ -56,7 +63,7 @@ export class ProjectOwnershipService {
         throw new ConflictException('User is already the project owner');
       }
 
-      const targetMembership = await this.projectsRepository.findMembership(
+      const targetMembership = await this.members.findMembership(
         projectId,
         dto.userId,
         db,
@@ -66,9 +73,9 @@ export class ProjectOwnershipService {
         throw new NotFoundException('Target user is not a project member');
       }
 
-      await this.projectsRepository.updateOwner(projectId, dto.userId, db);
+      await this.members.updateOwner(projectId, dto.userId, db);
 
-      await this.projectsRepository.updateMemberRole(
+      await this.members.updateMemberRole(
         {
           projectId,
           userId: dto.userId,
@@ -77,7 +84,7 @@ export class ProjectOwnershipService {
         db,
       );
 
-      await this.projectsRepository.updateMemberRole(
+      await this.members.updateMemberRole(
         {
           projectId,
           userId: actor.id,
@@ -86,7 +93,7 @@ export class ProjectOwnershipService {
         db,
       );
 
-      const updatedProject = await this.projectsRepository.findAuthorizedById(
+      const updatedProject = await this.authProjects.findAuthorizedById(
         projectId,
         dto.userId,
         actor.orgId,

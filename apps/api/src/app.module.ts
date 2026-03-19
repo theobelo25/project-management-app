@@ -12,9 +12,7 @@ import { TasksModule } from './domain/tasks/tasks.module';
 import { OrganizationsModule } from './domain/organizations/organizations.module';
 import { NotificationsModule } from './domain/notifications/notifications.module';
 import { AppExceptionFilter } from './common/filters/app-exception.filter';
-import { PROJECT_TASK_INFO_PROVIDER } from './domain/projects/types/project-task-info.types';
-import { ProjectTaskInfoProviderAdapter } from './domain/tasks/adapters/project-task-info-provider.adapter';
-import { TasksRepository } from './domain/tasks/repositories/tasks.repository';
+import { ProjectTaskIntegrationModule } from './integrations/project-task-integration.module';
 
 @Module({
   imports: [
@@ -32,15 +30,9 @@ import { TasksRepository } from './domain/tasks/repositories/tasks.repository';
     TasksModule,
     OrganizationsModule,
     NotificationsModule,
+    ProjectTaskIntegrationModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    AppExceptionFilter,
-    {
-      provide: PROJECT_TASK_INFO_PROVIDER,
-      useClass: ProjectTaskInfoProviderAdapter,
-    },
-  ],
+  providers: [AppService, AppExceptionFilter],
 })
 export class AppModule {}
