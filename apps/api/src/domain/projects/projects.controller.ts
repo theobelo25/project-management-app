@@ -29,11 +29,13 @@ import {
   UpdateProjectMemberRoleDto,
   AddProjectMemberDto,
 } from './dto';
-import { ProjectMembersService } from './members/project-members.service';
-import { ProjectOwnershipService } from './members/project-ownership.service';
+import { ProjectMembersService } from './services/project-members.service';
+import { ProjectOwnershipService } from './services/project-ownership.service';
 import { RequireProjectRole } from './decorators/require-project-role.decorator';
 import { ProjectRole } from '@repo/database';
 import { ProjectRoleGuard } from './guards/project-role.guard';
+import { CurrentProject } from './decorators/current-project.decorator';
+import { ProjectWithRole } from './types/projects.repository.types';
 
 @Controller('projects')
 @UseGuards(JwtAuthGuard, ProjectRoleGuard)
@@ -74,8 +76,9 @@ export class ProjectsController {
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
     @Body() body: UpdateProjectDto,
+    @CurrentProject() project?: ProjectWithRole,
   ): Promise<ProjectView> {
-    return this.projectsService.update(params.id, user, body);
+    return this.projectsService.update(params.id, user, body, project);
   }
 
   @Patch(':id/archive')
@@ -83,8 +86,9 @@ export class ProjectsController {
   async archive(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
+    @CurrentProject() project?: ProjectWithRole,
   ): Promise<ProjectView> {
-    return this.projectsService.archive(params.id, user);
+    return this.projectsService.archive(params.id, user, project);
   }
 
   @Patch(':id/unarchive')
@@ -92,8 +96,9 @@ export class ProjectsController {
   async unarchive(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
+    @CurrentProject() project?: ProjectWithRole,
   ): Promise<ProjectView> {
-    return this.projectsService.unarchive(params.id, user);
+    return this.projectsService.unarchive(params.id, user, project);
   }
 
   @Get(':id/members')
@@ -110,8 +115,9 @@ export class ProjectsController {
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
     @Body() body: AddProjectMemberDto,
+    @CurrentProject() project?: ProjectWithRole,
   ): Promise<ProjectMemberView> {
-    return this.projectMembersService.addMember(params.id, user, body);
+    return this.projectMembersService.addMember(params.id, user, body, project);
   }
 
   @Patch(':id/members/:userId')
@@ -120,12 +126,14 @@ export class ProjectsController {
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectMemberParamDto,
     @Body() body: UpdateProjectMemberRoleDto,
+    @CurrentProject() project?: ProjectWithRole,
   ): Promise<ProjectMemberView> {
     return this.projectMembersService.updateMemberRole(
       params.id,
       user,
       params.userId,
       body,
+      project,
     );
   }
 
@@ -135,11 +143,13 @@ export class ProjectsController {
   async removeMember(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectMemberParamDto,
+    @CurrentProject() project?: ProjectWithRole,
   ): Promise<void> {
     return this.projectMembersService.removeMember(
       params.id,
       user,
       params.userId,
+      project,
     );
   }
 
@@ -149,11 +159,13 @@ export class ProjectsController {
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
     @Body() body: TransferProjectOwnershipDto,
+    @CurrentProject() project?: ProjectWithRole,
   ): Promise<ProjectView> {
     return this.projectOwnershipService.transferOwnership(
       params.id,
       user,
       body,
+      project,
     );
   }
 
@@ -163,7 +175,8 @@ export class ProjectsController {
   async delete(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
+    @CurrentProject() project?: ProjectWithRole,
   ): Promise<void> {
-    return this.projectsService.delete(params.id, user);
+    return this.projectsService.delete(params.id, user, project);
   }
 }

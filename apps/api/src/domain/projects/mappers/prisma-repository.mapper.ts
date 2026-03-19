@@ -1,7 +1,7 @@
 import { ProjectRole } from '@repo/database';
 import { ProjectWithRole } from '../types/projects.repository.types';
 
-type PrismaProjectWithMemberRole = {
+export type PrismaProjectWithMemberRole = {
   id: string;
   organizationId: string;
   name: string;

@@ -16,6 +16,7 @@ import { UnitOfWork } from '@api/prisma/uow/unit-of-work.interface';
 import { ProjectRole } from '@repo/database';
 import { toProjectView } from '../mappers/project.mapper';
 import { PinoLogger } from 'nestjs-pino';
+import { ProjectWithRole } from '../types/projects.repository.types';
 
 @Injectable()
 export class ProjectOwnershipService {
@@ -33,9 +34,23 @@ export class ProjectOwnershipService {
     projectId: string,
     actor: AuthUser,
     dto: TransferProjectOwnershipDto,
+    authorizedProject?: ProjectWithRole,
   ): Promise<ProjectView> {
     return this.uow.transaction(async (db) => {
-      await this.projectAccessService.requireOwner(projectId, actor, db);
+      if (authorizedProject) {
+        // Guard already verified OWNER; also enforce not-archived.
+        this.projectAccessService.assertOwner(authorizedProject);
+        this.projectAccessService.assertNotArchived(
+          authorizedProject,
+          'Archived projects cannot transfer ownership',
+        );
+      } else {
+        await this.projectAccessService.requireOwnerAndNotArchived(
+          projectId,
+          actor,
+          db,
+        );
+      }
 
       if (dto.userId === actor.id) {
         throw new ConflictException('User is already the project owner');
@@ -84,7 +99,7 @@ export class ProjectOwnershipService {
 
       this.logger.info(
         {
-          event: 'project.owner.transfered',
+          event: 'project.owner.transferred',
           projectId,
           previousOwnerId: actor.id,
           newOwnerId: dto.userId,

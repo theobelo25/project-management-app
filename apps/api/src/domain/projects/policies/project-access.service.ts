@@ -73,14 +73,7 @@ export class ProjectAccessService {
     db?: Db,
   ): Promise<ProjectWithRole> {
     const project = await this.getAuthorizedProject(projectId, user, db);
-    const role = project.currentUserRole;
-
-    if (!role)
-      throw new ForbiddenException('You do not have access to this project');
-
-    if (this.roleRank(role) < this.roleRank(minimumRole))
-      throw new ForbiddenException('Insufficient project permissions');
-
+    this.assertRoleAtLeast(project, minimumRole);
     return project;
   }
 
@@ -90,13 +83,97 @@ export class ProjectAccessService {
     db?: Db,
   ): Promise<ProjectWithRole> {
     const project = await this.getAuthorizedProject(projectId, user, db);
+    this.assertOwner(project);
+    return project;
+  }
 
+  async requireNotArchived(
+    projectId: string,
+    user: AuthUser,
+    db?: Db,
+  ): Promise<ProjectWithRole> {
+    const project = await this.getAuthorizedProject(projectId, user, db);
+    this.assertNotArchived(project, 'Archived projects cannot be modified');
+    return project;
+  }
+
+  async requireRoleAndNotArchived(
+    projectId: string,
+    user: AuthUser,
+    minimumRole: ProjectRole,
+    db?: Db,
+  ): Promise<ProjectWithRole> {
+    const project = await this.requireRole(projectId, user, minimumRole, db);
+    this.assertNotArchived(project, 'Archived projects cannot be modified');
+    return project;
+  }
+
+  async requireOwnerAndNotArchived(
+    projectId: string,
+    user: AuthUser,
+    db?: Db,
+  ): Promise<ProjectWithRole> {
+    const project = await this.requireOwner(projectId, user, db);
+    this.assertNotArchived(
+      project,
+      'Archived projects cannot modify membership',
+    );
+    return project;
+  }
+
+  async requireOwnerAndUnarchived(
+    projectId: string,
+    user: AuthUser,
+    db?: Db,
+  ): Promise<ProjectWithRole> {
+    const project = await this.requireOwner(projectId, user, db);
+    this.assertNotArchived(project, 'Project is already archived');
+    return project;
+  }
+
+  async requireOwnerAndArchived(
+    projectId: string,
+    user: AuthUser,
+    db?: Db,
+  ): Promise<ProjectWithRole> {
+    const project = await this.requireOwner(projectId, user, db);
+    this.assertArchived(project, 'Project is not archived');
+    return project;
+  }
+
+  // ----------------------------
+  // Assertions for when a project is already loaded (e.g. by a guard)
+  // ----------------------------
+
+  assertRoleAtLeast(project: ProjectWithRole, minimumRole: ProjectRole) {
+    const role = project.currentUserRole;
+
+    if (!role) {
+      throw new ForbiddenException('You do not have access to this project');
+    }
+
+    if (this.roleRank(role) < this.roleRank(minimumRole)) {
+      throw new ForbiddenException('Insufficient project permissions');
+    }
+  }
+
+  assertOwner(project: ProjectWithRole) {
     if (project.currentUserRole !== ProjectRole.OWNER) {
       throw new ForbiddenException(
         'Only the project owner can perform this action',
       );
     }
+  }
 
-    return project;
+  assertNotArchived(project: ProjectWithRole, message: string) {
+    if (project.archivedAt) {
+      throw new ForbiddenException(message);
+    }
+  }
+
+  assertArchived(project: ProjectWithRole, message: string) {
+    if (!project.archivedAt) {
+      throw new ForbiddenException(message);
+    }
   }
 }

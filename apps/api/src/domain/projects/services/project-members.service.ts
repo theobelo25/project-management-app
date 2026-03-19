@@ -14,6 +14,7 @@ import { ProjectAccessService } from '../policies/project-access.service';
 import { ProjectsRepository } from '../repositories/projects.repository';
 import { PinoLogger } from 'nestjs-pino';
 import { UsersRepository } from '@api/domain/users/repositories/users.repository';
+import { ProjectWithRole } from '../types/projects.repository.types';
 
 @Injectable()
 export class ProjectMembersService {
@@ -29,8 +30,11 @@ export class ProjectMembersService {
   async getMembers(
     projectId: string,
     user: AuthUser,
+    authorizedProject?: ProjectWithRole,
   ): Promise<ProjectMembersView> {
-    await this.projectAccessService.requireMember(projectId, user);
+    if (!authorizedProject) {
+      await this.projectAccessService.requireMember(projectId, user);
+    }
 
     const members =
       await this.projectsRepository.findMembersByProjectId(projectId);
@@ -43,21 +47,37 @@ export class ProjectMembersService {
     return toProjectMembersView(members);
   }
 
+  private async requireOwnerAndNotArchivedForMembershipChange(
+    projectId: string,
+    actor: AuthUser,
+    authorizedProject?: ProjectWithRole,
+  ): Promise<void> {
+    if (authorizedProject) {
+      this.projectAccessService.assertOwner(authorizedProject);
+      this.projectAccessService.assertNotArchived(
+        authorizedProject,
+        'Archived projects cannot modify membership',
+      );
+      return;
+    }
+
+    await this.projectAccessService.requireOwnerAndNotArchived(
+      projectId,
+      actor,
+    );
+  }
+
   async addMember(
     projectId: string,
     actor: AuthUser,
     dto: AddProjectMemberDto,
+    authorizedProject?: ProjectWithRole,
   ): Promise<ProjectMemberView> {
-    const project = await this.projectAccessService.requireOwner(
+    await this.requireOwnerAndNotArchivedForMembershipChange(
       projectId,
       actor,
+      authorizedProject,
     );
-
-    if (project.archivedAt) {
-      throw new ForbiddenException(
-        'Archived projects cannot modify membership',
-      );
-    }
 
     if (dto.userId === actor.id) {
       throw new ConflictException('Owner is already a member of this project');
@@ -106,17 +126,13 @@ export class ProjectMembersService {
     actor: AuthUser,
     memberUserId: string,
     dto: UpdateProjectMemberRoleDto,
+    authorizedProject?: ProjectWithRole,
   ): Promise<ProjectMemberView> {
-    const project = await this.projectAccessService.requireOwner(
+    await this.requireOwnerAndNotArchivedForMembershipChange(
       projectId,
       actor,
+      authorizedProject,
     );
-
-    if (project.archivedAt) {
-      throw new ForbiddenException(
-        'Archived projects cannot modify membership',
-      );
-    }
 
     if (memberUserId === actor.id) {
       throw new ForbiddenException(
@@ -157,17 +173,13 @@ export class ProjectMembersService {
     projectId: string,
     actor: AuthUser,
     memberUserId: string,
+    authorizedProject?: ProjectWithRole,
   ): Promise<void> {
-    const project = await this.projectAccessService.requireOwner(
+    await this.requireOwnerAndNotArchivedForMembershipChange(
       projectId,
       actor,
+      authorizedProject,
     );
-
-    if (project.archivedAt) {
-      throw new ForbiddenException(
-        'Archived projects cannot modify membership',
-      );
-    }
 
     if (memberUserId === actor.id) {
       throw new ForbiddenException('Project owner cannot be removed');

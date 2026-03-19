@@ -19,7 +19,10 @@ import {
   UpdateProjectMemberRoleInput,
 } from '../types/projects.repository.types';
 import { ProjectsRepository } from './projects.repository';
-import { toProjectWithRole } from '../mappers/prisma-repository.mapper';
+import {
+  PrismaProjectWithMemberRole,
+  toProjectWithRole,
+} from '../mappers/prisma-repository.mapper';
 
 @Injectable()
 export class PrismaProjectsRepository extends ProjectsRepository {
@@ -67,7 +70,6 @@ export class PrismaProjectsRepository extends ProjectsRepository {
   ): Promise<PaginatedProjectsResult> {
     const prisma = db ?? this.prisma;
     const skip = (input.page - 1) * input.pageSize;
-
     const baseWhere: Prisma.ProjectWhereInput = {
       organizationId: input.orgId,
       OR: [
@@ -75,23 +77,22 @@ export class PrismaProjectsRepository extends ProjectsRepository {
         { members: { some: { userId: input.userId } } },
       ],
     };
-
+    // Apply archived filtering globally for this query.
     if (input.filter === 'archived') {
-      (baseWhere as Prisma.ProjectWhereInput).archivedAt = { not: null };
+      baseWhere.archivedAt = { not: null };
     } else if (!input.includeArchived) {
-      (baseWhere as Prisma.ProjectWhereInput).archivedAt = null;
+      baseWhere.archivedAt = null;
     }
-
     if (input.filter === 'owned') {
-      (baseWhere as Prisma.ProjectWhereInput).ownerId = input.userId;
+      baseWhere.ownerId = input.userId;
     } else if (input.filter === 'member') {
-      (baseWhere as Prisma.ProjectWhereInput).AND = [
+      baseWhere.AND = [
         { members: { some: { userId: input.userId } } },
         { ownerId: { not: input.userId } },
       ];
-      (baseWhere as Prisma.ProjectWhereInput).archivedAt = null;
+      // IMPORTANT: do NOT override baseWhere.archivedAt here.
+      // `includeArchived` (and `filter === 'archived'`) already decided it above.
     }
-
     if (input.search && input.search.length > 0) {
       const searchCondition: Prisma.ProjectWhereInput = {
         OR: [
@@ -103,15 +104,13 @@ export class PrismaProjectsRepository extends ProjectsRepository {
         ? [...baseWhere.AND, searchCondition]
         : [searchCondition];
     }
-
     const orderBy: Prisma.ProjectOrderByWithRelationInput =
       input.sort === 'name-asc'
         ? { name: 'asc' }
         : input.sort === 'created-desc'
           ? { createdAt: 'desc' }
           : { updatedAt: 'desc' };
-
-    const [items, total] = await Promise.all([
+    const [itemsRaw, total] = await Promise.all([
       prisma.project.findMany({
         where: baseWhere,
         skip,
@@ -127,11 +126,12 @@ export class PrismaProjectsRepository extends ProjectsRepository {
       }),
       prisma.project.count({ where: baseWhere }),
     ]);
-
+    const items: ProjectWithRole[] = itemsRaw.map(
+      (project: PrismaProjectWithMemberRole) =>
+        toProjectWithRole(project, input.userId),
+    );
     return {
-      items: items.map((project: Project) =>
-        toProjectWithRole(project as any, input.userId),
-      ),
+      items,
       total,
       page: input.page,
       pageSize: input.pageSize,
@@ -170,7 +170,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
 
     if (!project) return null;
 
-    return toProjectWithRole(project as any, userId);
+    return toProjectWithRole(project as PrismaProjectWithMemberRole, userId);
   }
 
   async findByIdWithMemberRole(
@@ -324,8 +324,8 @@ export class PrismaProjectsRepository extends ProjectsRepository {
     const project = await prisma.project.update({
       where: { id },
       data: {
-        ...(data.name != undefined ? { name: data.name } : {}),
-        ...(data.description != undefined
+        ...(data.name !== undefined ? { name: data.name } : {}),
+        ...(data.description !== undefined
           ? { description: data.description }
           : {}),
       },
@@ -338,7 +338,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
       },
     });
 
-    return toProjectWithRole(project as any, userId);
+    return toProjectWithRole(project as PrismaProjectWithMemberRole, userId);
   }
 
   async archiveForUser(
@@ -362,7 +362,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
       },
     });
 
-    return toProjectWithRole(project as any, userId);
+    return toProjectWithRole(project as PrismaProjectWithMemberRole, userId);
   }
 
   async unarchiveForUser(
@@ -386,7 +386,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
       },
     });
 
-    return toProjectWithRole(project as any, userId);
+    return toProjectWithRole(project as PrismaProjectWithMemberRole, userId);
   }
 
   async delete(id: string, db?: Db): Promise<Project> {

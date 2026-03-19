@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
-import { ProjectMembersService } from './members/project-members.service';
-import { ProjectOwnershipService } from './members/project-ownership.service';
+import { ProjectMembersService } from './services/project-members.service';
+import { ProjectOwnershipService } from './services/project-ownership.service';
 import { ProjectRole } from '@repo/database';
 import type {
   CreateProjectDto,
