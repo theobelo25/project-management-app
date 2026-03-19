@@ -12,7 +12,8 @@ import { TasksModule } from './domain/tasks/tasks.module';
 import { OrganizationsModule } from './domain/organizations/organizations.module';
 import { NotificationsModule } from './domain/notifications/notifications.module';
 import { AppExceptionFilter } from './common/filters/app-exception.filter';
-import { ProjectTaskIntegrationModule } from './integrations/project-task-integration.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -30,9 +31,19 @@ import { ProjectTaskIntegrationModule } from './integrations/project-task-integr
     TasksModule,
     OrganizationsModule,
     NotificationsModule,
-    ProjectTaskIntegrationModule,
+    ThrottlerModule.forRoot([
+      {
+        name: 'global',
+        ttl: 60_000,
+        limit: 120,
+      },
+    ]),
   ],
   controllers: [AppController],
-  providers: [AppService, AppExceptionFilter],
+  providers: [
+    AppService,
+    AppExceptionFilter,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}

@@ -50,7 +50,7 @@ export class ProjectsQueriesService {
     const projectIds = result.items.map((p) => p.id);
 
     const [taskCountsMap, membersMap] = await Promise.all([
-      this.projectTaskInfo.getTaskCountsByProjectIds(projectIds),
+      this.projectTaskInfo.getTaskCountsByProjectIds(projectIds, user.orgId),
       this.projects.findMembersWithUserByProjectIds(projectIds),
     ]);
 
@@ -79,9 +79,9 @@ export class ProjectsQueriesService {
       (await this.projectAccessService.requireMember(projectId, user));
 
     const [countsMap, members, recentTasks] = await Promise.all([
-      this.projectTaskInfo.getTaskCountsByProjectIds([projectId]),
+      this.projectTaskInfo.getTaskCountsByProjectIds([projectId], user.orgId),
       this.projects.findMembersWithUserByProjectIds([projectId]),
-      this.projectTaskInfo.findRecentByProjectId(projectId, 10),
+      this.projectTaskInfo.findRecentByProjectId(projectId, 10, user.orgId),
     ]);
 
     const counts = countsMap.get(projectId) ?? { total: 0, completed: 0 };

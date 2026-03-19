@@ -16,6 +16,15 @@ export type TaskAssigneeWithUser = TaskAssignee & {
   user: User;
 };
 
+export type TaskAssigneeWithUserAndTaskInfo = TaskAssigneeWithUser & {
+  task: Pick<Task, 'title' | 'projectId'>;
+};
+
+export type TaskAssignmentResult = {
+  assignment: TaskAssigneeWithUserAndTaskInfo;
+  created: boolean;
+};
+
 export type TaskWithAssignees = Task & {
   assignees: TaskAssigneeWithUser[];
 };

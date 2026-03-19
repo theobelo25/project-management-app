@@ -25,10 +25,11 @@ describe('TasksController', () => {
     unassignUser: jest.Mock;
   };
 
+  /** Matches runtime JWT payload shape used by task/project guards. */
   const user: AuthUser = {
     id: 'user-1',
-    email: 'test@example.com',
-  } as AuthUser;
+    orgId: 'org-1',
+  };
 
   beforeEach(() => {
     tasksService = {
@@ -45,7 +46,7 @@ describe('TasksController', () => {
   });
 
   describe('create', () => {
-    it('calls tasksService.create with the current user id and request body', async () => {
+    it('calls tasksService.create with AuthUser and body', async () => {
       const body: CreateTaskDto = {
         title: 'Build controller tests',
         description: 'Write tests for TasksController',
@@ -61,13 +62,13 @@ describe('TasksController', () => {
 
       const result = await controller.create(user, body);
 
-      expect(tasksService.create).toHaveBeenCalledWith(user.id, body);
+      expect(tasksService.create).toHaveBeenCalledWith(user, body);
       expect(result).toEqual(taskView);
     });
   });
 
   describe('findById', () => {
-    it('calls tasksService.findById with the route taskId and current user id', async () => {
+    it('calls tasksService.findById with taskId and AuthUser', async () => {
       const params: TaskIdParamDto = {
         taskId: 'task-1',
       };
@@ -81,16 +82,13 @@ describe('TasksController', () => {
 
       const result = await controller.findById(user, params);
 
-      expect(tasksService.findById).toHaveBeenCalledWith(
-        params.taskId,
-        user.id,
-      );
+      expect(tasksService.findById).toHaveBeenCalledWith(params.taskId, user);
       expect(result).toEqual(taskView);
     });
   });
 
   describe('findMany', () => {
-    it('calls tasksService.findMany with the current user id and query', async () => {
+    it('calls tasksService.findMany with AuthUser and query', async () => {
       const query: FindTasksQueryDto = {
         projectId: 'project-1',
       } as FindTasksQueryDto;
@@ -126,13 +124,13 @@ describe('TasksController', () => {
 
       const result = await controller.findMany(user, query);
 
-      expect(tasksService.findMany).toHaveBeenCalledWith(user.id, query);
+      expect(tasksService.findMany).toHaveBeenCalledWith(user, query);
       expect(result).toEqual(paginatedResult);
     });
   });
 
   describe('update', () => {
-    it('calls tasksService.update with taskId, user id, and body', async () => {
+    it('calls tasksService.update with taskId, AuthUser, and body', async () => {
       const params: TaskIdParamDto = {
         taskId: 'task-1',
       };
@@ -140,6 +138,10 @@ describe('TasksController', () => {
       const body: UpdateTaskDto = {
         title: 'Updated title',
         description: 'Updated description',
+        dueDate: undefined,
+        status: undefined,
+        priority: undefined,
+        position: undefined,
       };
 
       const taskView: TaskView = {
@@ -153,7 +155,7 @@ describe('TasksController', () => {
 
       expect(tasksService.update).toHaveBeenCalledWith(
         params.taskId,
-        user.id,
+        user,
         body,
       );
       expect(result).toEqual(taskView);
@@ -161,7 +163,7 @@ describe('TasksController', () => {
   });
 
   describe('delete', () => {
-    it('calls tasksService.delete with taskId and current user id', async () => {
+    it('calls tasksService.delete with taskId and AuthUser', async () => {
       const params: TaskIdParamDto = {
         taskId: 'task-1',
       };
@@ -170,13 +172,13 @@ describe('TasksController', () => {
 
       const result = await controller.delete(user, params);
 
-      expect(tasksService.delete).toHaveBeenCalledWith(params.taskId, user.id);
+      expect(tasksService.delete).toHaveBeenCalledWith(params.taskId, user);
       expect(result).toBeUndefined();
     });
   });
 
   describe('assignUser', () => {
-    it('calls tasksService.assignUser with taskId, assignee userId, and current user id', async () => {
+    it('calls tasksService.assignUser with taskId, assigneeId, and AuthUser', async () => {
       const params: TaskAssigneeParamsDto = {
         taskId: 'task-1',
         userId: 'user-2',
@@ -194,14 +196,14 @@ describe('TasksController', () => {
       expect(tasksService.assignUser).toHaveBeenCalledWith(
         params.taskId,
         params.userId,
-        user.id,
+        user,
       );
       expect(result).toEqual(assignmentView);
     });
   });
 
   describe('unassignUser', () => {
-    it('calls tasksService.unassignUser with taskId, assignee userId, and current user id', async () => {
+    it('calls tasksService.unassignUser with taskId, assigneeId, and AuthUser', async () => {
       const params: TaskAssigneeParamsDto = {
         taskId: 'task-1',
         userId: 'user-2',
@@ -214,7 +216,7 @@ describe('TasksController', () => {
       expect(tasksService.unassignUser).toHaveBeenCalledWith(
         params.taskId,
         params.userId,
-        user.id,
+        user,
       );
       expect(result).toBeUndefined();
     });

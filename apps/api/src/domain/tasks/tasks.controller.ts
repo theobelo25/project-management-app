@@ -23,13 +23,33 @@ import { TaskIdParamDto } from './dto/task-id-param.dto';
 import { TaskAssigneeParamsDto } from './dto/task-assignee-params.dto';
 import { FindTasksQueryDto } from './dto/find-tasks-query.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { TaskAccessGuard } from './guards/task-access.guard';
+import { RequireTaskAccess } from './decorators/require-task-access.decorator';
+import { Throttle } from '@nestjs/throttler';
 
+/**
+ * Tasks HTTP API
+ *
+ * HTTP semantics (high level):
+ * - `GET /tasks` — list tasks for a project (requires `projectId` query); **safe**, **idempotent**.
+ * - `GET /tasks/:taskId` — fetch one task; **safe**, **idempotent**.
+ * - `POST /tasks` — create task; **not idempotent** unless you add a client idempotency key (not implemented here).
+ * - `PATCH /tasks/:taskId` — partial update; **not idempotent** in general (depends on body).
+ * - `DELETE /tasks/:taskId` — delete task; **idempotent** (repeat delete → 404 or no-op depending on error mapping).
+ * - `POST /tasks/:taskId/assignees/:userId` — add assignee; **idempotent** (duplicate assign → 200 with existing row semantics via repo).
+ * - `DELETE /tasks/:taskId/assignees/:userId` — remove assignee; **idempotent** (repeat → 204, no-op at DB).
+ *
+ * Route order: static/collection routes before `:taskId` to avoid future foot-guns when adding paths like `export`.
+ */
+
+@Throttle({ default: { ttl: 60_000, limit: 60 } })
 @Controller('tasks')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, TaskAccessGuard)
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Post()
+  @RequireTaskAccess('createInProject')
   async create(
     @CurrentUser() user: AuthUser,
     @Body() body: CreateTaskDto,
@@ -37,15 +57,12 @@ export class TasksController {
     return this.tasksService.create(user, body);
   }
 
-  @Get(':taskId')
-  async findById(
-    @CurrentUser() user: AuthUser,
-    @Param() params: TaskIdParamDto,
-  ): Promise<TaskView> {
-    return this.tasksService.findById(params.taskId, user);
-  }
-
+  /**
+   * List tasks in a project (pagination + filters via query).
+   * 200 + JSON body.
+   */
   @Get()
+  @RequireTaskAccess('readProject')
   async findMany(
     @CurrentUser() user: AuthUser,
     @Query() query: FindTasksQueryDto,
@@ -53,7 +70,21 @@ export class TasksController {
     return this.tasksService.findMany(user, query);
   }
 
+  /**
+   * Get a single task by id.
+   * 200 + JSON body.
+   */
+  @Get(':taskId')
+  @RequireTaskAccess('readTask')
+  async findById(
+    @CurrentUser() user: AuthUser,
+    @Param() params: TaskIdParamDto,
+  ): Promise<TaskView> {
+    return this.tasksService.findById(params.taskId, user);
+  }
+
   @Patch(':taskId')
+  @RequireTaskAccess('updateTask')
   async update(
     @CurrentUser() user: AuthUser,
     @Param() params: TaskIdParamDto,
@@ -62,8 +93,13 @@ export class TasksController {
     return this.tasksService.update(params.taskId, user, body);
   }
 
+  /**
+   * Delete task.
+   * 204 No Content on success.
+   */
   @Delete(':taskId')
   @HttpCode(204)
+  @RequireTaskAccess('deleteTask')
   async delete(
     @CurrentUser() user: AuthUser,
     @Param() params: TaskIdParamDto,
@@ -71,7 +107,12 @@ export class TasksController {
     await this.tasksService.delete(params.taskId, user);
   }
 
+  /**
+   * Assign a user to a task.
+   * 200 + assignment view. Idempotent at persistence layer (unique constraint + recovery).
+   */
   @Post(':taskId/assignees/:userId')
+  @RequireTaskAccess('assignTask')
   async assignUser(
     @CurrentUser() user: AuthUser,
     @Param() params: TaskAssigneeParamsDto,
@@ -79,8 +120,13 @@ export class TasksController {
     return this.tasksService.assignUser(params.taskId, params.userId, user);
   }
 
+  /**
+   * Unassign a user from a task.
+   * 204 No Content. Idempotent (second delete is a no-op).
+   */
   @Delete(':taskId/assignees/:userId')
   @HttpCode(204)
+  @RequireTaskAccess('unassignTask')
   async unassignUser(
     @CurrentUser() user: AuthUser,
     @Param() params: TaskAssigneeParamsDto,

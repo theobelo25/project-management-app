@@ -1,48 +1,64 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { TasksRepository } from './repositories/tasks.repository';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { PinoLogger } from 'nestjs-pino';
-import {
-  toCreateTaskInput,
-  toTaskView,
-  toTaskViews,
-  toUpdateTaskInput,
-} from './mappers/tasks.mapper';
 import {
   AuthUser,
   TaskView,
   PaginationResult,
   TaskAssignmentView,
 } from '@repo/types';
+import {
+  toCreateTaskInput,
+  toTaskView,
+  toTaskViews,
+  toUpdateTaskInput,
+} from './mappers/tasks.mapper';
 import { toTaskAssignmentView } from './mappers/task-assignment.mapper';
-import { TaskAccessService } from './policies/task-access.service';
 import { FindTasksQueryDto } from './dto/find-tasks-query.dto';
-import { UsersRepository } from '../users/repositories/users.repository';
-import { NotificationsService } from '../notifications/notifications.service';
+import { TASKS_REPOSITORY } from './tasks.tokens';
+import { TaskAssignmentNotifier } from './notifiers/task-assignment-notifier';
+import { TaskAssigneePolicy } from './policies/task-assignee-policy';
+import {
+  throwTaskNotFoundOnPrismaP2025,
+  throwTaskNotFoundOnPrismaAssignOrUnassignErrors,
+} from './utils/task-prisma-error-mapper';
+
+/** Base fields so logs are filterable in Loki/Datadog/etc. */
+const TASKS_LOG_CTX = {
+  domain: 'tasks',
+  component: 'TasksService',
+} as const;
 
 @Injectable()
 export class TasksService {
   constructor(
-    private readonly taskAccessService: TaskAccessService,
+    @Inject(TASKS_REPOSITORY)
     private readonly tasksRepository: TasksRepository,
-    private readonly usersRepository: UsersRepository,
-    private readonly notificationsService: NotificationsService,
+    private readonly taskAssigneePolicy: TaskAssigneePolicy,
+    private readonly taskAssignmentNotifier: TaskAssignmentNotifier,
     private readonly logger: PinoLogger,
   ) {}
 
-  async create(user: AuthUser, dto: CreateTaskDto): Promise<TaskView> {
-    await this.taskAccessService.assertCanCreateInProject(user, dto.projectId);
+  /**
+   * SECURITY INVARIANT
+   * ------------------
+   * This service intentionally does NOT re-check authorization on every method call.
+   * Authorization is enforced at the HTTP boundary by `TasksController` + `TaskAccessGuard`
+   * via `@RequireTaskAccess(...)` metadata.
+   *
+   * MUST NOT call these methods from non-HTTP code paths (or from other modules)
+   * without an explicit authorization check.
+   */
 
+  async create(user: AuthUser, dto: CreateTaskDto): Promise<TaskView> {
     const input = toCreateTaskInput(dto, user.id);
     const task = await this.tasksRepository.create(input);
 
     this.logger.info(
       {
+        ...TASKS_LOG_CTX,
         event: 'task.created',
         taskId: task.id,
         createdById: task.createdById,
@@ -59,13 +75,18 @@ export class TasksService {
     user: AuthUser,
     dto: UpdateTaskDto,
   ): Promise<TaskView> {
-    await this.taskAccessService.assertCanUpdate(taskId, user);
-
     const input = toUpdateTaskInput(dto);
-    const task = await this.tasksRepository.update(taskId, input);
+
+    let task;
+    try {
+      task = await this.tasksRepository.update(taskId, input);
+    } catch (err) {
+      throwTaskNotFoundOnPrismaP2025(err, { taskId, userId: user.id });
+    }
 
     this.logger.info(
       {
+        ...TASKS_LOG_CTX,
         event: 'task.updated',
         taskId: task.id,
         updatedById: user.id,
@@ -78,8 +99,13 @@ export class TasksService {
   }
 
   async findById(taskId: string, user: AuthUser): Promise<TaskView> {
-    await this.taskAccessService.assertCanRead(taskId, user);
-    const task = await this.tasksRepository.findByIdOrThrow(taskId);
+    let task;
+    try {
+      task = await this.tasksRepository.findByIdOrThrow(taskId);
+    } catch (err) {
+      throwTaskNotFoundOnPrismaP2025(err, { taskId, userId: user.id });
+    }
+
     return toTaskView(task);
   }
 
@@ -87,8 +113,6 @@ export class TasksService {
     user: AuthUser,
     query: FindTasksQueryDto,
   ): Promise<PaginationResult<TaskView>> {
-    await this.taskAccessService.assertCanReadProject(user, query.projectId);
-
     const result = await this.tasksRepository.findMany({
       orgId: user.orgId,
       ...query,
@@ -101,12 +125,15 @@ export class TasksService {
   }
 
   async delete(taskId: string, user: AuthUser): Promise<void> {
-    await this.taskAccessService.assertCanDelete(taskId, user);
-
-    await this.tasksRepository.delete(taskId);
+    try {
+      await this.tasksRepository.delete(taskId);
+    } catch (err) {
+      throwTaskNotFoundOnPrismaP2025(err, { taskId, userId: user.id });
+    }
 
     this.logger.info(
       {
+        ...TASKS_LOG_CTX,
         event: 'task.deleted',
         taskId,
         deletedById: user.id,
@@ -120,42 +147,63 @@ export class TasksService {
     assigneeUserId: string,
     currentUser: AuthUser,
   ): Promise<TaskAssignmentView> {
-    await this.taskAccessService.assertCanAssign(taskId, currentUser);
-
-    const assignee = await this.usersRepository.findById(assigneeUserId);
-    if (!assignee) throw new NotFoundException('User not found');
-
-    if (assignee.orgId !== currentUser.orgId) {
-      throw new ForbiddenException(
-        'Cannot assign users from another organization',
-      );
-    }
-
-    const assignment = await this.tasksRepository.assignUser(
-      taskId,
+    await this.taskAssigneePolicy.assertAssigneeInSameOrgOrThrow(
       assigneeUserId,
+      currentUser,
     );
 
-    // Create a notification for the assignee (skip self-assignment noise)
-    if (assigneeUserId !== currentUser.id) {
-      const task = await this.tasksRepository.findByIdOrThrow(taskId);
-      await this.notificationsService.notifyTaskAssigned(assigneeUserId, {
+    let assignmentResult: Awaited<ReturnType<TasksRepository['assignUser']>>;
+
+    try {
+      assignmentResult = await this.tasksRepository.assignUser(
         taskId,
-        taskTitle: task.title,
-        projectId: task.projectId,
-        assignedById: currentUser.id,
+        assigneeUserId,
+      );
+    } catch (err) {
+      throwTaskNotFoundOnPrismaAssignOrUnassignErrors(err, {
+        taskId,
+        assigneeUserId,
+        requesterUserId: currentUser.id,
       });
     }
 
-    this.logger.info(
-      {
-        event: 'task.assignee.added',
-        taskId,
-        userId: assigneeUserId,
-        updatedById: currentUser.id,
-      },
-      'Task assignee added successfully',
-    );
+    const { assignment, created } = assignmentResult;
+
+    if (created && assigneeUserId !== currentUser.id) {
+      try {
+        await this.taskAssignmentNotifier.notifyTaskAssigned(assigneeUserId, {
+          taskId,
+          taskTitle: assignment.task.title,
+          projectId: assignment.task.projectId,
+          assignedById: currentUser.id,
+        });
+      } catch (err) {
+        this.logger.warn(
+          {
+            ...TASKS_LOG_CTX,
+            event: 'task.assignee.notification_failed',
+            taskId,
+            userId: assigneeUserId,
+            updatedById: currentUser.id,
+            err,
+          },
+          'Failed to notify task assignee',
+        );
+      }
+    }
+
+    if (created) {
+      this.logger.info(
+        {
+          ...TASKS_LOG_CTX,
+          event: 'task.assignee.added',
+          taskId,
+          userId: assigneeUserId,
+          updatedById: currentUser.id,
+        },
+        'Task assignee added successfully',
+      );
+    }
 
     return toTaskAssignmentView(assignment);
   }
@@ -165,18 +213,31 @@ export class TasksService {
     assigneeUserId: string,
     currentUser: AuthUser,
   ): Promise<void> {
-    await this.taskAccessService.assertCanAssign(taskId, currentUser);
-
-    await this.tasksRepository.unassignUser(taskId, assigneeUserId);
-
-    this.logger.info(
-      {
-        event: 'task.assignee.removed',
+    let deletedCount: number;
+    try {
+      deletedCount = await this.tasksRepository.unassignUser(
         taskId,
-        userId: assigneeUserId,
-        updatedById: currentUser.id,
-      },
-      'Task assignee removed successfully',
-    );
+        assigneeUserId,
+      );
+    } catch (err) {
+      throwTaskNotFoundOnPrismaAssignOrUnassignErrors(err, {
+        taskId,
+        assigneeUserId,
+        requesterUserId: currentUser.id,
+      });
+    }
+
+    if (deletedCount > 0) {
+      this.logger.info(
+        {
+          ...TASKS_LOG_CTX,
+          event: 'task.assignee.removed',
+          taskId,
+          userId: assigneeUserId,
+          updatedById: currentUser.id,
+        },
+        'Task assignee removed successfully',
+      );
+    }
   }
 }

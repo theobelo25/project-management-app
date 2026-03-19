@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { ProjectMembersService } from './services/project-members.service';
 import { ProjectOwnershipService } from './services/project-ownership.service';
@@ -18,9 +18,10 @@ import { PrismaModule } from '@api/prisma';
 import { ProjectsCommandsService } from './services/projects-commands.service';
 import { ProjectsQueriesService } from './services/projects-queries.service';
 import { UsersService } from '../users/users.service';
+import { TasksModule } from '../tasks/tasks.module';
 
 @Module({
-  imports: [UsersModule, PrismaModule],
+  imports: [UsersModule, PrismaModule, forwardRef(() => TasksModule)],
   controllers: [ProjectsController],
   providers: [
     ProjectsService,

@@ -1,46 +1,55 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { ProjectRole } from '@repo/database';
+import type { AuthUser } from '@repo/types';
+import { PinoLogger } from 'nestjs-pino';
+
 import { ProjectOwnershipService } from './project-ownership.service';
 import { ProjectAccessService } from '../policies/project-access.service';
-import { ProjectsRepository } from '../repositories/projects.repository';
+import type {
+  ProjectAuthorizationRepository,
+  ProjectMemberRepository,
+} from '../repositories/projects.repository';
 import { ProjectWithRole } from '../types/projects.repository.types';
-import { PinoLogger } from 'nestjs-pino';
 
 describe('ProjectOwnershipService', () => {
   let service: ProjectOwnershipService;
 
-  const projectsRepository: jest.Mocked<ProjectsRepository> = {
-    createWithOwner: jest.fn(),
-    findManyForUser: jest.fn(),
-    findById: jest.fn(),
-    findAuthorizedById: jest.fn(),
+  const orgId = 'org-1';
+  const actor: AuthUser = { id: 'user-1', orgId };
+
+  const membersRepository: jest.Mocked<
+    Pick<
+      ProjectMemberRepository,
+      'findMembership' | 'updateOwner' | 'updateMemberRole'
+    >
+  > = {
     findMembership: jest.fn(),
-    updateForUser: jest.fn(),
-    archiveForUser: jest.fn(),
-    unarchiveForUser: jest.fn(),
-    delete: jest.fn(),
-    findMembersByProjectId: jest.fn(),
-    addMember: jest.fn(),
-    updateMemberRole: jest.fn(),
-    removeMember: jest.fn(),
     updateOwner: jest.fn(),
+    updateMemberRole: jest.fn(),
   };
 
-  const projectAccessService: jest.Mocked<ProjectAccessService> = {
-    getAuthorizedProject: jest.fn(),
-    getUserRole: jest.fn(),
-    requireMember: jest.fn(),
-    requireRole: jest.fn(),
-    requireOwner: jest.fn(),
-    requireActiveProject: jest.fn(),
-    requireUnarchivedProject: jest.fn(),
-    requireArchivedProject: jest.fn(),
-  } as unknown as jest.Mocked<ProjectAccessService>;
+  const authProjectsRepository: jest.Mocked<
+    Pick<ProjectAuthorizationRepository, 'findAuthorizedById'>
+  > = {
+    findAuthorizedById: jest.fn(),
+  };
+
+  const projectAccessService: jest.Mocked<
+    Pick<
+      ProjectAccessService,
+      'requireOwnerAndNotArchived' | 'assertOwner' | 'assertNotArchived'
+    >
+  > = {
+    requireOwnerAndNotArchived: jest.fn(),
+    assertOwner: jest.fn(),
+    assertNotArchived: jest.fn(),
+  };
 
   const makeProject = (
     overrides: Partial<ProjectWithRole> = {},
   ): ProjectWithRole => ({
     id: 'project-1',
+    organizationId: 'org-row-1',
     name: 'Project Alpha',
     description: 'Test project',
     ownerId: 'user-1',
@@ -49,6 +58,14 @@ describe('ProjectOwnershipService', () => {
     updatedAt: new Date('2026-03-09T12:00:00.000Z'),
     currentUserRole: ProjectRole.OWNER,
     ...overrides,
+  });
+
+  const makeProjectMember = () => ({
+    id: 'pm-2',
+    projectId: 'project-1',
+    userId: 'user-2',
+    role: ProjectRole.ADMIN,
+    createdAt: new Date('2026-03-09T13:00:00.000Z'),
   });
 
   const unitOfWork = {
@@ -71,14 +88,15 @@ describe('ProjectOwnershipService', () => {
     jest.clearAllMocks();
 
     service = new ProjectOwnershipService(
-      projectsRepository,
-      projectAccessService,
+      membersRepository as unknown as ProjectMemberRepository,
+      authProjectsRepository as unknown as ProjectAuthorizationRepository,
+      projectAccessService as unknown as ProjectAccessService,
       unitOfWork as any,
       logger,
     );
 
-    unitOfWork.transaction.mockImplementation(async (fn) =>
-      fn(undefined as any),
+    unitOfWork.transaction.mockImplementation(
+      async (fn: (db: unknown) => unknown) => fn(undefined),
     );
   });
 
@@ -89,49 +107,44 @@ describe('ProjectOwnershipService', () => {
         currentUserRole: ProjectRole.OWNER,
       });
 
-      projectAccessService.requireOwner.mockResolvedValue(makeProject());
+      projectAccessService.requireOwnerAndNotArchived.mockResolvedValue(
+        makeProject(),
+      );
 
-      projectsRepository.findMembership.mockResolvedValue({
-        id: 'pm-2',
-        projectId: 'project-1',
-        userId: 'user-2',
-        role: ProjectRole.ADMIN,
-        createdAt: new Date('2026-03-09T13:00:00.000Z'),
-      } as any);
-
-      projectsRepository.updateOwner.mockResolvedValue(undefined);
-      projectsRepository.updateMemberRole.mockResolvedValue({
+      membersRepository.findMembership.mockResolvedValue(makeProjectMember());
+      membersRepository.updateOwner.mockResolvedValue(undefined);
+      membersRepository.updateMemberRole.mockResolvedValue({
         userId: 'user-2',
         role: ProjectRole.OWNER,
         createdAt: new Date('2026-03-09T13:00:00.000Z'),
       });
-      projectsRepository.findAuthorizedById.mockResolvedValue(updatedProject);
+      authProjectsRepository.findAuthorizedById.mockResolvedValue(
+        updatedProject,
+      );
 
-      const result = await service.transferOwnership('project-1', 'user-1', {
+      const result = await service.transferOwnership('project-1', actor, {
         userId: 'user-2',
       });
 
       expect(unitOfWork.transaction).toHaveBeenCalled();
 
-      expect(projectAccessService.requireOwner).toHaveBeenCalledWith(
-        'project-1',
-        'user-1',
-        undefined,
-      );
+      expect(
+        projectAccessService.requireOwnerAndNotArchived,
+      ).toHaveBeenCalledWith('project-1', actor, undefined);
 
-      expect(projectsRepository.findMembership).toHaveBeenCalledWith(
+      expect(membersRepository.findMembership).toHaveBeenCalledWith(
         'project-1',
         'user-2',
         undefined,
       );
 
-      expect(projectsRepository.updateOwner).toHaveBeenCalledWith(
+      expect(membersRepository.updateOwner).toHaveBeenCalledWith(
         'project-1',
         'user-2',
         undefined,
       );
 
-      expect(projectsRepository.updateMemberRole).toHaveBeenNthCalledWith(
+      expect(membersRepository.updateMemberRole).toHaveBeenNthCalledWith(
         1,
         {
           projectId: 'project-1',
@@ -141,13 +154,20 @@ describe('ProjectOwnershipService', () => {
         undefined,
       );
 
-      expect(projectsRepository.updateMemberRole).toHaveBeenNthCalledWith(
+      expect(membersRepository.updateMemberRole).toHaveBeenNthCalledWith(
         2,
         {
           projectId: 'project-1',
           userId: 'user-1',
           role: ProjectRole.ADMIN,
         },
+        undefined,
+      );
+
+      expect(authProjectsRepository.findAuthorizedById).toHaveBeenCalledWith(
+        'project-1',
+        'user-2',
+        orgId,
         undefined,
       );
 
@@ -164,7 +184,7 @@ describe('ProjectOwnershipService', () => {
 
       expect(logger.info).toHaveBeenCalledWith(
         {
-          event: 'project.owner.transfered',
+          event: 'project.owner.transferred',
           projectId: 'project-1',
           previousOwnerId: 'user-1',
           newOwnerId: 'user-2',
@@ -174,53 +194,72 @@ describe('ProjectOwnershipService', () => {
     });
 
     it('throws when target user is already the owner', async () => {
-      projectAccessService.requireOwner.mockResolvedValue(makeProject());
-
-      await expect(
-        service.transferOwnership('project-1', 'user-1', {
-          userId: 'user-1',
-        }),
-      ).rejects.toThrow(
-        new ConflictException('User is already the project owner'),
+      projectAccessService.requireOwnerAndNotArchived.mockResolvedValue(
+        makeProject(),
       );
 
-      expect(projectsRepository.findMembership).not.toHaveBeenCalled();
-      expect(projectsRepository.updateOwner).not.toHaveBeenCalled();
+      await expect(
+        service.transferOwnership('project-1', actor, {
+          userId: actor.id,
+        }),
+      ).rejects.toThrow(ConflictException);
+
+      await expect(
+        service.transferOwnership('project-1', actor, {
+          userId: actor.id,
+        }),
+      ).rejects.toThrow('User is already the project owner');
+
+      expect(membersRepository.findMembership).not.toHaveBeenCalled();
+      expect(membersRepository.updateOwner).not.toHaveBeenCalled();
     });
 
     it('throws when target user is not a project member', async () => {
-      projectAccessService.requireOwner.mockResolvedValue(makeProject());
-      projectsRepository.findMembership.mockResolvedValue(null);
+      projectAccessService.requireOwnerAndNotArchived.mockResolvedValue(
+        makeProject(),
+      );
+      membersRepository.findMembership.mockResolvedValue(null);
 
       await expect(
-        service.transferOwnership('project-1', 'user-1', {
+        service.transferOwnership('project-1', actor, {
           userId: 'user-2',
         }),
-      ).rejects.toThrow(
-        new NotFoundException('Target user is not a project member'),
-      );
+      ).rejects.toThrow(NotFoundException);
 
-      expect(projectsRepository.updateOwner).not.toHaveBeenCalled();
+      await expect(
+        service.transferOwnership('project-1', actor, {
+          userId: 'user-2',
+        }),
+      ).rejects.toThrow('Target user is not a project member');
+
+      expect(membersRepository.updateOwner).not.toHaveBeenCalled();
     });
 
     it('throws when updated project cannot be found after transfer', async () => {
-      projectAccessService.requireOwner.mockResolvedValue(makeProject());
+      projectAccessService.requireOwnerAndNotArchived.mockResolvedValue(
+        makeProject(),
+      );
 
-      projectsRepository.findMembership.mockResolvedValue({
-        id: 'pm-2',
-        projectId: 'project-1',
+      membersRepository.findMembership.mockResolvedValue(makeProjectMember());
+      membersRepository.updateOwner.mockResolvedValue(undefined);
+      membersRepository.updateMemberRole.mockResolvedValue({
         userId: 'user-2',
-        role: ProjectRole.ADMIN,
+        role: ProjectRole.OWNER,
         createdAt: new Date('2026-03-09T13:00:00.000Z'),
-      } as any);
-
-      projectsRepository.findAuthorizedById.mockResolvedValue(null);
+      });
+      authProjectsRepository.findAuthorizedById.mockResolvedValue(null);
 
       await expect(
-        service.transferOwnership('project-1', 'user-1', {
+        service.transferOwnership('project-1', actor, {
           userId: 'user-2',
         }),
-      ).rejects.toThrow(new NotFoundException('Project not found'));
+      ).rejects.toThrow(NotFoundException);
+
+      await expect(
+        service.transferOwnership('project-1', actor, {
+          userId: 'user-2',
+        }),
+      ).rejects.toThrow('Project not found');
     });
   });
 });

@@ -4,46 +4,64 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ProjectRole } from '@repo/database';
+import type { AuthUser } from '@repo/types';
+import { PinoLogger } from 'nestjs-pino';
+
+import { UsersService } from '@api/domain/users/users.service';
 import { ProjectMembersService } from './project-members.service';
 import { ProjectAccessService } from '../policies/project-access.service';
-import { ProjectsRepository } from '../repositories/projects.repository';
+import type { ProjectMemberRepository } from '../repositories/projects.repository';
 import { ProjectWithRole } from '../types/projects.repository.types';
-import { PinoLogger } from 'nestjs-pino';
+
 describe('ProjectMembersService', () => {
   let service: ProjectMembersService;
 
-  const projectsRepository: jest.Mocked<ProjectsRepository> = {
-    createWithOwner: jest.fn(),
-    findManyForUser: jest.fn(),
-    findById: jest.fn(),
-    findAuthorizedById: jest.fn(),
-    findMembership: jest.fn(),
-    updateForUser: jest.fn(),
-    archiveForUser: jest.fn(),
-    unarchiveForUser: jest.fn(),
-    delete: jest.fn(),
+  const orgId = 'org-1';
+
+  const actorOwner: AuthUser = { id: 'user-1', orgId };
+  const actorMember: AuthUser = { id: 'user-2', orgId };
+
+  const projectMemberRepository: jest.Mocked<
+    Pick<
+      ProjectMemberRepository,
+      | 'findMembersByProjectId'
+      | 'findMembership'
+      | 'addMember'
+      | 'updateMemberRole'
+      | 'removeMember'
+    >
+  > = {
     findMembersByProjectId: jest.fn(),
+    findMembership: jest.fn(),
     addMember: jest.fn(),
     updateMemberRole: jest.fn(),
     removeMember: jest.fn(),
-    updateOwner: jest.fn(),
   };
 
-  const projectAccessService: jest.Mocked<ProjectAccessService> = {
-    getAuthorizedProject: jest.fn(),
-    getUserRole: jest.fn(),
+  const projectAccessService: jest.Mocked<
+    Pick<
+      ProjectAccessService,
+      | 'requireMember'
+      | 'requireOwnerAndNotArchived'
+      | 'assertOwner'
+      | 'assertNotArchived'
+    >
+  > = {
     requireMember: jest.fn(),
-    requireRole: jest.fn(),
-    requireOwner: jest.fn(),
-    requireActiveProject: jest.fn(),
-    requireUnarchivedProject: jest.fn(),
-    requireArchivedProject: jest.fn(),
-  } as unknown as jest.Mocked<ProjectAccessService>;
+    requireOwnerAndNotArchived: jest.fn(),
+    assertOwner: jest.fn(),
+    assertNotArchived: jest.fn(),
+  };
+
+  const usersService: jest.Mocked<Pick<UsersService, 'findById'>> = {
+    findById: jest.fn(),
+  };
 
   const makeProject = (
     overrides: Partial<ProjectWithRole> = {},
   ): ProjectWithRole => ({
     id: 'project-1',
+    organizationId: 'org-row-1',
     name: 'Project Alpha',
     description: 'Test project',
     ownerId: 'user-1',
@@ -52,6 +70,16 @@ describe('ProjectMembersService', () => {
     updatedAt: new Date('2026-03-09T12:00:00.000Z'),
     currentUserRole: ProjectRole.OWNER,
     ...overrides,
+  });
+
+  const makeUserView = (id: string, userOrgId: string = orgId) => ({
+    id,
+    orgId: userOrgId,
+    organizationName: 'Test Org',
+    email: `${id}@example.com`,
+    name: `User ${id}`,
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2026-01-01T00:00:00.000Z'),
   });
 
   const logger: jest.Mocked<PinoLogger> = {
@@ -69,8 +97,9 @@ describe('ProjectMembersService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     service = new ProjectMembersService(
-      projectsRepository,
-      projectAccessService,
+      projectMemberRepository as unknown as ProjectMemberRepository,
+      projectAccessService as unknown as ProjectAccessService,
+      usersService as unknown as UsersService,
       logger,
     );
   });
@@ -83,7 +112,7 @@ describe('ProjectMembersService', () => {
         }),
       );
 
-      projectsRepository.findMembersByProjectId.mockResolvedValue([
+      projectMemberRepository.findMembersByProjectId.mockResolvedValue([
         {
           userId: 'user-1',
           role: ProjectRole.OWNER,
@@ -96,15 +125,20 @@ describe('ProjectMembersService', () => {
         },
       ]);
 
-      const result = await service.getMembers('project-1', 'user-2');
+      const result = await service.getMembers('project-1', actorMember);
 
       expect(projectAccessService.requireMember).toHaveBeenCalledWith(
         'project-1',
-        'user-2',
+        actorMember,
       );
 
-      expect(projectsRepository.findMembersByProjectId).toHaveBeenCalledWith(
-        'project-1',
+      expect(
+        projectMemberRepository.findMembersByProjectId,
+      ).toHaveBeenCalledWith('project-1');
+
+      expect(logger.debug).toHaveBeenCalledWith(
+        { projectId: 'project-1', userId: actorMember.id },
+        'Fetched project members',
       );
 
       expect(result).toEqual({
@@ -126,35 +160,37 @@ describe('ProjectMembersService', () => {
 
   describe('addMember', () => {
     it('allows owner to add a new member', async () => {
-      projectAccessService.requireOwner.mockResolvedValue(
+      projectAccessService.requireOwnerAndNotArchived.mockResolvedValue(
         makeProject({
           currentUserRole: ProjectRole.OWNER,
         }),
       );
 
-      projectsRepository.findMembership.mockResolvedValue(null);
-      projectsRepository.addMember.mockResolvedValue({
+      usersService.findById.mockResolvedValue(makeUserView('user-2'));
+      projectMemberRepository.findMembership.mockResolvedValue(null);
+      projectMemberRepository.addMember.mockResolvedValue({
         userId: 'user-2',
         role: ProjectRole.MEMBER,
         createdAt: new Date('2026-03-09T13:00:00.000Z'),
       });
 
-      const result = await service.addMember('project-1', 'user-1', {
+      const result = await service.addMember('project-1', actorOwner, {
         userId: 'user-2',
         role: ProjectRole.MEMBER,
       });
 
-      expect(projectAccessService.requireOwner).toHaveBeenCalledWith(
-        'project-1',
-        'user-1',
-      );
+      expect(
+        projectAccessService.requireOwnerAndNotArchived,
+      ).toHaveBeenCalledWith('project-1', actorOwner);
 
-      expect(projectsRepository.findMembership).toHaveBeenCalledWith(
+      expect(usersService.findById).toHaveBeenCalledWith('user-2');
+
+      expect(projectMemberRepository.findMembership).toHaveBeenCalledWith(
         'project-1',
         'user-2',
       );
 
-      expect(projectsRepository.addMember).toHaveBeenCalledWith({
+      expect(projectMemberRepository.addMember).toHaveBeenCalledWith({
         projectId: 'project-1',
         userId: 'user-2',
         role: ProjectRole.MEMBER,
@@ -170,7 +206,7 @@ describe('ProjectMembersService', () => {
         {
           event: 'project.member.added',
           projectId: 'project-1',
-          actorUserId: 'user-1',
+          actorUserId: actorOwner.id,
           addedUserId: 'user-2',
           role: ProjectRole.MEMBER,
         },
@@ -179,58 +215,77 @@ describe('ProjectMembersService', () => {
     });
 
     it('throws when user is already a member', async () => {
-      projectAccessService.requireOwner.mockResolvedValue(makeProject());
+      projectAccessService.requireOwnerAndNotArchived.mockResolvedValue(
+        makeProject(),
+      );
 
-      projectsRepository.findMembership.mockResolvedValue({
+      usersService.findById.mockResolvedValue(makeUserView('user-2'));
+
+      projectMemberRepository.findMembership.mockResolvedValue({
         id: 'pm-1',
         projectId: 'project-1',
         userId: 'user-2',
         role: ProjectRole.MEMBER,
         createdAt: new Date('2026-03-09T13:00:00.000Z'),
-      } as any);
+      });
 
       await expect(
-        service.addMember('project-1', 'user-1', {
+        service.addMember('project-1', actorOwner, {
           userId: 'user-2',
           role: ProjectRole.MEMBER,
         }),
-      ).rejects.toThrow(
-        new ConflictException('User is already a project member'),
-      );
+      ).rejects.toThrow(ConflictException);
 
-      expect(projectsRepository.addMember).not.toHaveBeenCalled();
+      await expect(
+        service.addMember('project-1', actorOwner, {
+          userId: 'user-2',
+          role: ProjectRole.MEMBER,
+        }),
+      ).rejects.toThrow('User is already a project member');
+
+      expect(projectMemberRepository.addMember).not.toHaveBeenCalled();
     });
 
     it('throws when owner tries to add themselves', async () => {
-      projectAccessService.requireOwner.mockResolvedValue(makeProject());
-
-      await expect(
-        service.addMember('project-1', 'user-1', {
-          userId: 'user-1',
-          role: ProjectRole.MEMBER,
-        }),
-      ).rejects.toThrow(
-        new ConflictException('Owner is already a member of this project'),
+      projectAccessService.requireOwnerAndNotArchived.mockResolvedValue(
+        makeProject(),
       );
 
-      expect(projectsRepository.findMembership).not.toHaveBeenCalled();
-      expect(projectsRepository.addMember).not.toHaveBeenCalled();
+      await expect(
+        service.addMember('project-1', actorOwner, {
+          userId: actorOwner.id,
+          role: ProjectRole.MEMBER,
+        }),
+      ).rejects.toThrow(ConflictException);
+
+      await expect(
+        service.addMember('project-1', actorOwner, {
+          userId: actorOwner.id,
+          role: ProjectRole.MEMBER,
+        }),
+      ).rejects.toThrow('Owner is already a member of this project');
+
+      expect(usersService.findById).not.toHaveBeenCalled();
+      expect(projectMemberRepository.findMembership).not.toHaveBeenCalled();
+      expect(projectMemberRepository.addMember).not.toHaveBeenCalled();
     });
   });
 
   describe('updateMemberRole', () => {
     it('allows owner to update a member role', async () => {
-      projectAccessService.requireOwner.mockResolvedValue(makeProject());
+      projectAccessService.requireOwnerAndNotArchived.mockResolvedValue(
+        makeProject(),
+      );
 
-      projectsRepository.findMembership.mockResolvedValue({
+      projectMemberRepository.findMembership.mockResolvedValue({
         id: 'pm-1',
         projectId: 'project-1',
         userId: 'user-2',
         role: ProjectRole.MEMBER,
         createdAt: new Date('2026-03-09T13:00:00.000Z'),
-      } as any);
+      });
 
-      projectsRepository.updateMemberRole.mockResolvedValue({
+      projectMemberRepository.updateMemberRole.mockResolvedValue({
         userId: 'user-2',
         role: ProjectRole.ADMIN,
         createdAt: new Date('2026-03-09T13:00:00.000Z'),
@@ -238,22 +293,21 @@ describe('ProjectMembersService', () => {
 
       const result = await service.updateMemberRole(
         'project-1',
-        'user-1',
+        actorOwner,
         'user-2',
         { role: ProjectRole.ADMIN },
       );
 
-      expect(projectAccessService.requireOwner).toHaveBeenCalledWith(
-        'project-1',
-        'user-1',
-      );
+      expect(
+        projectAccessService.requireOwnerAndNotArchived,
+      ).toHaveBeenCalledWith('project-1', actorOwner);
 
-      expect(projectsRepository.findMembership).toHaveBeenCalledWith(
+      expect(projectMemberRepository.findMembership).toHaveBeenCalledWith(
         'project-1',
         'user-2',
       );
 
-      expect(projectsRepository.updateMemberRole).toHaveBeenCalledWith({
+      expect(projectMemberRepository.updateMemberRole).toHaveBeenCalledWith({
         projectId: 'project-1',
         userId: 'user-2',
         role: ProjectRole.ADMIN,
@@ -264,66 +318,90 @@ describe('ProjectMembersService', () => {
         role: ProjectRole.ADMIN,
         joinedAt: '2026-03-09T13:00:00.000Z',
       });
+
+      expect(logger.info).toHaveBeenCalledWith(
+        {
+          event: 'project.member.role.updated',
+          projectId: 'project-1',
+          actorUserId: actorOwner.id,
+          memberUserId: 'user-2',
+          newRole: ProjectRole.ADMIN,
+        },
+        'Project member role updated',
+      );
     });
 
     it('throws when trying to update the owner through member role endpoint', async () => {
-      projectAccessService.requireOwner.mockResolvedValue(makeProject());
-
-      await expect(
-        service.updateMemberRole('project-1', 'user-1', 'user-1', {
-          role: ProjectRole.ADMIN,
-        }),
-      ).rejects.toThrow(
-        new ForbiddenException(
-          'Owner role must be changed via ownership transfer',
-        ),
+      projectAccessService.requireOwnerAndNotArchived.mockResolvedValue(
+        makeProject(),
       );
 
-      expect(projectsRepository.findMembership).not.toHaveBeenCalled();
-      expect(projectsRepository.updateMemberRole).not.toHaveBeenCalled();
+      await expect(
+        service.updateMemberRole('project-1', actorOwner, actorOwner.id, {
+          role: ProjectRole.ADMIN,
+        }),
+      ).rejects.toThrow(ForbiddenException);
+
+      await expect(
+        service.updateMemberRole('project-1', actorOwner, actorOwner.id, {
+          role: ProjectRole.ADMIN,
+        }),
+      ).rejects.toThrow('Owner role must be changed via ownership transfer');
+
+      expect(projectMemberRepository.findMembership).not.toHaveBeenCalled();
+      expect(projectMemberRepository.updateMemberRole).not.toHaveBeenCalled();
     });
 
     it('throws when project member does not exist', async () => {
-      projectAccessService.requireOwner.mockResolvedValue(makeProject());
-      projectsRepository.findMembership.mockResolvedValue(null);
+      projectAccessService.requireOwnerAndNotArchived.mockResolvedValue(
+        makeProject(),
+      );
+      projectMemberRepository.findMembership.mockResolvedValue(null);
 
       await expect(
-        service.updateMemberRole('project-1', 'user-1', 'user-2', {
+        service.updateMemberRole('project-1', actorOwner, 'user-2', {
           role: ProjectRole.ADMIN,
         }),
-      ).rejects.toThrow(new NotFoundException('Project member not found'));
+      ).rejects.toThrow(NotFoundException);
 
-      expect(projectsRepository.updateMemberRole).not.toHaveBeenCalled();
+      await expect(
+        service.updateMemberRole('project-1', actorOwner, 'user-2', {
+          role: ProjectRole.ADMIN,
+        }),
+      ).rejects.toThrow('Project member not found');
+
+      expect(projectMemberRepository.updateMemberRole).not.toHaveBeenCalled();
     });
   });
 
   describe('removeMember', () => {
     it('allows owner to remove a member', async () => {
-      projectAccessService.requireOwner.mockResolvedValue(makeProject());
+      projectAccessService.requireOwnerAndNotArchived.mockResolvedValue(
+        makeProject(),
+      );
 
-      projectsRepository.findMembership.mockResolvedValue({
+      projectMemberRepository.findMembership.mockResolvedValue({
         id: 'pm-1',
         projectId: 'project-1',
         userId: 'user-2',
         role: ProjectRole.MEMBER,
         createdAt: new Date('2026-03-09T13:00:00.000Z'),
-      } as any);
+      });
 
-      projectsRepository.removeMember.mockResolvedValue(undefined);
+      projectMemberRepository.removeMember.mockResolvedValue(undefined);
 
-      await service.removeMember('project-1', 'user-1', 'user-2');
+      await service.removeMember('project-1', actorOwner, 'user-2');
 
-      expect(projectAccessService.requireOwner).toHaveBeenCalledWith(
-        'project-1',
-        'user-1',
-      );
+      expect(
+        projectAccessService.requireOwnerAndNotArchived,
+      ).toHaveBeenCalledWith('project-1', actorOwner);
 
-      expect(projectsRepository.findMembership).toHaveBeenCalledWith(
+      expect(projectMemberRepository.findMembership).toHaveBeenCalledWith(
         'project-1',
         'user-2',
       );
 
-      expect(projectsRepository.removeMember).toHaveBeenCalledWith(
+      expect(projectMemberRepository.removeMember).toHaveBeenCalledWith(
         'project-1',
         'user-2',
       );
@@ -332,7 +410,7 @@ describe('ProjectMembersService', () => {
         {
           event: 'project.member.removed',
           projectId: 'project-1',
-          actorUserId: 'user-1',
+          actorUserId: actorOwner.id,
           removedUserId: 'user-2',
         },
         'Project member removed',
@@ -340,27 +418,37 @@ describe('ProjectMembersService', () => {
     });
 
     it('throws when trying to remove the owner', async () => {
-      projectAccessService.requireOwner.mockResolvedValue(makeProject());
-
-      await expect(
-        service.removeMember('project-1', 'user-1', 'user-1'),
-      ).rejects.toThrow(
-        new ForbiddenException('Project owner cannot be removed'),
+      projectAccessService.requireOwnerAndNotArchived.mockResolvedValue(
+        makeProject(),
       );
 
-      expect(projectsRepository.findMembership).not.toHaveBeenCalled();
-      expect(projectsRepository.removeMember).not.toHaveBeenCalled();
+      await expect(
+        service.removeMember('project-1', actorOwner, actorOwner.id),
+      ).rejects.toThrow(ForbiddenException);
+
+      await expect(
+        service.removeMember('project-1', actorOwner, actorOwner.id),
+      ).rejects.toThrow('Project owner cannot be removed');
+
+      expect(projectMemberRepository.findMembership).not.toHaveBeenCalled();
+      expect(projectMemberRepository.removeMember).not.toHaveBeenCalled();
     });
 
     it('throws when project member does not exist', async () => {
-      projectAccessService.requireOwner.mockResolvedValue(makeProject());
-      projectsRepository.findMembership.mockResolvedValue(null);
+      projectAccessService.requireOwnerAndNotArchived.mockResolvedValue(
+        makeProject(),
+      );
+      projectMemberRepository.findMembership.mockResolvedValue(null);
 
       await expect(
-        service.removeMember('project-1', 'user-1', 'user-2'),
-      ).rejects.toThrow(new NotFoundException('Project member not found'));
+        service.removeMember('project-1', actorOwner, 'user-2'),
+      ).rejects.toThrow(NotFoundException);
 
-      expect(projectsRepository.removeMember).not.toHaveBeenCalled();
+      await expect(
+        service.removeMember('project-1', actorOwner, 'user-2'),
+      ).rejects.toThrow('Project member not found');
+
+      expect(projectMemberRepository.removeMember).not.toHaveBeenCalled();
     });
   });
 });

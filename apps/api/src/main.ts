@@ -7,11 +7,16 @@ import { ZodValidationPipe } from './common';
 import { getCorsOptions } from './config';
 import { getAppOptions } from './config/app.options';
 import { Logger as PinoNestLogger } from 'nestjs-pino';
+import { json, urlencoded } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
   app.useLogger(app.get(PinoNestLogger));
+
+  // Payload limits (tune per product needs)
+  app.use(json({ limit: '512kb' }));
+  app.use(urlencoded({ extended: true, limit: '512kb' }));
 
   app.use(cookieParser());
   app.setGlobalPrefix('api');
