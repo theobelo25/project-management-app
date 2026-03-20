@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma';
+import { HealthModule } from './health';
 import { UsersModule } from './domain/users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './domain/auth/auth.module';
@@ -15,6 +16,8 @@ import { AppExceptionFilter } from './common/filters/app-exception.filter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from '@api/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ZodSerializerInterceptor } from 'nestjs-zod';
 
 @Module({
   imports: [
@@ -25,6 +28,7 @@ import { JwtAuthGuard } from '@api/common';
     }),
     AppConfigModule,
     PrismaModule,
+    HealthModule,
     UsersModule,
     AuthModule,
     LoggerModule,
@@ -44,6 +48,7 @@ import { JwtAuthGuard } from '@api/common';
   providers: [
     AppService,
     AppExceptionFilter,
+    { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptor },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
