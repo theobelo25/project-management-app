@@ -14,7 +14,7 @@ import { OrganizationMembershipsQueriesService } from './services/organization-m
 import { OrganizationMembershipsAuthorizationService } from './services/organization-memberships-authorization.service';
 import { OrganizationMembershipsMutationsService } from './services/organization-memberships-mutations.service';
 
-import { OrganizationWorkspacesService } from './services/organization-workspaces.service';
+import { OrganizationWorkspaceBootstrapModule } from './organization-workspace-bootstrap.module';
 import { OrganizationsRepository } from './repositories/organizations.repository';
 import { PrismaOrganizationsRepository } from './repositories/prisma-organizations.repository';
 
@@ -24,12 +24,16 @@ import { OrganizationMembershipsRepository } from './repositories/organization-m
 import { PrismaOrganizationMembershipsRepository } from './repositories/prisma-organization-memberships.repository';
 
 @Module({
-  imports: [UsersModule, AuthTokensModule, PrismaModule],
+  imports: [
+    UsersModule,
+    AuthTokensModule,
+    PrismaModule,
+    OrganizationWorkspaceBootstrapModule,
+  ],
   controllers: [OrganizationsController],
   providers: [
     OrganizationsDomainService,
     OrganizationsApplicationService,
-    OrganizationWorkspacesService,
 
     OrganizationInvitesService,
     OrganizationMembershipsService,
@@ -53,6 +57,9 @@ import { PrismaOrganizationMembershipsRepository } from './repositories/prisma-o
       useClass: PrismaOrganizationMembershipsRepository,
     },
   ],
-  exports: [OrganizationMembershipsService, OrganizationWorkspacesService],
+  exports: [
+    OrganizationMembershipsService,
+    OrganizationWorkspaceBootstrapModule,
+  ],
 })
 export class OrganizationsModule {}

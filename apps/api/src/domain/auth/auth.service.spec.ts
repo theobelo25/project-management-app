@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { UsersRepository } from '../users/repositories/users.repository';
+import { ORGANIZATION_WORKSPACE_BOOTSTRAP } from '../organizations/organization-workspace-bootstrap.interface';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -48,6 +49,12 @@ describe('AuthService', () => {
     error: jest.Mock;
   };
 
+  let organizationWorkspaceBootstrap: {
+    createInitialOrganizationForUserName: jest.Mock;
+  };
+
+  const orgId = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+
   const signupDto = {
     email: 'test@example.com',
     password: 'password123',
@@ -56,6 +63,8 @@ describe('AuthService', () => {
 
   const privateUser = {
     id: '1415c2fc-4067-4c4f-a7e1-748afc4e9b71',
+    orgId,
+    organizationName: "Theo's Workspace",
     email: 'test@example.com',
     name: 'Theo',
     passwordHash: 'hashed-password',
@@ -65,6 +74,8 @@ describe('AuthService', () => {
 
   const userView = {
     id: privateUser.id,
+    orgId,
+    organizationName: privateUser.organizationName,
     email: privateUser.email,
     name: privateUser.name,
     createdAt: privateUser.createdAt,
@@ -109,6 +120,12 @@ describe('AuthService', () => {
       error: jest.fn(),
     };
 
+    organizationWorkspaceBootstrap = {
+      createInitialOrganizationForUserName: jest
+        .fn()
+        .mockResolvedValue({ id: orgId }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -136,6 +153,10 @@ describe('AuthService', () => {
           provide: PinoLogger,
           useValue: logger,
         },
+        {
+          provide: ORGANIZATION_WORKSPACE_BOOTSTRAP,
+          useValue: organizationWorkspaceBootstrap,
+        },
       ],
     }).compile();
 
@@ -162,8 +183,12 @@ describe('AuthService', () => {
         tx,
       );
       expect(hashingService.hash).toHaveBeenCalledWith(signupDto.password);
+      expect(
+        organizationWorkspaceBootstrap.createInitialOrganizationForUserName,
+      ).toHaveBeenCalledWith(signupDto.name, tx);
       expect(usersRepository.create).toHaveBeenCalledWith(
         {
+          orgId,
           email: signupDto.email,
           name: signupDto.name,
           passwordHash: 'hashed-password',
@@ -181,7 +206,7 @@ describe('AuthService', () => {
         refreshToken: 'refresh-token',
       });
       expect(logger.info).toHaveBeenCalledWith(
-        { userId: userView.id },
+        { userId: userView.id, organizationId: orgId },
         'User signed up successfully',
       );
     });
@@ -204,6 +229,9 @@ describe('AuthService', () => {
     it('throws BadRequestException when user creation returns null', async () => {
       usersRepository.findPrivateUserByEmail.mockResolvedValue(null);
       hashingService.hash.mockResolvedValue('hashed-password');
+      organizationWorkspaceBootstrap.createInitialOrganizationForUserName.mockResolvedValue(
+        { id: orgId },
+      );
       usersRepository.create.mockResolvedValue(null);
 
       await expect(service.signup(signupDto)).rejects.toThrow(

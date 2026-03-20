@@ -1,9 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Db } from '@api/prisma';
 import { OrganizationErrorMessages } from '../constants/error-messages';
+import { OrganizationWorkspaceBootstrap } from '../organization-workspace-bootstrap.interface';
 
 @Injectable()
-export class OrganizationWorkspacesService {
+export class OrganizationWorkspacesService
+  implements OrganizationWorkspaceBootstrap
+{
   async createOrganizationEntity(
     name: string,
     tx: Db,

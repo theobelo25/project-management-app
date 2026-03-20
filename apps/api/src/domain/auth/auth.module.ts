@@ -23,7 +23,7 @@ import { AppConfigModule, getAccessJwtOptions } from '@api/config';
 import { AuthRepository } from './repositories/auth.repository';
 import { PrismaModule } from '@api/prisma';
 
-import { OrganizationsModule } from '../organizations/organizations.module';
+import { OrganizationWorkspaceBootstrapModule } from '../organizations/organization-workspace-bootstrap.module';
 
 import { RefreshTokenRepositoryFacade } from './repositories/refresh-token.repository';
 import { AuthCookiesInterceptor } from './interceptors/auth-cookies.interceptor';
@@ -36,8 +36,7 @@ import { AuthorizedUserForOrgService } from './authorized-user-for-org.service';
     PassportModule,
     PrismaModule,
 
-    // No forwardRef needed anymore (OrganizationsModule doesn't import AuthModule)
-    OrganizationsModule,
+    OrganizationWorkspaceBootstrapModule,
 
     JwtModule.registerAsync({
       inject: [ConfigService],
