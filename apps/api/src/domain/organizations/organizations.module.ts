@@ -6,7 +6,7 @@ import { PrismaOrganizationInvitesRepository } from './repositories/prisma-organ
 import { UsersModule } from '../users/users.module';
 import { OrganizationMembershipsService } from './services/organization-memberships.service';
 import { AuthTokensModule } from '../auth/auth-tokens.module';
-import { OrganizationsDomainService } from './organizations.service';
+import { OrganizationsDomainService } from './services/organizations-domain.service';
 import { OrganizationsApplicationService } from './services/organizations-app.service';
 import { PrismaModule } from '@api/prisma';
 
@@ -23,6 +23,10 @@ import { InviteUrlService } from './services/invite-url.service';
 import { OrganizationMembershipsRepository } from './repositories/organization-memberships.repository';
 import { PrismaOrganizationMembershipsRepository } from './repositories/prisma-organization-memberships.repository';
 
+/**
+ * OrganizationsApplicationService: HTTP-facing orchestration. OrganizationsDomainService:
+ * core org lifecycle (create / leave / delete). Co-located under services/.
+ */
 @Module({
   imports: [
     UsersModule,

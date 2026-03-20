@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AuthUser } from '@repo/types';
 
-import { OrganizationsDomainService } from '../organizations.service';
+import { OrganizationsDomainService } from './organizations-domain.service';
 import { OrganizationMembershipsService } from './organization-memberships.service';
 
 import { CreateOrganizationDto } from '../dto/create-organization.dto';
