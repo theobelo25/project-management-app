@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import {
   PrismaTasksRepository,
   PrismaTasksRepositoryTx,
@@ -6,7 +6,7 @@ import {
 import { TasksService } from './tasks.service';
 import { TasksController } from './tasks.controller';
 import { TaskAccessService } from './policies/task-access.service';
-import { ProjectsModule } from '../projects/projects.module';
+import { ProjectsPersistenceModule } from '../projects/projects-persistence.module';
 import { UsersModule } from '../users/users.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { PrismaModule } from '@api/prisma';
@@ -23,7 +23,7 @@ import type { Prisma } from '@repo/database';
 
 @Module({
   imports: [
-    forwardRef(() => ProjectsModule),
+    ProjectsPersistenceModule,
     UsersModule,
     NotificationsModule,
     PrismaModule,

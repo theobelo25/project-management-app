@@ -5,8 +5,8 @@
  * - Provided and exported as `PROJECT_TASK_INFO_PROVIDER` from `TasksModule`
  *   (see `tasks.module.ts`: `ProjectTaskInfoProviderAdapter` + `useExisting`).
  *
- * Previously this lived behind `integrations/project-task-integration.module.ts`; that extra module
- * is optional once `ProjectsModule` imports `TasksModule` and `TasksModule` exports the provider token.
+ * Task-side access to project membership for authorization uses `ProjectsPersistenceModule`
+ * (`PROJECT_TASK_CONTEXT_REPOSITORY`), not `ProjectsModule`, avoiding a Projects ↔ Tasks module cycle.
  */
 import { Inject, Injectable } from '@nestjs/common';
 import type { ProjectRecentTask } from '@repo/types';
