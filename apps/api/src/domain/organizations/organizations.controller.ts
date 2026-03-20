@@ -8,15 +8,15 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
-import { CurrentUser, JwtAuthGuard } from '@api/common';
+import { CurrentUser, PaginationQueryDto } from '@api/common';
 import {
   AuthUser,
   OrganizationDetailView,
   OrganizationInviteAdminView,
   OrganizationInviteView,
   OrganizationMemberView,
+  OrganizationView,
   OrganizationSummaryView,
   PaginatedOrganizationMembersView,
   PendingInviteView,
@@ -38,7 +38,6 @@ import { OrganizationsApplicationService } from './services/organizations-app.se
 import { RefreshOrganizationsAccessCookie } from './decorators/refresh-organizations-access-cookie.decorator';
 
 @Controller('organizations')
-@UseGuards(JwtAuthGuard)
 export class OrganizationsController {
   constructor(
     private readonly organizationsAppService: OrganizationsApplicationService,
@@ -47,7 +46,9 @@ export class OrganizationsController {
   ) {}
 
   @Get()
-  async listMyOrganizations(@CurrentUser() user: AuthUser) {
+  async listMyOrganizations(
+    @CurrentUser() user: AuthUser,
+  ): Promise<OrganizationView[]> {
     return this.organizationMembershipsService.listOrganizationsForUser(
       user.id,
     );
@@ -151,15 +152,8 @@ export class OrganizationsController {
   async listMembers(
     @CurrentUser() user: AuthUser,
     @Param() params: OrganizationParamsDto,
-    @Query('page') pageRaw?: string,
-    @Query('limit') limitRaw?: string,
+    @Query() query: PaginationQueryDto,
   ): Promise<PaginatedOrganizationMembersView> {
-    // Keep it simple: coerce in controller (matches your PaginationQuerySchema defaults if you prefer DTO)
-    const page = Math.max(1, Number(pageRaw ?? 1) || 1);
-    const limit = Math.max(1, Math.min(100, Number(limitRaw ?? 20) || 20));
-
-    // membership check is effectively enforced by repo/service behavior,
-    // but if you want explicit auth, call assertMembership(user.id, params.id) first.
     await this.organizationMembershipsService.assertMembership(
       user.id,
       params.id,
@@ -167,8 +161,7 @@ export class OrganizationsController {
 
     return this.organizationMembershipsService.listMembers(
       params.id,
-      page,
-      limit,
+      query,
     );
   }
 
