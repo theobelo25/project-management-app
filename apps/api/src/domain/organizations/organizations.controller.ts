@@ -36,6 +36,7 @@ import {
 import { OrganizationMembershipsService } from './services/organization-memberships.service';
 import { OrganizationsApplicationService } from './services/organizations-app.service';
 import { RefreshOrganizationsAccessCookie } from './decorators/refresh-organizations-access-cookie.decorator';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -57,6 +58,7 @@ export class OrganizationsController {
   // ---- Invites ----
 
   @Post('invites')
+  @Throttle({ global: { ttl: 60_000, limit: 30 } })
   async createInvite(
     @CurrentUser() user: AuthUser,
     @Body() dto: CreateOrganizationInviteDto,
@@ -66,6 +68,7 @@ export class OrganizationsController {
 
   // New: list invites created for the current org (admin/owner)
   @Get('invites/sent')
+  @Throttle({ global: { ttl: 60_000, limit: 60 } })
   async listSentInvites(
     @CurrentUser() user: AuthUser,
   ): Promise<OrganizationInviteAdminView[]> {
@@ -74,6 +77,7 @@ export class OrganizationsController {
 
   // Existing: invites pending for the current user email
   @Get('invites')
+  @Throttle({ global: { ttl: 60_000, limit: 60 } })
   async getPendingInvites(
     @CurrentUser() user: AuthUser,
   ): Promise<PendingInviteView[]> {
@@ -84,6 +88,7 @@ export class OrganizationsController {
   @RefreshOrganizationsAccessCookie()
   @Post('invites/accept')
   @HttpCode(204)
+  @Throttle({ global: { ttl: 60_000, limit: 10 } })
   async acceptInvite(
     @CurrentUser() user: AuthUser,
     @Body() dto: AcceptOrganizationInviteDto,
@@ -95,6 +100,7 @@ export class OrganizationsController {
   @RefreshOrganizationsAccessCookie()
   @Post('invites/:id/accept')
   @HttpCode(204)
+  @Throttle({ global: { ttl: 60_000, limit: 10 } })
   async acceptInviteById(
     @CurrentUser() user: AuthUser,
     @Param() params: InviteIdParamsDto,
@@ -105,6 +111,7 @@ export class OrganizationsController {
   // Existing: decline by id
   @Post('invites/:id/decline')
   @HttpCode(204)
+  @Throttle({ global: { ttl: 60_000, limit: 10 } })
   async declineInviteById(
     @CurrentUser() user: AuthUser,
     @Param() params: InviteIdParamsDto,
@@ -115,6 +122,7 @@ export class OrganizationsController {
   // New: revoke invite by id (admin/owner)
   @Post('invites/:id/revoke')
   @HttpCode(204)
+  @Throttle({ global: { ttl: 60_000, limit: 10 } })
   async revokeInviteById(
     @CurrentUser() user: AuthUser,
     @Param() params: InviteIdParamsDto,

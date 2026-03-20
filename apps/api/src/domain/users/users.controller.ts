@@ -4,6 +4,7 @@ import { CurrentUser } from '@api/common';
 import { UserIdParamDto } from './dto/user-id-param.dto';
 import { GetUsersQueryDto, GlobalUsersSearchQueryDto } from './dto';
 import { AuthUser, UserView } from '@repo/types';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('users')
 export class UsersController {
@@ -18,6 +19,7 @@ export class UsersController {
   }
 
   @Get('search')
+  @Throttle({ global: { ttl: 60_000, limit: 30 } })
   async searchAllUsers(
     @Query() query: GlobalUsersSearchQueryDto,
   ): Promise<UserView[]> {

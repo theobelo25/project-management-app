@@ -42,7 +42,7 @@ import { Throttle } from '@nestjs/throttler';
  * Route order: static/collection routes before `:taskId` to avoid future foot-guns when adding paths like `export`.
  */
 
-@Throttle({ default: { ttl: 60_000, limit: 60 } })
+@Throttle({ global: { ttl: 60_000, limit: 60 } })
 @Controller('tasks')
 @UseGuards(TaskAccessGuard)
 export class TasksController {

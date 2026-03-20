@@ -24,6 +24,7 @@ import { CookiesService } from './cookies/cookies.service';
 import { LoginRequestDto } from './dto/login-request.dto';
 import { SignupRequestDto } from './dto/signup-request.dto';
 import { AuthCookiesInterceptor } from './interceptors/auth-cookies.interceptor';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -35,6 +36,7 @@ export class AuthController {
   @Post('signup')
   @Public()
   @UseInterceptors(AuthCookiesInterceptor)
+  @Throttle({ global: { ttl: 60_000, limit: 60 } })
   async signup(@Body() body: SignupRequestDto): Promise<AuthSession> {
     const signupInput: SignupInputDto = {
       email: body.email,
@@ -48,6 +50,7 @@ export class AuthController {
   @Post('login')
   @Public()
   @UseInterceptors(AuthCookiesInterceptor)
+  @Throttle({ global: { ttl: 60_000, limit: 20 } })
   async login(@Body() body: LoginRequestDto): Promise<AuthSession> {
     const loginInput: LoginInput = {
       email: body.email,
@@ -66,6 +69,7 @@ export class AuthController {
   @Public()
   @UseGuards(RefreshAuthGuard)
   @UseInterceptors(AuthCookiesInterceptor)
+  @Throttle({ global: { ttl: 60_000, limit: 60 } })
   async refreshToken(
     @CurrentRefreshToken() rawRefreshToken: string,
   ): Promise<AuthSession> {
@@ -75,6 +79,7 @@ export class AuthController {
   @Post('logout')
   @Public()
   @HttpCode(204)
+  @Throttle({ global: { ttl: 60_000, limit: 60 } })
   async logout(
     @Req() req: Request,
     @Res({ passthrough: true }) response: Response,
