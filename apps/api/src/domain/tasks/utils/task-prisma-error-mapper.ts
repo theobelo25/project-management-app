@@ -1,18 +1,17 @@
+import { isRecord } from '@api/common/utils/type-guards';
 import { Prisma } from '@repo/database';
 import { taskNotFound } from '../errors/task-errors';
 
 function getPrismaErrorCode(err: unknown): string | undefined {
-  const maybe = err as any;
-  if (!maybe || typeof maybe !== 'object') return undefined;
-  return typeof maybe.code === 'string' ? maybe.code : undefined;
+  if (!isRecord(err)) return undefined;
+  return typeof err.code === 'string' ? err.code : undefined;
 }
 
 function getPrismaErrorMeta(err: unknown): Record<string, unknown> | undefined {
-  const maybe = err as any;
-  if (!maybe || typeof maybe !== 'object') return undefined;
-  const meta = maybe.meta;
-  if (!meta || typeof meta !== 'object') return undefined;
-  return meta as Record<string, unknown>;
+  if (!isRecord(err)) return undefined;
+  const meta = err.meta;
+  if (!isRecord(meta)) return undefined;
+  return meta;
 }
 
 export function throwTaskNotFoundOnPrismaP2025(

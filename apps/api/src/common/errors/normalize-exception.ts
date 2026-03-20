@@ -30,12 +30,10 @@ export function normalizeException(exception: unknown): NormalizedError {
     let details: unknown | undefined;
 
     if (payload) {
-      const res = exception.getResponse() as any;
-
-      if (Array.isArray(res?.message)) {
+      if (payload.validationMessages) {
         message = 'Validation failed';
         error = payload.error ?? exception.name;
-        details = res.message;
+        details = payload.validationMessages;
       } else {
         message = payload.message ?? message;
         error = payload.error ?? error;
