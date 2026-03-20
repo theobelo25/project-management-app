@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
-import { CurrentUser, JwtAuthGuard } from '@api/common';
+import { CurrentUser } from '@api/common';
 import {
   AuthUser,
   TaskView,
@@ -44,7 +44,7 @@ import { Throttle } from '@nestjs/throttler';
 
 @Throttle({ default: { ttl: 60_000, limit: 60 } })
 @Controller('tasks')
-@UseGuards(JwtAuthGuard, TaskAccessGuard)
+@UseGuards(TaskAccessGuard)
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 

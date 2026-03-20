@@ -1,6 +1,7 @@
 // DECORATORS
 export * from './decorators/current-user.decorator';
 export * from './decorators/refresh-token.decorator';
+export * from './decorators/public.decorator';
 
 // GUARDS
 export * from './guards/jwt-auth.guard';

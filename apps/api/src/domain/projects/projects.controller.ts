@@ -1,4 +1,4 @@
-import { CurrentUser, JwtAuthGuard } from '@api/common';
+import { CurrentUser } from '@api/common';
 import {
   Body,
   Controller,
@@ -36,22 +36,19 @@ import { ProjectRole } from '@repo/database';
 import { ProjectRoleGuard } from './guards/project-role.guard';
 import { CurrentProject } from './decorators/current-project.decorator';
 import { ProjectWithRole } from './types/projects.repository.types';
+import { ProjectsFacade } from './projects.facade';
 
 @Controller('projects')
-@UseGuards(JwtAuthGuard, ProjectRoleGuard)
+@UseGuards(ProjectRoleGuard)
 export class ProjectsController {
-  constructor(
-    private readonly projectsService: ProjectsService,
-    private readonly projectMembersService: ProjectMembersService,
-    private readonly projectOwnershipService: ProjectOwnershipService,
-  ) {}
+  constructor(private readonly projectsFacade: ProjectsFacade) {}
 
   @Post()
   async create(
     @CurrentUser() user: AuthUser,
     @Body() body: CreateProjectDto,
   ): Promise<ProjectView> {
-    return this.projectsService.create(user, body);
+    return this.projectsFacade.create(user, body);
   }
 
   @Get()
@@ -59,7 +56,7 @@ export class ProjectsController {
     @CurrentUser() user: AuthUser,
     @Query() query: GetProjectsQueryDto,
   ): Promise<PaginatedProjectsListView> {
-    return this.projectsService.findManyForUser(user, query);
+    return this.projectsFacade.findManyForUser(user, query);
   }
 
   @Get(':id')
@@ -67,7 +64,7 @@ export class ProjectsController {
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
   ): Promise<ProjectView> {
-    return this.projectsService.findDetailById(params.id, user);
+    return this.projectsFacade.findByIdDetail(params.id, user);
   }
 
   @Patch(':id')
@@ -78,7 +75,7 @@ export class ProjectsController {
     @Body() body: UpdateProjectDto,
     @CurrentProject() project?: ProjectWithRole,
   ): Promise<ProjectView> {
-    return this.projectsService.update(params.id, user, body, project);
+    return this.projectsFacade.update(params.id, user, body, project);
   }
 
   @Patch(':id/archive')
@@ -88,7 +85,7 @@ export class ProjectsController {
     @Param() params: ProjectIdParamDto,
     @CurrentProject() project?: ProjectWithRole,
   ): Promise<ProjectView> {
-    return this.projectsService.archive(params.id, user, project);
+    return this.projectsFacade.archive(params.id, user, project);
   }
 
   @Patch(':id/unarchive')
@@ -98,7 +95,7 @@ export class ProjectsController {
     @Param() params: ProjectIdParamDto,
     @CurrentProject() project?: ProjectWithRole,
   ): Promise<ProjectView> {
-    return this.projectsService.unarchive(params.id, user, project);
+    return this.projectsFacade.unarchive(params.id, user, project);
   }
 
   @Get(':id/members')
@@ -106,9 +103,9 @@ export class ProjectsController {
   async getMembers(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
-    @CurrentProject() project: ProjectWithRole, // no longer optional if guard always runs
+    @CurrentProject() project: ProjectWithRole,
   ): Promise<ProjectMembersView> {
-    return this.projectMembersService.getMembers(params.id, user, project);
+    return this.projectsFacade.getMembers(params.id, user, project);
   }
 
   @Post(':id/members')
@@ -119,7 +116,7 @@ export class ProjectsController {
     @Body() body: AddProjectMemberDto,
     @CurrentProject() project?: ProjectWithRole,
   ): Promise<ProjectMemberView> {
-    return this.projectMembersService.addMember(params.id, user, body, project);
+    return this.projectsFacade.addMember(params.id, user, body, project);
   }
 
   @Patch(':id/members/:userId')
@@ -130,7 +127,7 @@ export class ProjectsController {
     @Body() body: UpdateProjectMemberRoleDto,
     @CurrentProject() project?: ProjectWithRole,
   ): Promise<ProjectMemberView> {
-    return this.projectMembersService.updateMemberRole(
+    return this.projectsFacade.updateMemberRole(
       params.id,
       user,
       params.userId,
@@ -147,7 +144,7 @@ export class ProjectsController {
     @Param() params: ProjectMemberParamDto,
     @CurrentProject() project?: ProjectWithRole,
   ): Promise<void> {
-    return this.projectMembersService.removeMember(
+    return this.projectsFacade.removeMember(
       params.id,
       user,
       params.userId,
@@ -163,7 +160,7 @@ export class ProjectsController {
     @Body() body: TransferProjectOwnershipDto,
     @CurrentProject() project?: ProjectWithRole,
   ): Promise<ProjectView> {
-    return this.projectOwnershipService.transferOwnership(
+    return this.projectsFacade.transferOwnership(
       params.id,
       user,
       body,
@@ -179,6 +176,6 @@ export class ProjectsController {
     @Param() params: ProjectIdParamDto,
     @CurrentProject() project?: ProjectWithRole,
   ): Promise<void> {
-    return this.projectsService.delete(params.id, user, project);
+    return this.projectsFacade.delete(params.id, user, project);
   }
 }

@@ -9,7 +9,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { CurrentRefreshToken, CurrentUser, JwtAuthGuard } from '@api/common';
+import { CurrentRefreshToken, CurrentUser, Public } from '@api/common';
 import {
   UserView,
   SignupInputDto,
@@ -33,6 +33,7 @@ export class AuthController {
   ) {}
 
   @Post('signup')
+  @Public()
   @UseInterceptors(AuthCookiesInterceptor)
   async signup(@Body() body: SignupRequestDto): Promise<AuthSession> {
     const signupInput: SignupInputDto = {
@@ -45,6 +46,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Public()
   @UseInterceptors(AuthCookiesInterceptor)
   async login(@Body() body: LoginRequestDto): Promise<AuthSession> {
     const loginInput: LoginInput = {
@@ -61,6 +63,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @Public()
   @UseGuards(RefreshAuthGuard)
   @UseInterceptors(AuthCookiesInterceptor)
   async refreshToken(
@@ -70,6 +73,7 @@ export class AuthController {
   }
 
   @Post('logout')
+  @Public()
   @HttpCode(204)
   async logout(
     @Req() req: Request,
@@ -85,7 +89,6 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(JwtAuthGuard)
   async me(@CurrentUser() user: UserView): Promise<UserView> {
     return user;
   }

@@ -14,6 +14,7 @@ import { NotificationsModule } from './domain/notifications/notifications.module
 import { AppExceptionFilter } from './common/filters/app-exception.filter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from '@api/common';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { APP_GUARD } from '@nestjs/core';
   providers: [
     AppService,
     AppExceptionFilter,
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })

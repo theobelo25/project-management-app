@@ -2,6 +2,7 @@ import { Controller, Get, Inject } from '@nestjs/common';
 import { AppService } from './app.service';
 import { PRISMA } from '@api/prisma';
 import { PrismaClient } from '@repo/database';
+import { Public } from '@api/common';
 
 @Controller()
 export class AppController {
@@ -11,11 +12,13 @@ export class AppController {
   ) {}
 
   @Get()
+  @Public()
   getHello(): string {
     return this.appService.getHello();
   }
 
   @Get('health')
+  @Public()
   async getHealth(): Promise<{ status: string; db: 'ok' | 'error' }> {
     let db: 'ok' | 'error' = 'error';
     try {
