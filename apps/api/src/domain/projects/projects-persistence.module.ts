@@ -13,6 +13,9 @@ import {
  * Project persistence + repository port tokens only (no HTTP, no Tasks).
  * Imported by `ProjectsModule` and by `TasksModule` for `PROJECT_TASK_CONTEXT_REPOSITORY`,
  * which breaks the former ProjectsModule ↔ TasksModule `forwardRef` cycle.
+ *
+ * Port tokens are `Symbol`s + interfaces: one `PrismaProjectsRepository` implements every
+ * port; `useExisting` binds each token to that singleton (multi-port pattern).
  */
 @Module({
   imports: [PrismaModule],

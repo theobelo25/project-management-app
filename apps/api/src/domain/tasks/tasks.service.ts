@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { TasksRepository } from './repositories/tasks.repository';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -17,7 +17,6 @@ import {
 } from './mappers/tasks.mapper';
 import { toTaskAssignmentView } from './mappers/task-assignment.mapper';
 import { FindTasksQueryDto } from './dto/find-tasks-query.dto';
-import { TASKS_REPOSITORY } from './tasks.tokens';
 import { TaskAssignmentNotifier } from './notifiers/task-assignment-notifier';
 import { TaskAssigneePolicy } from './policies/task-assignee-policy';
 import {
@@ -34,7 +33,6 @@ const TASKS_LOG_CTX = {
 @Injectable()
 export class TasksService {
   constructor(
-    @Inject(TASKS_REPOSITORY)
     private readonly tasksRepository: TasksRepository,
     private readonly taskAssigneePolicy: TaskAssigneePolicy,
     private readonly taskAssignmentNotifier: TaskAssignmentNotifier,

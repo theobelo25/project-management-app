@@ -8,18 +8,14 @@
  * Task-side access to project membership for authorization uses `ProjectsPersistenceModule`
  * (`PROJECT_TASK_CONTEXT_REPOSITORY`), not `ProjectsModule`, avoiding a Projects ↔ Tasks module cycle.
  */
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { ProjectRecentTask } from '@repo/types';
 import type { IProjectTaskInfoProvider } from '@api/domain/projects/types/project-task-info.types';
 import { TasksRepository } from '../repositories/tasks.repository';
-import { TASKS_REPOSITORY } from '../tasks.tokens';
 
 @Injectable()
 export class ProjectTaskInfoProviderAdapter implements IProjectTaskInfoProvider {
-  constructor(
-    @Inject(TASKS_REPOSITORY)
-    private readonly tasksRepository: TasksRepository,
-  ) {}
+  constructor(private readonly tasksRepository: TasksRepository) {}
 
   async getTaskCountsByProjectIds(
     projectIds: string[],

@@ -10,7 +10,7 @@ import { ProjectsPersistenceModule } from '../projects/projects-persistence.modu
 import { UsersModule } from '../users/users.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { PrismaModule } from '@api/prisma';
-import { TASKS_REPOSITORY } from './tasks.tokens';
+import { TasksRepository } from './repositories/tasks.repository';
 import { TASKS_REPOSITORY_TX_FACTORY } from './tasks.tx.tokens';
 import { TaskAssignmentNotifier } from './notifiers/task-assignment-notifier';
 import { TaskAssigneePolicy } from './policies/task-assignee-policy';
@@ -43,7 +43,7 @@ import type { Prisma } from '@repo/database';
       useExisting: ProjectTaskInfoProviderAdapter,
     },
     {
-      provide: TASKS_REPOSITORY,
+      provide: TasksRepository,
       useClass: PrismaTasksRepository,
     },
     {
@@ -55,7 +55,7 @@ import type { Prisma } from '@repo/database';
     },
   ],
   /**
-   * `TASKS_REPOSITORY` is intentionally NOT exported: it would let other modules bypass
+   * `TasksRepository` is intentionally NOT exported: it would let other modules bypass
    * `TasksService` + authorization rules. External modules should depend on
    * `PROJECT_TASK_INFO_PROVIDER` (read-only task projections) or call HTTP/use application services.
    */

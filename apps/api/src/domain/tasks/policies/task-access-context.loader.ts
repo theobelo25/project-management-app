@@ -4,7 +4,6 @@ import {
   PROJECT_TASK_CONTEXT_REPOSITORY,
   type ProjectTaskContextRepository,
 } from '@api/domain/projects/repositories/projects.repository';
-import { TASKS_REPOSITORY } from '../tasks.tokens';
 import { TasksRepository } from '../repositories/tasks.repository';
 import type { TaskAccessContext } from '../types/tasks.repository.types';
 
@@ -15,7 +14,6 @@ import type { TaskAccessContext } from '../types/tasks.repository.types';
 @Injectable()
 export class TaskAccessContextLoader {
   constructor(
-    @Inject(TASKS_REPOSITORY)
     private readonly tasksRepository: TasksRepository,
     @Inject(PROJECT_TASK_CONTEXT_REPOSITORY)
     private readonly projectContext: ProjectTaskContextRepository,
