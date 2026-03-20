@@ -32,8 +32,28 @@ export const OrganizationInviteAdminViewSchema = z.object({
   createdById: z.string(),
 });
 
+export const OrganizationInviteViewSchema = z.object({
+  inviteUrl: z.string().url(),
+  email: z.string().email(),
+  expiresAt: z.iso.datetime(),
+});
+
+export const PendingInviteViewSchema = z.object({
+  id: z.string(),
+  organizationName: z.string(),
+  email: z.string().email(),
+  expiresAt: z.iso.datetime(),
+});
+
 export const OrganizationInvitesAdminListViewSchema = z.object({
   items: z.array(OrganizationInviteAdminViewSchema),
+});
+
+export const OrganizationViewSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  role: OrganizationRoleSchema,
+  joinedAt: z.iso.datetime(),
 });
 
 export const OrganizationMemberViewSchema = z.object({
@@ -57,4 +77,12 @@ export const OrganizationSummaryViewSchema = z.object({
   name: z.string(),
   role: OrganizationRoleSchema,
   joinedAt: z.iso.datetime(),
+});
+
+export const OrganizationDetailViewSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  role: OrganizationRoleSchema,
+  joinedAt: z.iso.datetime(),
+  members: z.array(OrganizationMemberViewSchema),
 });

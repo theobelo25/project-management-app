@@ -37,8 +37,22 @@ import { OrganizationMembershipsService } from './services/organization-membersh
 import { OrganizationsApplicationService } from './services/organizations-app.service';
 import { RefreshOrganizationsAccessCookie } from './decorators/refresh-organizations-access-cookie.decorator';
 import { Throttle } from '@nestjs/throttler';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
+import { ZodSerializerDto } from 'nestjs-zod';
+import {
+  OrganizationDetailResponseDto,
+  OrganizationInviteAdminListResponseDto,
+  OrganizationInviteResponseDto,
+  OrganizationMemberResponseDto,
+  OrganizationSummaryResponseDto,
+  OrganizationViewListResponseDto,
+  PaginatedOrganizationMembersResponseDto,
+  PendingInviteListResponseDto,
+} from '@api/common/swagger/response-dtos';
 
 @Controller('organizations')
+@ApiTags('organizations')
+@ApiCookieAuth('Authentication')
 export class OrganizationsController {
   constructor(
     private readonly organizationsAppService: OrganizationsApplicationService,
@@ -47,6 +61,7 @@ export class OrganizationsController {
   ) {}
 
   @Get()
+  @ZodSerializerDto(OrganizationViewListResponseDto)
   async listMyOrganizations(
     @CurrentUser() user: AuthUser,
   ): Promise<OrganizationView[]> {
@@ -59,6 +74,7 @@ export class OrganizationsController {
 
   @Post('invites')
   @Throttle({ global: { ttl: 60_000, limit: 30 } })
+  @ZodSerializerDto(OrganizationInviteResponseDto)
   async createInvite(
     @CurrentUser() user: AuthUser,
     @Body() dto: CreateOrganizationInviteDto,
@@ -69,6 +85,7 @@ export class OrganizationsController {
   // New: list invites created for the current org (admin/owner)
   @Get('invites/sent')
   @Throttle({ global: { ttl: 60_000, limit: 60 } })
+  @ZodSerializerDto(OrganizationInviteAdminListResponseDto)
   async listSentInvites(
     @CurrentUser() user: AuthUser,
   ): Promise<OrganizationInviteAdminView[]> {
@@ -78,6 +95,7 @@ export class OrganizationsController {
   // Existing: invites pending for the current user email
   @Get('invites')
   @Throttle({ global: { ttl: 60_000, limit: 60 } })
+  @ZodSerializerDto(PendingInviteListResponseDto)
   async getPendingInvites(
     @CurrentUser() user: AuthUser,
   ): Promise<PendingInviteView[]> {
@@ -133,6 +151,7 @@ export class OrganizationsController {
   // ---- Orgs ----
 
   @Get(':id')
+  @ZodSerializerDto(OrganizationDetailResponseDto)
   async getOrganizationDetails(
     @CurrentUser() user: AuthUser,
     @Param() params: OrganizationParamsDto,
@@ -145,6 +164,7 @@ export class OrganizationsController {
 
   // New: summary endpoint (no members list)
   @Get(':id/summary')
+  @ZodSerializerDto(OrganizationSummaryResponseDto)
   async getOrganizationSummary(
     @CurrentUser() user: AuthUser,
     @Param() params: OrganizationParamsDto,
@@ -157,6 +177,7 @@ export class OrganizationsController {
 
   // New: members list paginated
   @Get(':id/members')
+  @ZodSerializerDto(PaginatedOrganizationMembersResponseDto)
   async listMembers(
     @CurrentUser() user: AuthUser,
     @Param() params: OrganizationParamsDto,
@@ -184,6 +205,7 @@ export class OrganizationsController {
   }
 
   @Post(':id/members')
+  @ZodSerializerDto(OrganizationMemberResponseDto)
   async addOrganizationMember(
     @CurrentUser() user: AuthUser,
     @Param() params: OrganizationParamsDto,

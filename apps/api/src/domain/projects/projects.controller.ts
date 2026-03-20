@@ -11,7 +11,8 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ProjectsService } from './projects.service';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
+import { ZodSerializerDto } from 'nestjs-zod';
 import {
   AuthUser,
   PaginatedProjectsListView,
@@ -29,29 +30,38 @@ import {
   UpdateProjectMemberRoleDto,
   AddProjectMemberDto,
 } from './dto';
-import { ProjectMembersService } from './services/project-members.service';
-import { ProjectOwnershipService } from './services/project-ownership.service';
 import { RequireProjectRole } from './decorators/require-project-role.decorator';
 import { ProjectRole } from '@repo/database';
 import { ProjectRoleGuard } from './guards/project-role.guard';
 import { CurrentProject } from './decorators/current-project.decorator';
 import { ProjectWithRole } from './types/projects.repository.types';
 import { ProjectsFacade } from './projects.facade';
+import {
+  PaginatedProjectsListResponseDto,
+  ProjectMemberResponseDto,
+  ProjectMembersResponseDto,
+  ProjectViewResponseDto,
+} from '@api/common/swagger/response-dtos';
 
 @Controller('projects')
+@ApiTags('projects')
+@ApiCookieAuth('Authentication')
 @UseGuards(ProjectRoleGuard)
 export class ProjectsController {
   constructor(private readonly projectsFacade: ProjectsFacade) {}
 
   @Post()
+  @ZodSerializerDto(ProjectViewResponseDto)
   async create(
     @CurrentUser() user: AuthUser,
     @Body() body: CreateProjectDto,
   ): Promise<ProjectView> {
+    // ensure runtime serialization + OpenAPI response schema stay aligned
     return this.projectsFacade.create(user, body);
   }
 
   @Get()
+  @ZodSerializerDto(PaginatedProjectsListResponseDto)
   async findMany(
     @CurrentUser() user: AuthUser,
     @Query() query: GetProjectsQueryDto,
@@ -60,6 +70,7 @@ export class ProjectsController {
   }
 
   @Get(':id')
+  @ZodSerializerDto(ProjectViewResponseDto)
   async findById(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
@@ -69,6 +80,7 @@ export class ProjectsController {
 
   @Patch(':id')
   @RequireProjectRole(ProjectRole.ADMIN)
+  @ZodSerializerDto(ProjectViewResponseDto)
   async update(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
@@ -80,6 +92,7 @@ export class ProjectsController {
 
   @Patch(':id/archive')
   @RequireProjectRole(ProjectRole.OWNER)
+  @ZodSerializerDto(ProjectViewResponseDto)
   async archive(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
@@ -90,6 +103,7 @@ export class ProjectsController {
 
   @Patch(':id/unarchive')
   @RequireProjectRole(ProjectRole.OWNER)
+  @ZodSerializerDto(ProjectViewResponseDto)
   async unarchive(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
@@ -100,6 +114,7 @@ export class ProjectsController {
 
   @Get(':id/members')
   @RequireProjectRole(ProjectRole.MEMBER)
+  @ZodSerializerDto(ProjectMembersResponseDto)
   async getMembers(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
@@ -110,6 +125,7 @@ export class ProjectsController {
 
   @Post(':id/members')
   @RequireProjectRole(ProjectRole.OWNER)
+  @ZodSerializerDto(ProjectMemberResponseDto)
   async addMember(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
@@ -121,6 +137,7 @@ export class ProjectsController {
 
   @Patch(':id/members/:userId')
   @RequireProjectRole(ProjectRole.OWNER)
+  @ZodSerializerDto(ProjectMemberResponseDto)
   async updateMemberRole(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectMemberParamDto,
@@ -154,6 +171,7 @@ export class ProjectsController {
 
   @Patch(':id/owner')
   @RequireProjectRole(ProjectRole.OWNER)
+  @ZodSerializerDto(ProjectViewResponseDto)
   async transferOwnership(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,

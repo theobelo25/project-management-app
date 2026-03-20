@@ -10,6 +10,8 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
+import { ZodSerializerDto } from 'nestjs-zod';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { CurrentUser } from '@api/common';
@@ -26,6 +28,10 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskAccessGuard } from './guards/task-access.guard';
 import { RequireTaskAccess } from './decorators/require-task-access.decorator';
 import { Throttle } from '@nestjs/throttler';
+import {
+  TaskAssignmentResponseDto,
+  TaskViewResponseDto,
+} from '@api/common/swagger/response-dtos';
 
 /**
  * Tasks HTTP API
@@ -44,12 +50,15 @@ import { Throttle } from '@nestjs/throttler';
 
 @Throttle({ global: { ttl: 60_000, limit: 60 } })
 @Controller('tasks')
+@ApiTags('tasks')
+@ApiCookieAuth('Authentication')
 @UseGuards(TaskAccessGuard)
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Post()
   @RequireTaskAccess('createInProject')
+  @ZodSerializerDto(TaskViewResponseDto)
   async create(
     @CurrentUser() user: AuthUser,
     @Body() body: CreateTaskDto,
@@ -76,6 +85,7 @@ export class TasksController {
    */
   @Get(':taskId')
   @RequireTaskAccess('readTask')
+  @ZodSerializerDto(TaskViewResponseDto)
   async findById(
     @CurrentUser() user: AuthUser,
     @Param() params: TaskIdParamDto,
@@ -85,6 +95,7 @@ export class TasksController {
 
   @Patch(':taskId')
   @RequireTaskAccess('updateTask')
+  @ZodSerializerDto(TaskViewResponseDto)
   async update(
     @CurrentUser() user: AuthUser,
     @Param() params: TaskIdParamDto,
@@ -113,6 +124,7 @@ export class TasksController {
    */
   @Post(':taskId/assignees/:userId')
   @RequireTaskAccess('assignTask')
+  @ZodSerializerDto(TaskAssignmentResponseDto)
   async assignUser(
     @CurrentUser() user: AuthUser,
     @Param() params: TaskAssigneeParamsDto,
