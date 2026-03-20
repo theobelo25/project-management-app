@@ -5,7 +5,8 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { getRequestCorrelationId } from '../utils/http.utils';
 import { normalizeException } from '../errors/normalize-exception';
 import { buildApiErrorResponse } from '../errors/build-api-error-response';
 import { APP_LOGGER, AppLogger } from '@api/logger/app.logger.interface';
@@ -20,7 +21,7 @@ export class AppExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
+    const request = ctx.getRequest();
 
     const normalized = normalizeException(exception);
     const payload = buildApiErrorResponse({
@@ -30,7 +31,7 @@ export class AppExceptionFilter implements ExceptionFilter {
 
     this.logger.error(
       {
-        requestId: (request as any).id,
+        requestId: getRequestCorrelationId(request),
       },
       `${payload.statusCode} ${payload.message}`,
     );

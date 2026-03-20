@@ -9,7 +9,16 @@ import { Test } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { Prisma } from '@repo/database';
 import request from 'supertest';
+import type { AppLogger } from '@api/logger/app.logger.interface';
 import { AppExceptionFilter } from '../src/common/filters/app-exception.filter';
+
+const mockLogger: AppLogger = {
+  setContext: jest.fn(),
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+};
 
 function createPrismaKnownRequestError(
   code: string,
@@ -76,7 +85,7 @@ describe('AppExceptionFilter (e2e)', () => {
 
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix('api');
-    app.useGlobalFilters(new AppExceptionFilter());
+    app.useGlobalFilters(new AppExceptionFilter(mockLogger));
 
     await app.init();
   });

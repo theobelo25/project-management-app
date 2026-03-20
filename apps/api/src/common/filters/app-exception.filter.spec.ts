@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@repo/database';
+import type { AppLogger } from '@api/logger/app.logger.interface';
 import { AppExceptionFilter } from './app-exception.filter';
 
 function createPrismaKnownRequestError(
@@ -35,8 +36,16 @@ function createPrismaKnownRequestError(
 describe('AppExceptionFilter', () => {
   let filter: AppExceptionFilter;
 
+  const mockLogger: AppLogger = {
+    setContext: jest.fn(),
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  };
+
   beforeEach(() => {
-    filter = new AppExceptionFilter();
+    filter = new AppExceptionFilter(mockLogger);
     jest.useFakeTimers().setSystemTime(new Date('2026-03-09T12:00:00.000Z'));
   });
 

@@ -9,6 +9,15 @@ import { COOKIE } from '../src/domain/auth/cookies/cookies.constants';
 import { prisma } from '@repo/database';
 import { ZodValidationPipe } from '@api/common';
 import { AppExceptionFilter } from '@api/common/filters/app-exception.filter';
+import type { AppLogger } from '@api/logger/app.logger.interface';
+
+const mockLogger: AppLogger = {
+  setContext: jest.fn(),
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+};
 
 type PrismaDb = typeof prisma;
 
@@ -24,7 +33,7 @@ describe('Users E2E', () => {
     app.use(cookieParser());
     app.setGlobalPrefix('api'); // if you want to mirror main.ts
     app.useGlobalPipes(new ZodValidationPipe());
-    app.useGlobalFilters(new AppExceptionFilter());
+    app.useGlobalFilters(new AppExceptionFilter(mockLogger));
     await app.init();
 
     db = app.get<PrismaDb>(PRISMA);

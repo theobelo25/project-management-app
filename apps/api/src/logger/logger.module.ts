@@ -25,7 +25,7 @@ import { PinoAppLoggerAdapter } from './pino-app-logger.apapter';
               const header = req.headers['x-request-id'];
               const rawId =
                 (Array.isArray(header) ? header[0] : header) ??
-                (req as any).id ?? // whatever pino-http may have set
+                req.id ??
                 randomUUID();
               const requestId = String(rawId);
               res.setHeader('x-request-id', requestId);
