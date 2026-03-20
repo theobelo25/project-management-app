@@ -8,6 +8,15 @@ import { PRISMA } from '../src/prisma/types/prisma.constants';
 import { PrismaClient, ProjectRole } from '@repo/database';
 import { ZodValidationPipe } from '@api/common';
 import { AppExceptionFilter } from '@api/common/filters/app-exception.filter';
+import type { AppLogger } from '@api/logger/app.logger.interface';
+
+const mockLogger: AppLogger = {
+  setContext: jest.fn(),
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+};
 
 describe('Projects E2E', () => {
   let app: INestApplication;
@@ -22,7 +31,7 @@ describe('Projects E2E', () => {
     app.use(cookieParser());
     app.setGlobalPrefix('api'); // mirror main.ts
     app.useGlobalPipes(new ZodValidationPipe());
-    app.useGlobalFilters(new AppExceptionFilter());
+    app.useGlobalFilters(new AppExceptionFilter(mockLogger));
     await app.init();
 
     prisma = app.get(PRISMA);

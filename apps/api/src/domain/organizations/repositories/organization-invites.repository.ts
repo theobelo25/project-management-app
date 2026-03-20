@@ -4,6 +4,7 @@ import {
   CreateOrganizationInviteInput,
   OrganizationInviteRecord,
 } from '../types/organization-invite.repository.types';
+import { OrganizationInviteAdminView } from '@repo/types';
 
 export abstract class OrganizationInvitesRepository {
   abstract create(
@@ -11,8 +12,9 @@ export abstract class OrganizationInvitesRepository {
     db?: Db,
   ): Promise<OrganizationInviteRecord>;
 
-  abstract findByTokenHash(
+  abstract findByTokenHashAndPrefix(
     tokenHash: string,
+    tokenPrefix: string,
     db?: Db,
   ): Promise<OrganizationInviteRecord | null>;
 
@@ -26,7 +28,12 @@ export abstract class OrganizationInvitesRepository {
     db?: Db,
   ): Promise<PendingInviteView[]>;
 
-  abstract markAccepted(inviteId: string, db?: Db): Promise<void>;
+  abstract listForOrganization(
+    organizationId: string,
+    db?: Db,
+  ): Promise<OrganizationInviteAdminView[]>;
 
-  abstract markRevoked(inviteId: string, db?: Db): Promise<void>;
+  abstract markAccepted(inviteId: string, now: Date, db?: Db): Promise<number>;
+
+  abstract markRevoked(inviteId: string, now: Date, db?: Db): Promise<number>;
 }

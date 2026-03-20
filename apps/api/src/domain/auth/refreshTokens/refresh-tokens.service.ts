@@ -10,14 +10,19 @@ import {
   CreateRefreshTokenInput,
   RefreshTokenRecord,
 } from '../types/refresh-token.types';
-import { AuthRepository } from '../repositories/auth.repository';
+import { RefreshTokenRepositoryFacade } from '../repositories/refresh-token.repository';
 import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class RefreshTokensService {
+  private lastCleanupAtMs = 0;
+
+  // Adjust based on your traffic; this prevents a DB cleanup on every request.
+  private readonly cleanupCooldownMs = 120_000;
+
   constructor(
     private readonly authConfig: AuthConfigService,
-    private readonly authRepository: AuthRepository,
+    private readonly refreshTokenRepository: RefreshTokenRepositoryFacade,
     @Inject(HASHING_SERVICE)
     private readonly hashingService: HashingService,
     private readonly logger: PinoLogger,
@@ -58,11 +63,13 @@ export class RefreshTokensService {
     now: Date,
     tx?: Db,
   ): Promise<never> {
-    await this.authRepository.revokeUserRefreshTokens(userId, now, tx);
+    await this.refreshTokenRepository.revokeUserRefreshTokens(userId, now, tx);
+
     this.logger.warn(
       { userId, revokedAt: now.toISOString() },
       'Refresh token reuse detected; revoked all active refresh tokens',
     );
+
     throw new UnauthorizedException('Refresh token reuse detected');
   }
 
@@ -72,10 +79,11 @@ export class RefreshTokensService {
   ): Promise<RefreshTokenRecord | null> {
     const tokenPrefix = this.getTokenPrefix(rawToken);
 
-    const candidates = await this.authRepository.findRefreshTokensByPrefix(
-      tokenPrefix,
-      tx,
-    );
+    const candidates =
+      await this.refreshTokenRepository.findRefreshTokensByPrefix(
+        tokenPrefix,
+        tx,
+      );
 
     for (const candidate of candidates) {
       const isMatch = await this.hashingService.verify(
@@ -91,10 +99,27 @@ export class RefreshTokensService {
     return null;
   }
 
+  private async cleanupExpiredRevokedTokensIfDue(tx?: Db) {
+    const nowMs = Date.now();
+
+    // if we cleaned recently, skip
+    if (nowMs - this.lastCleanupAtMs < this.cleanupCooldownMs) return;
+
+    this.lastCleanupAtMs = nowMs;
+
+    await this.refreshTokenRepository.deleteExpiredRevokedRefreshTokens(
+      new Date(nowMs),
+      tx,
+    );
+  }
+
   async issueInitial(userId: string, tx?: Db): Promise<string> {
     const { rawToken, dto } = await this.buildRefreshTokenRecord(userId);
 
-    const created = await this.authRepository.createRefreshToken(dto, tx);
+    const created = await this.refreshTokenRepository.createRefreshToken(
+      dto,
+      tx,
+    );
 
     this.logger.info(
       { userId, tokenId: created.id },
@@ -108,6 +133,8 @@ export class RefreshTokensService {
     rawToken: string,
     tx?: Db,
   ): Promise<{ userId: string; nextRawToken: string }> {
+    await this.cleanupExpiredRevokedTokensIfDue(tx);
+
     const matched = await this.findByRaw(rawToken, tx);
 
     if (!matched) {
@@ -125,6 +152,7 @@ export class RefreshTokensService {
         },
         'Expired refresh token presented for rotation',
       );
+
       throw new UnauthorizedException('Invalid refresh token');
     }
 
@@ -136,16 +164,17 @@ export class RefreshTokensService {
       matched.userId,
     );
 
-    const next = await this.authRepository.createRefreshToken(dto, tx);
+    const next = await this.refreshTokenRepository.createRefreshToken(dto, tx);
 
-    const consumed = await this.authRepository.consumeAndReplaceRefreshToken(
-      {
-        currentId: matched.id,
-        replacedByTokenId: next.id,
-        now,
-      },
-      tx,
-    );
+    const consumed =
+      await this.refreshTokenRepository.consumeAndReplaceRefreshToken(
+        {
+          currentId: matched.id,
+          replacedByTokenId: next.id,
+          now,
+        },
+        tx,
+      );
 
     if (!consumed) {
       return this.revokeAllAndThrowReuse(matched.userId, now, tx);
@@ -168,6 +197,7 @@ export class RefreshTokensService {
 
   async revoke(rawToken: string) {
     const matched = await this.findByRaw(rawToken);
+
     if (!matched) {
       this.logger.debug(
         'Refresh token revoke requested but no matching token was found',
@@ -179,13 +209,9 @@ export class RefreshTokensService {
       return;
     }
 
-    await this.authRepository.revokeRefreshToken(matched.id, new Date());
-  }
-
-  async findValidRefreshToken(
-    rawRefreshToken: string,
-    tx?: Db,
-  ): Promise<RefreshTokenRecord | null> {
-    return this.findByRaw(rawRefreshToken, tx);
+    await this.refreshTokenRepository.revokeRefreshToken(
+      matched.id,
+      new Date(),
+    );
   }
 }

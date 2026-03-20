@@ -1,4 +1,3 @@
-import { FindTasksQuerySchema } from '@repo/types';
-import { createZodDto } from '@api/common';
+import { FindTasksQuerySchema, createZodDto } from '@repo/types';
 
 export class FindTasksQueryDto extends createZodDto(FindTasksQuerySchema) {}

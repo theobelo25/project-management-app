@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UsersRepository } from './repositories/users.repository';
 import { Db } from '@api/prisma';
 import {
@@ -49,6 +53,12 @@ export class UsersService {
     return this.usersRepository.findById(id, db);
   }
 
+  async requireById(id: string, db?: Db): Promise<UserView> {
+    const user = await this.usersRepository.findById(id, db);
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
+
   async findPrivateUserById(id: string, db?: Db): Promise<PrivateUser | null> {
     return this.usersRepository.findPrivateUserById(id, db);
   }
@@ -69,5 +79,13 @@ export class UsersService {
       return this.usersRepository.searchUsersByOrgId(orgId, search.trim(), db);
     }
     return this.usersRepository.getUsersByOrgId(orgId, db);
+  }
+
+  async searchUsers(search: string, db?: Db): Promise<UserView[]> {
+    return this.usersRepository.searchUsers(search, db);
+  }
+
+  async getAllUsers(db?: Db): Promise<UserView[]> {
+    return this.usersRepository.getAllUsers(db);
   }
 }

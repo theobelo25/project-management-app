@@ -1,6 +1,5 @@
 import {
   PaginatedProjectsListView,
-  PaginatedProjectsView,
   ProjectListItemView,
   ProjectView,
   ProjectDetailView,
@@ -15,7 +14,6 @@ import {
   toIsoString,
   toIsoStringOrNull,
 } from '@api/common/mappers/mapper.utils';
-import { TaskWithAssignees } from '../../tasks/types/tasks.repository.types';
 
 export function toProjectView(project: ProjectWithRole): ProjectView {
   return {
@@ -27,18 +25,6 @@ export function toProjectView(project: ProjectWithRole): ProjectView {
     createdAt: toIsoString(project.createdAt),
     updatedAt: toIsoString(project.updatedAt),
     currentUserRole: project.currentUserRole,
-  };
-}
-
-export function toPaginatedProjectsView(
-  result: PaginatedProjectsResult,
-): PaginatedProjectsView {
-  return {
-    items: result.items.map(toProjectView),
-    page: result.page,
-    pageSize: result.pageSize,
-    total: result.total,
-    totalPages: Math.ceil(result.total / result.pageSize),
   };
 }
 
@@ -86,7 +72,7 @@ export function toProjectDetailView(
   project: ProjectWithRole,
   counts: { total: number; completed: number },
   members: ProjectListMemberWithUser[],
-  recentTasks: TaskWithAssignees[],
+  recentTasks: ProjectRecentTask[],
 ): ProjectDetailView {
   const base = toProjectView(project);
   const openTasks = counts.total - counts.completed;

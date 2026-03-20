@@ -5,7 +5,7 @@ import {
   PipeTransform,
 } from '@nestjs/common';
 import { ZodError, ZodType } from 'zod';
-import { isZodDto } from '../zod/zod-dto.util';
+import { isZodDto } from '@repo/types';
 
 @Injectable()
 export class ZodValidationPipe implements PipeTransform {

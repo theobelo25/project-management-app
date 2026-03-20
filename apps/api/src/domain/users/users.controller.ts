@@ -1,36 +1,44 @@
-import {
-  Controller,
-  Get,
-  NotFoundException,
-  Param,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
+import { ZodSerializerDto } from 'nestjs-zod';
 import { UsersService } from './users.service';
-import { CurrentUser, JwtAuthGuard } from '@api/common';
+import { CurrentUser } from '@api/common';
 import { UserIdParamDto } from './dto/user-id-param.dto';
-import { GetUsersQueryDto } from './dto';
-import { AuthUser } from '@repo/types';
+import { GetUsersQueryDto, GlobalUsersSearchQueryDto } from './dto';
+import { AuthUser, UserView } from '@repo/types';
+import { Throttle } from '@nestjs/throttler';
+import {
+  UserViewListResponseDto,
+  UserViewResponseDto,
+} from '@api/common/swagger/response-dtos';
 
 @Controller('users')
+@ApiTags('users')
+@ApiCookieAuth('Authentication')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard)
+  @ZodSerializerDto(UserViewListResponseDto)
   async getUsers(
     @CurrentUser() user: AuthUser,
     @Query() query: GetUsersQueryDto,
-  ) {
+  ): Promise<UserView[]> {
     return this.usersService.getUsersForOrg(user.orgId, query.search);
   }
 
+  @Get('search')
+  @Throttle({ global: { ttl: 60_000, limit: 30 } })
+  @ZodSerializerDto(UserViewListResponseDto)
+  async searchAllUsers(
+    @Query() query: GlobalUsersSearchQueryDto,
+  ): Promise<UserView[]> {
+    return this.usersService.searchUsers(query.search);
+  }
+
   @Get(':id')
-  async findById(@Param() params: UserIdParamDto) {
-    const user = await this.usersService.findById(params.id);
-
-    if (!user) throw new NotFoundException('User not found');
-
-    return user;
+  @ZodSerializerDto(UserViewResponseDto)
+  async findById(@Param() params: UserIdParamDto): Promise<UserView> {
+    return this.usersService.requireById(params.id);
   }
 }

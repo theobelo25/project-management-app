@@ -13,26 +13,53 @@ enum ProjectRole {
     MEMBER
 }
 
+enum TaskStatus {
+    TODO
+    IN_PROGRESS
+    REVIEW
+    DONE
+}
+
+enum TaskPriority {
+    LOW
+    MEDIUM
+    HIGH
+}
+
+enum OrganizationRole {
+    OWNER
+    ADMIN
+    MEMBER
+}
+
 model User {
-    id           String   @id @default(uuid()) @db.Uuid
-    email        String   @unique
-    name         String
-    passwordHash String
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @updatedAt
+    id                      String                   @id @default(uuid()) @db.Uuid
+    email                   String                   @unique
+    name                    String
+    passwordHash            String
+    createdAt               DateTime                 @default(now())
+    updatedAt               DateTime                 @updatedAt
+    refreshTokens           RefreshToken[]
+    ownedProjects           Project[]                @relation("OwnedProjects")
+    projectMembers          ProjectMember[]          @relation("ProjectMemberships")
+    createdTasks            Task[]                   @relation("TaskCreator")
+    taskAssignees           TaskAssignee[]
+    tasks                   Task[]
+    // Multi-org:
+    organizationMemberships OrganizationMembership[]
+    // Default org used when we need to restore a user after an org deletion.
+    defaultOrganizationId   String?                  @db.Uuid
+    defaultOrganization     Organization?            @relation("DefaultOrganization", fields: [defaultOrganizationId], references: [id], onDelete: SetNull)
+    // Active org pointer used for scoping queries (required at runtime)
+    activeOrganizationId    String                   @db.Uuid
+    activeOrganization      Organization             @relation("ActiveOrganization", fields: [activeOrganizationId], references: [id], onDelete: Restrict)
+    // Invites
+    createdInvites          OrganizationInvite[]     @relation("InviteCreator")
+    organizationInvites     OrganizationInvite[]
+    // Notifications
+    userNotifications       UserNotification[]
 
-    refreshTokens RefreshToken[]
-
-    ownedProjects  Project[]       @relation("OwnedProjects")
-    projectMembers ProjectMember[] @relation("ProjectMemberships")
-
-    createdTasks        Task[]               @relation("TaskCreator")
-    taskAssignees       TaskAssignee[]
-    tasks               Task[]
-    organization        Organization         @relation(fields: [organizationId], references: [id])
-    organizationId      String               @db.Uuid
-    createdInvites      OrganizationInvite[] @relation("InviteCreator")
-    organizationInvites OrganizationInvite[]
+    @@index([defaultOrganizationId])
 }
 
 model RefreshToken {
@@ -97,19 +124,6 @@ model ProjectMember {
     @@index([projectId, role])
 }
 
-enum TaskStatus {
-    TODO
-    IN_PROGRESS
-    REVIEW
-    DONE
-}
-
-enum TaskPriority {
-    LOW
-    MEDIUM
-    HIGH
-}
-
 model Task {
     id          String       @id @default(uuid()) @db.Uuid
     projectId   String       @db.Uuid
@@ -146,15 +160,33 @@ model TaskAssignee {
 }
 
 model Organization {
-    id                  String               @id @default(uuid()) @db.Uuid
-    name                String
-    createdAt           DateTime             @default(now())
-    updatedAt           DateTime             @updatedAt
-    users               User[]
-    projects            Project[]
-    organizationInvites OrganizationInvite[]
+    id                      String                   @id @default(uuid()) @db.Uuid
+    name                    String
+    createdAt               DateTime                 @default(now())
+    updatedAt               DateTime                 @updatedAt
+    projects                Project[]
+    organizationInvites     OrganizationInvite[]
+    organizationMemberships OrganizationMembership[]
+    // Active-org pointer backref
+    defaultUsers            User[]                   @relation("DefaultOrganization")
+    activeUsers             User[]                   @relation("ActiveOrganization")
 
     @@index([createdAt])
+}
+
+model OrganizationMembership {
+    id             String           @id @default(uuid()) @db.Uuid
+    userId         String           @db.Uuid
+    organizationId String           @db.Uuid
+    role           OrganizationRole @default(MEMBER)
+    createdAt      DateTime         @default(now())
+
+    user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, organizationId])
+    @@index([organizationId])
+    @@index([userId])
 }
 
 model OrganizationInvite {
@@ -178,4 +210,19 @@ model OrganizationInvite {
     @@index([tokenPrefix])
     @@index([expiresAt])
     @@index([organizationId, email])
+}
+
+model UserNotification {
+    id        String    @id @default(uuid()) @db.Uuid
+    userId    String    @db.Uuid
+    type      String
+    title     String
+    body      String?
+    meta      Json?
+    createdAt DateTime  @default(now())
+    clearedAt DateTime?
+    user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId, clearedAt])
+    @@index([createdAt])
 }

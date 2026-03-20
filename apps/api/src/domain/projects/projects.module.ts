@@ -1,39 +1,36 @@
 import { Module } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
-import { ProjectMembersService } from './members/project-members.service';
-import { ProjectOwnershipService } from './members/project-ownership.service';
+import { ProjectMembersService } from './services/project-members.service';
+import { ProjectOwnershipService } from './services/project-ownership.service';
 import { ProjectAccessService } from './policies/project-access.service';
-import { PrismaProjectsRepository } from './repositories/prisma-projects.repository';
 import { ProjectsController } from './projects.controller';
 import { ProjectRoleGuard } from './guards/project-role.guard';
-import { ProjectsRepository } from './repositories/projects.repository';
-import { TasksRepository } from '../tasks/repositories/tasks.repository';
-import { PrismaTasksRepository } from '../tasks/repositories/prisma-tasks.repository';
 import { UsersModule } from '../users/users.module';
+import { ProjectsCommandsService } from './services/projects-commands.service';
+import { ProjectsQueriesService } from './services/projects-queries.service';
+import { UsersService } from '../users/users.service';
+import { TasksModule } from '../tasks/tasks.module';
+import { ProjectsFacade } from './projects.facade';
+import { ProjectsPersistenceModule } from './projects-persistence.module';
 
 @Module({
-  imports: [UsersModule],
+  imports: [UsersModule, ProjectsPersistenceModule, TasksModule],
   controllers: [ProjectsController],
   providers: [
     ProjectsService,
+    ProjectsCommandsService,
+    ProjectsQueriesService,
     ProjectMembersService,
     ProjectOwnershipService,
     ProjectAccessService,
     ProjectRoleGuard,
-    {
-      provide: ProjectsRepository,
-      useClass: PrismaProjectsRepository,
-    },
-    {
-      provide: TasksRepository,
-      useClass: PrismaTasksRepository,
-    },
+    ProjectsFacade,
   ],
   exports: [
+    ProjectsPersistenceModule,
     ProjectsService,
     ProjectMembersService,
     ProjectOwnershipService,
-    ProjectsRepository,
   ],
 })
 export class ProjectsModule {}

@@ -1,4 +1,3 @@
-import { TaskIdParamSchema } from '@repo/types';
-import { createZodDto } from '@api/common';
+import { TaskIdParamSchema, createZodDto } from '@repo/types';
 
 export class TaskIdParamDto extends createZodDto(TaskIdParamSchema) {}

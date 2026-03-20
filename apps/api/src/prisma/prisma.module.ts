@@ -1,9 +1,8 @@
-import { Global, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { PRISMA, UNIT_OF_WORK } from './types/prisma.constants';
 import { prisma } from '@repo/database';
 import { PrismaUnitOfWork } from './uow/prisma-unit-of-work.service';
 
-@Global()
 @Module({
   providers: [
     { provide: PRISMA, useValue: prisma },

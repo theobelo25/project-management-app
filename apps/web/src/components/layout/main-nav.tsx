@@ -9,10 +9,12 @@ import {
 import { Button } from "../ui/button";
 import { Menu } from "lucide-react";
 import { SecondaryNav } from "./secondary-nav";
+import { ROUTES } from "@web/lib/routes";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/projects", label: "Projects" },
+  { href: ROUTES.dashboard, label: "Dashboard" },
+  { href: ROUTES.projects, label: "Projects" },
+  { href: ROUTES.organizations, label: "Organizations" },
 ] as const;
 
 function NavLinks() {

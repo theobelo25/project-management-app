@@ -1,4 +1,3 @@
-import { createZodDto } from '@api/common';
-import { SignupRequestSchema } from '@repo/types';
+import { SignupRequestSchema, createZodDto } from '@repo/types';
 
 export class SignupRequestDto extends createZodDto(SignupRequestSchema) {}

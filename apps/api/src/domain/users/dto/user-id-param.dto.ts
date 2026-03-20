@@ -1,8 +1,3 @@
-import { z } from 'zod';
-import { createZodDto } from '@api/common';
-
-const UserIdParamSchema = z.object({
-  id: z.string().uuid(),
-});
+import { createZodDto, UserIdParamSchema } from '@repo/types';
 
 export class UserIdParamDto extends createZodDto(UserIdParamSchema) {}

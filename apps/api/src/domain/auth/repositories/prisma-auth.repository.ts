@@ -50,17 +50,6 @@ export class PrismaAuthRepository extends AuthRepository {
     return tokens.map((token: RefreshToken) => this.toDomain(token));
   }
 
-  async findRefreshTokenById(
-    id: string,
-    tx?: Db,
-  ): Promise<RefreshTokenRecord | null> {
-    const prisma = tx ?? this.prisma;
-
-    const token = await prisma.refreshToken.findUnique({ where: { id } });
-
-    return token ? this.toDomain(token) : null;
-  }
-
   async revokeRefreshToken(
     id: string,
     revokedAt: Date,

@@ -102,7 +102,7 @@ export function DashboardContent({
       <DashboardWelcome />
       <DashboardStats stats={stats} />
       <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
-        <div className="sm:col-span-2 xl:col-span-2">
+        <div className="sm:col-span-2 xl:col-span-2 h-full">
           <DashboardProjectsCard projects={recentProjects} />
         </div>
         <DashboardTasksCard tasks={myTasks} />

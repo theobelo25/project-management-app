@@ -158,7 +158,7 @@ describe('AuthController', () => {
   });
 
   describe('logout', () => {
-    it('logs out when refresh token exists, clears cookies, and returns success', async () => {
+    it('logs out when refresh token exists, clears cookies, and returns no content', async () => {
       authService.logout.mockResolvedValue(undefined);
       const req = {
         cookies: { [COOKIE.REFRESH]: 'raw-refresh-token' },
@@ -167,7 +167,7 @@ describe('AuthController', () => {
       expect(authService.logout).toHaveBeenCalledWith('raw-refresh-token');
       expect(cookiesService.clearAccessCookie).toHaveBeenCalledWith(response);
       expect(cookiesService.clearRefreshCookie).toHaveBeenCalledWith(response);
-      expect(result).toEqual({ success: true });
+      expect(result).toBeUndefined();
     });
 
     it('does not call authService.logout when refresh token is missing', async () => {
@@ -176,7 +176,7 @@ describe('AuthController', () => {
       expect(authService.logout).not.toHaveBeenCalled();
       expect(cookiesService.clearAccessCookie).toHaveBeenCalledWith(response);
       expect(cookiesService.clearRefreshCookie).toHaveBeenCalledWith(response);
-      expect(result).toEqual({ success: true });
+      expect(result).toBeUndefined();
     });
 
     it('still clears cookies when refresh token is undefined', async () => {
@@ -185,7 +185,7 @@ describe('AuthController', () => {
       expect(authService.logout).not.toHaveBeenCalled();
       expect(cookiesService.clearAccessCookie).toHaveBeenCalledWith(response);
       expect(cookiesService.clearRefreshCookie).toHaveBeenCalledWith(response);
-      expect(result).toEqual({ success: true });
+      expect(result).toBeUndefined();
     });
   });
 });

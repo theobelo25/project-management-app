@@ -1,4 +1,5 @@
 import { Project, ProjectRole } from '@repo/database';
+import type { ProjectsFilter, ProjectsSort } from '@repo/types';
 
 export type ProjectWithRole = Project & {
   currentUserRole?: ProjectRole;
@@ -18,8 +19,8 @@ export type FindManyForUserInput = {
   pageSize: number;
   includeArchived: boolean;
   search?: string;
-  filter: 'all' | 'owned' | 'member' | 'archived';
-  sort: 'updated-desc' | 'created-desc' | 'name-asc';
+  filter: ProjectsFilter;
+  sort: ProjectsSort;
 };
 
 export type PaginatedProjectsResult = {
@@ -52,22 +53,9 @@ export type UpdateProjectMemberRoleInput = {
   role: ProjectRole;
 };
 
-export type TransferProjectOwnershipInput = {
-  projectId: string;
-  currentOwnerId: string;
-  nextOwnerId: string;
-};
-
 export type ProjectListMemberWithUser = {
   userId: string;
   name: string;
   email?: string | null;
   image?: string | null;
-};
-
-export type ProjectWithRoleAndCounts = ProjectWithRole & {
-  totalTasks: number;
-  completedTasks: number;
-  openTasks: number;
-  members: ProjectListMemberWithUser[];
 };

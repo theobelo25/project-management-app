@@ -23,6 +23,10 @@ import { Db } from '@api/prisma';
 import { toUserView } from '../users/mappers/user.mapper';
 import { UsersRepository } from '../users/repositories/users.repository';
 import { PinoLogger } from 'nestjs-pino';
+import {
+  ORGANIZATION_WORKSPACE_BOOTSTRAP,
+  OrganizationWorkspaceBootstrap,
+} from '../organizations/organization-workspace-bootstrap.interface';
 
 @Injectable()
 export class AuthService {
@@ -33,6 +37,8 @@ export class AuthService {
     private readonly refreshTokenService: RefreshTokensService,
     @Inject(UNIT_OF_WORK) private readonly uow: UnitOfWork,
     private readonly logger: PinoLogger,
+    @Inject(ORGANIZATION_WORKSPACE_BOOTSTRAP)
+    private readonly organizationWorkspaceBootstrap: OrganizationWorkspaceBootstrap,
   ) {
     this.logger.setContext(AuthService.name);
   }
@@ -41,12 +47,12 @@ export class AuthService {
     return this.uow.transaction(async (tx) => {
       await this.assertEmailAvailable(dto.email, tx);
 
-      // Portfolio-friendly: each signup gets its own org/workspace.
-      const org = await tx.organization.create({
-        data: {
-          name: `${dto.name}'s Workspace`,
-        },
-      });
+      // Naming policy lives in organizations domain
+      const org =
+        await this.organizationWorkspaceBootstrap.createInitialOrganizationForUserName(
+          dto.name,
+          tx,
+        );
 
       const newUser = await this.createUserWithHashedPassword(dto, org.id, tx);
       if (!newUser) throw new BadRequestException('Problem creating user');
@@ -92,7 +98,7 @@ export class AuthService {
     }
 
     this.logger.debug({ userId: user.id }, 'User credentials authenticated');
-    return toUserView(user as any);
+    return toUserView(user);
   }
 
   async issueSession(user: UserView): Promise<AuthSession> {
@@ -173,6 +179,7 @@ export class AuthService {
       email,
       tx,
     );
+
     if (existing) {
       this.logger.warn(
         { email },

@@ -12,6 +12,16 @@ import {
 } from '@repo/database';
 import { ZodValidationPipe } from '@api/common';
 import { AppExceptionFilter } from '@api/common/filters/app-exception.filter';
+import type { AppLogger } from '@api/logger/app.logger.interface';
+
+const mockLogger: AppLogger = {
+  setContext: jest.fn(),
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+};
+
 describe('Tasks E2E', () => {
   let app: INestApplication;
   let prisma: PrismaClient;
@@ -23,7 +33,7 @@ describe('Tasks E2E', () => {
     app.use(cookieParser());
     app.setGlobalPrefix('api');
     app.useGlobalPipes(new ZodValidationPipe());
-    app.useGlobalFilters(new AppExceptionFilter());
+    app.useGlobalFilters(new AppExceptionFilter(mockLogger));
     await app.init();
     prisma = app.get(PRISMA);
   });

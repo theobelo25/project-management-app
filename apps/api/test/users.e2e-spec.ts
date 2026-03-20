@@ -9,6 +9,15 @@ import { COOKIE } from '../src/domain/auth/cookies/cookies.constants';
 import { prisma } from '@repo/database';
 import { ZodValidationPipe } from '@api/common';
 import { AppExceptionFilter } from '@api/common/filters/app-exception.filter';
+import type { AppLogger } from '@api/logger/app.logger.interface';
+
+const mockLogger: AppLogger = {
+  setContext: jest.fn(),
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+};
 
 type PrismaDb = typeof prisma;
 
@@ -24,7 +33,7 @@ describe('Users E2E', () => {
     app.use(cookieParser());
     app.setGlobalPrefix('api'); // if you want to mirror main.ts
     app.useGlobalPipes(new ZodValidationPipe());
-    app.useGlobalFilters(new AppExceptionFilter());
+    app.useGlobalFilters(new AppExceptionFilter(mockLogger));
     await app.init();
 
     db = app.get<PrismaDb>(PRISMA);
@@ -87,8 +96,18 @@ describe('Users E2E', () => {
   });
 
   describe('GET /users/:id', () => {
+    it('returns 401 when unauthenticated', async () => {
+      const missingId = '11111111-1111-4111-8111-111111111111';
+
+      await request(app.getHttpServer())
+        .get(`/api/users/${missingId}`)
+        .expect(401);
+    });
+
     it('returns a user by id', async () => {
-      const signupResponse = await request(app.getHttpServer())
+      const agent = request.agent(app.getHttpServer());
+
+      const signupResponse = await agent
         .post('/api/auth/signup')
         .send({
           email: 'findme@example.com',
@@ -100,9 +119,7 @@ describe('Users E2E', () => {
 
       const userId = signupResponse.body.id as string;
 
-      const response = await request(app.getHttpServer())
-        .get(`/api/users/${userId}`)
-        .expect(200);
+      const response = await agent.get(`/api/users/${userId}`).expect(200);
 
       expect(response.body).toEqual(
         expect.objectContaining({
@@ -114,25 +131,32 @@ describe('Users E2E', () => {
     });
 
     it('returns 400 for an invalid UUID', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/api/users/not-a-uuid')
-        .expect(400);
+      const agent = request.agent(app.getHttpServer());
+
+      await agent.post('/api/auth/signup').send({
+        email: 'invaliduuid@example.com',
+        name: 'Invalid UUID User',
+        password: 'Password123!',
+        confirmPassword: 'Password123!',
+      });
+
+      const response = await agent.get('/api/users/not-a-uuid').expect(400);
 
       expect(response.body.message).toBeDefined();
     });
 
-    it('returns null or 404 for a missing user id', async () => {
+    it('returns 404 for a missing user id', async () => {
+      const agent = request.agent(app.getHttpServer());
       const missingId = '11111111-1111-4111-8111-111111111111';
 
-      const response = await request(app.getHttpServer()).get(
-        `/users/${missingId}`,
-      );
+      await agent.post('/api/auth/signup').send({
+        email: 'missinguser@example.com',
+        name: 'Missing User',
+        password: 'Password123!',
+        confirmPassword: 'Password123!',
+      });
 
-      expect([200, 404]).toContain(response.status);
-
-      if (response.status === 200) {
-        expect(response.body).toBeNull();
-      }
+      await agent.get(`/api/users/${missingId}`).expect(404);
     });
   });
 });

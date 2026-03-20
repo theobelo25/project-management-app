@@ -1,4 +1,4 @@
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { UsersService } from './users.service';
@@ -42,6 +42,7 @@ describe('UsersService', () => {
   };
 
   const createUserDto = {
+    orgId: 'org-1',
     email: 'test@example.com',
     name: 'Theo',
     passwordHash: 'hashed-password',
@@ -186,6 +187,30 @@ describe('UsersService', () => {
       const result = await service.findById(userView.id, db as any);
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('requireById', () => {
+    it('returns a user when repository returns a user', async () => {
+      usersRepository.findById.mockResolvedValue(userView);
+
+      const result = await service.requireById(userView.id, db as any);
+
+      expect(usersRepository.findById).toHaveBeenCalledWith(userView.id, db);
+      expect(result).toEqual(userView);
+    });
+
+    it('throws NotFoundException when repository returns null', async () => {
+      usersRepository.findById.mockResolvedValue(null);
+
+      await expect(service.requireById(userView.id, db as any)).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.requireById(userView.id, db as any)).rejects.toThrow(
+        'User not found',
+      );
+
+      expect(usersRepository.findById).toHaveBeenCalledWith(userView.id, db);
     });
   });
 

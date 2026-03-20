@@ -11,7 +11,6 @@ export type OrganizationInviteRecord = {
   id: string;
   organizationId: string;
   email: string;
-  tokenHash: string;
   tokenPrefix: string;
   expiresAt: Date;
   acceptedAt: Date | null;

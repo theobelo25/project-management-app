@@ -1,4 +1,3 @@
-import { CreateTaskSchema } from '@repo/types';
-import { createZodDto } from '@api/common';
+import { CreateTaskSchema, createZodDto } from '@repo/types';
 
 export class CreateTaskDto extends createZodDto(CreateTaskSchema) {}

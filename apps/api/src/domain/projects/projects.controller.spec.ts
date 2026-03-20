@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
-import { ProjectMembersService } from './members/project-members.service';
-import { ProjectOwnershipService } from './members/project-ownership.service';
+import { ProjectMembersService } from './services/project-members.service';
+import { ProjectOwnershipService } from './services/project-ownership.service';
 import { ProjectRole } from '@repo/database';
 import type {
   CreateProjectDto,
@@ -97,6 +97,9 @@ describe('ProjectsController', () => {
         page: 1,
         pageSize: 20,
         includeArchived: false,
+        search: undefined,
+        filter: 'all',
+        sort: 'updated-desc',
       };
 
       const response = {
@@ -202,9 +205,11 @@ describe('ProjectsController', () => {
 
       projectMembersService.getMembers.mockResolvedValue(response);
 
-      const result = await controller.getMembers(user as any, {
-        id: 'project-1',
-      });
+      const result = await controller.getMembers(
+        user as any,
+        { id: 'project-1' } as any,
+        projectView as any, // ProjectWithRole
+      );
 
       expect(projectMembersService.getMembers).toHaveBeenCalledWith(
         'project-1',

@@ -16,11 +16,6 @@ export abstract class AuthRepository {
     tx?: Db,
   ): Promise<RefreshTokenRecord[]>;
 
-  abstract findRefreshTokenById(
-    id: string,
-    tx?: Db,
-  ): Promise<RefreshTokenRecord | null>;
-
   abstract revokeRefreshToken(
     id: string,
     revokedAt: Date,

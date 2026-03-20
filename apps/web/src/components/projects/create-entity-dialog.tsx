@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Plus } from "lucide-react";
 
 import { Button } from "@web/components/ui/button";
@@ -17,9 +17,8 @@ type CreateEntityDialogProps = {
   triggerLabel: string;
   dialogTitle: string;
   dialogDescription: string;
-  /** When provided, used as the dialog trigger instead of the default button. */
-  trigger?: React.ReactNode;
-  children: (props: { onSuccess: () => void }) => React.ReactNode;
+  trigger?: ReactNode;
+  children: (props: { onSuccess: () => void }) => ReactNode;
 };
 
 export function CreateEntityDialog({
@@ -35,7 +34,7 @@ export function CreateEntityDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger ?? (
-          <Button>
+          <Button type="button">
             <Plus className="mr-2 h-4 w-4" />
             {triggerLabel}
           </Button>

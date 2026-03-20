@@ -1,4 +1,4 @@
-import { CurrentUser, JwtAuthGuard } from '@api/common';
+import { CurrentUser } from '@api/common';
 import {
   Body,
   Controller,
@@ -11,7 +11,8 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ProjectsService } from './projects.service';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
+import { ZodSerializerDto } from 'nestjs-zod';
 import {
   AuthUser,
   PaginatedProjectsListView,
@@ -29,103 +30,126 @@ import {
   UpdateProjectMemberRoleDto,
   AddProjectMemberDto,
 } from './dto';
-import { ProjectMembersService } from './members/project-members.service';
-import { ProjectOwnershipService } from './members/project-ownership.service';
 import { RequireProjectRole } from './decorators/require-project-role.decorator';
 import { ProjectRole } from '@repo/database';
 import { ProjectRoleGuard } from './guards/project-role.guard';
+import { CurrentProject } from './decorators/current-project.decorator';
+import { ProjectWithRole } from './types/projects.repository.types';
+import { ProjectsFacade } from './projects.facade';
+import {
+  PaginatedProjectsListResponseDto,
+  ProjectMemberResponseDto,
+  ProjectMembersResponseDto,
+  ProjectViewResponseDto,
+} from '@api/common/swagger/response-dtos';
 
 @Controller('projects')
-@UseGuards(JwtAuthGuard, ProjectRoleGuard)
+@ApiTags('projects')
+@ApiCookieAuth('Authentication')
+@UseGuards(ProjectRoleGuard)
 export class ProjectsController {
-  constructor(
-    private readonly projectsService: ProjectsService,
-    private readonly projectMembersService: ProjectMembersService,
-    private readonly projectOwnershipService: ProjectOwnershipService,
-  ) {}
+  constructor(private readonly projectsFacade: ProjectsFacade) {}
 
   @Post()
+  @ZodSerializerDto(ProjectViewResponseDto)
   async create(
     @CurrentUser() user: AuthUser,
     @Body() body: CreateProjectDto,
   ): Promise<ProjectView> {
-    return this.projectsService.create(user, body);
+    // ensure runtime serialization + OpenAPI response schema stay aligned
+    return this.projectsFacade.create(user, body);
   }
 
   @Get()
+  @ZodSerializerDto(PaginatedProjectsListResponseDto)
   async findMany(
     @CurrentUser() user: AuthUser,
     @Query() query: GetProjectsQueryDto,
   ): Promise<PaginatedProjectsListView> {
-    return this.projectsService.findManyForUser(user, query);
+    return this.projectsFacade.findManyForUser(user, query);
   }
 
   @Get(':id')
+  @ZodSerializerDto(ProjectViewResponseDto)
   async findById(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
   ): Promise<ProjectView> {
-    return this.projectsService.findDetailById(params.id, user);
+    return this.projectsFacade.findByIdDetail(params.id, user);
   }
 
   @Patch(':id')
   @RequireProjectRole(ProjectRole.ADMIN)
+  @ZodSerializerDto(ProjectViewResponseDto)
   async update(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
     @Body() body: UpdateProjectDto,
+    @CurrentProject() project?: ProjectWithRole,
   ): Promise<ProjectView> {
-    return this.projectsService.update(params.id, user, body);
+    return this.projectsFacade.update(params.id, user, body, project);
   }
 
   @Patch(':id/archive')
   @RequireProjectRole(ProjectRole.OWNER)
+  @ZodSerializerDto(ProjectViewResponseDto)
   async archive(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
+    @CurrentProject() project?: ProjectWithRole,
   ): Promise<ProjectView> {
-    return this.projectsService.archive(params.id, user);
+    return this.projectsFacade.archive(params.id, user, project);
   }
 
   @Patch(':id/unarchive')
   @RequireProjectRole(ProjectRole.OWNER)
+  @ZodSerializerDto(ProjectViewResponseDto)
   async unarchive(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
+    @CurrentProject() project?: ProjectWithRole,
   ): Promise<ProjectView> {
-    return this.projectsService.unarchive(params.id, user);
+    return this.projectsFacade.unarchive(params.id, user, project);
   }
 
   @Get(':id/members')
+  @RequireProjectRole(ProjectRole.MEMBER)
+  @ZodSerializerDto(ProjectMembersResponseDto)
   async getMembers(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
+    @CurrentProject() project: ProjectWithRole,
   ): Promise<ProjectMembersView> {
-    return this.projectMembersService.getMembers(params.id, user);
+    return this.projectsFacade.getMembers(params.id, user, project);
   }
 
   @Post(':id/members')
   @RequireProjectRole(ProjectRole.OWNER)
+  @ZodSerializerDto(ProjectMemberResponseDto)
   async addMember(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
     @Body() body: AddProjectMemberDto,
+    @CurrentProject() project?: ProjectWithRole,
   ): Promise<ProjectMemberView> {
-    return this.projectMembersService.addMember(params.id, user, body);
+    return this.projectsFacade.addMember(params.id, user, body, project);
   }
 
   @Patch(':id/members/:userId')
   @RequireProjectRole(ProjectRole.OWNER)
+  @ZodSerializerDto(ProjectMemberResponseDto)
   async updateMemberRole(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectMemberParamDto,
     @Body() body: UpdateProjectMemberRoleDto,
+    @CurrentProject() project?: ProjectWithRole,
   ): Promise<ProjectMemberView> {
-    return this.projectMembersService.updateMemberRole(
+    return this.projectsFacade.updateMemberRole(
       params.id,
       user,
       params.userId,
       body,
+      project,
     );
   }
 
@@ -135,25 +159,30 @@ export class ProjectsController {
   async removeMember(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectMemberParamDto,
+    @CurrentProject() project?: ProjectWithRole,
   ): Promise<void> {
-    return this.projectMembersService.removeMember(
+    return this.projectsFacade.removeMember(
       params.id,
       user,
       params.userId,
+      project,
     );
   }
 
   @Patch(':id/owner')
   @RequireProjectRole(ProjectRole.OWNER)
+  @ZodSerializerDto(ProjectViewResponseDto)
   async transferOwnership(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
     @Body() body: TransferProjectOwnershipDto,
+    @CurrentProject() project?: ProjectWithRole,
   ): Promise<ProjectView> {
-    return this.projectOwnershipService.transferOwnership(
+    return this.projectsFacade.transferOwnership(
       params.id,
       user,
       body,
+      project,
     );
   }
 
@@ -163,7 +192,8 @@ export class ProjectsController {
   async delete(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
+    @CurrentProject() project?: ProjectWithRole,
   ): Promise<void> {
-    return this.projectsService.delete(params.id, user);
+    return this.projectsFacade.delete(params.id, user, project);
   }
 }

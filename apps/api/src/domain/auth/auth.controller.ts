@@ -2,27 +2,38 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Post,
   Req,
   Res,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { CurrentRefreshToken, CurrentUser, JwtAuthGuard } from '@api/common';
+import { CurrentRefreshToken, CurrentUser, Public } from '@api/common';
 import {
-  SignupRequestDto,
   UserView,
   SignupInputDto,
   LoginRequestDto as LoginInput,
   COOKIE,
+  AuthSession,
 } from '@repo/types';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { RefreshAuthGuard } from '@api/common';
 import { CookiesService } from './cookies/cookies.service';
-import { SuccessResponse } from '@repo/types';
 import { LoginRequestDto } from './dto/login-request.dto';
+import { SignupRequestDto } from './dto/signup-request.dto';
+import { AuthCookiesInterceptor } from './interceptors/auth-cookies.interceptor';
+import { Throttle } from '@nestjs/throttler';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
+import { ZodSerializerDto } from 'nestjs-zod';
+import {
+  AuthSessionResponseDto,
+  UserViewResponseDto,
+} from '@api/common/swagger/response-dtos';
 
 @Controller('auth')
+@ApiTags('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
@@ -30,29 +41,26 @@ export class AuthController {
   ) {}
 
   @Post('signup')
-  async signup(
-    @Body() body: SignupRequestDto,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<UserView> {
+  @Public()
+  @UseInterceptors(AuthCookiesInterceptor)
+  @Throttle({ global: { ttl: 60_000, limit: 60 } })
+  @ZodSerializerDto(AuthSessionResponseDto)
+  async signup(@Body() body: SignupRequestDto): Promise<AuthSession> {
     const signupInput: SignupInputDto = {
       email: body.email,
       name: body.name,
       password: body.password,
     };
 
-    const { user, accessToken, refreshToken } =
-      await this.authService.signup(signupInput);
-
-    this.cookieService.setAuthCookies(response, accessToken, refreshToken);
-
-    return user;
+    return this.authService.signup(signupInput);
   }
 
   @Post('login')
-  async login(
-    @Body() body: LoginRequestDto,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<UserView> {
+  @Public()
+  @UseInterceptors(AuthCookiesInterceptor)
+  @Throttle({ global: { ttl: 60_000, limit: 20 } })
+  @ZodSerializerDto(AuthSessionResponseDto)
+  async login(@Body() body: LoginRequestDto): Promise<AuthSession> {
     const loginInput: LoginInput = {
       email: body.email,
       password: body.password,
@@ -63,33 +71,30 @@ export class AuthController {
       loginInput.password,
     );
 
-    const { accessToken, refreshToken } =
-      await this.authService.issueSession(user);
-
-    this.cookieService.setAuthCookies(response, accessToken, refreshToken);
-
-    return user;
+    return this.authService.issueSession(user);
   }
 
   @Post('refresh')
+  @Public()
   @UseGuards(RefreshAuthGuard)
+  @UseInterceptors(AuthCookiesInterceptor)
+  @Throttle({ global: { ttl: 60_000, limit: 60 } })
+  @ApiCookieAuth('Refresh')
+  @ZodSerializerDto(AuthSessionResponseDto)
   async refreshToken(
     @CurrentRefreshToken() rawRefreshToken: string,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<UserView> {
-    const { user, accessToken, refreshToken } =
-      await this.authService.refresh(rawRefreshToken);
-
-    this.cookieService.setAuthCookies(response, accessToken, refreshToken);
-
-    return user;
+  ): Promise<AuthSession> {
+    return this.authService.refresh(rawRefreshToken);
   }
 
   @Post('logout')
+  @Public()
+  @HttpCode(204)
+  @Throttle({ global: { ttl: 60_000, limit: 60 } })
   async logout(
     @Req() req: Request,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<SuccessResponse> {
+  ): Promise<void> {
     const rawRefreshToken = req.cookies?.[COOKIE.REFRESH];
 
     if (typeof rawRefreshToken === 'string')
@@ -97,12 +102,11 @@ export class AuthController {
 
     this.cookieService.clearAccessCookie(response);
     this.cookieService.clearRefreshCookie(response);
-
-    return { success: true };
   }
 
   @Get('me')
-  @UseGuards(JwtAuthGuard)
+  @ApiCookieAuth('Authentication')
+  @ZodSerializerDto(UserViewResponseDto)
   async me(@CurrentUser() user: UserView): Promise<UserView> {
     return user;
   }

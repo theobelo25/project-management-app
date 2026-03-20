@@ -2,33 +2,29 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { TokenPayload } from '../types/token-payload.interface';
-import { UsersService } from '@api/domain/users/users.service';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UserView } from '@repo/types';
+import { Injectable } from '@nestjs/common';
 import { AuthConfigService } from '@api/config';
+import { UserView } from '@repo/types';
+import { AuthorizedUserForOrgService } from '../authorized-user-for-org.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly authConfig: AuthConfigService,
-    private readonly usersService: UsersService,
+    private readonly authorizedUserForOrg: AuthorizedUserForOrgService,
   ) {
-    const options = {
+    super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => request.cookies?.[authConfig.cookies.access.name],
       ]),
       ignoreExpiration: false,
-      secretOrKey: authConfig.access.jwt.secret,
-      issuer: authConfig.access.jwt.signOptions.issuer,
-      audience: authConfig.access.jwt.signOptions.audience,
-    };
-
-    super(options);
+      secretOrKey: authConfig.access.secret,
+      issuer: authConfig.access.issuer,
+      audience: authConfig.access.audience,
+    });
   }
 
   async validate(payload: TokenPayload): Promise<UserView> {
-    const user = await this.usersService.findById(payload.sub);
-    if (!user) throw new UnauthorizedException('Unauthorized');
-    return user;
+    return this.authorizedUserForOrg.fromTokenPayload(payload);
   }
 }

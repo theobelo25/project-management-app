@@ -1,4 +1,3 @@
-import { AddProjectMemberSchema } from '@repo/types';
-import { createZodDto } from '@api/common';
+import { AddProjectMemberSchema, createZodDto } from '@repo/types';
 
 export class AddProjectMemberDto extends createZodDto(AddProjectMemberSchema) {}

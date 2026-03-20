@@ -1,45 +1,30 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { ConfigType } from '@nestjs/config';
-import { accessJwtConfig } from './access-jwt.config';
-import { refreshTokenConfig } from './refresh-token.config';
-import { cookieConfig } from './cookie.config';
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { getAccessJwtOptions } from './access-jwt.options';
+import { getRefreshTokenOptions } from './refresh-token.options';
+import { getCookieConfig } from './cookie.options';
 
 @Injectable()
 export class AuthConfigService {
-  readonly access: {
-    jwt: ConfigType<typeof accessJwtConfig>['jwt'];
-    ttlMs: ConfigType<typeof accessJwtConfig>['ttlMs'];
-    jwtSign: ConfigType<typeof accessJwtConfig>['jwtSign'];
-  };
+  constructor(private readonly config: ConfigService) {}
 
-  readonly refresh: {
-    ttlMs: ConfigType<typeof refreshTokenConfig>['ttlMs'];
-    ttlSeconds: ConfigType<typeof refreshTokenConfig>['ttlSeconds'];
-    prefixSecret: ConfigType<typeof refreshTokenConfig>['prefixSecret'];
-  };
-
-  readonly cookies: ConfigType<typeof cookieConfig>;
-
-  constructor(
-    @Inject(accessJwtConfig.KEY)
-    accessCfg: ConfigType<typeof accessJwtConfig>,
-    @Inject(refreshTokenConfig.KEY)
-    refreshCfg: ConfigType<typeof refreshTokenConfig>,
-    @Inject(cookieConfig.KEY)
-    cookieCfg: ConfigType<typeof cookieConfig>,
-  ) {
-    this.access = {
-      jwt: accessCfg.jwt,
-      ttlMs: accessCfg.ttlMs,
-      jwtSign: accessCfg.jwtSign,
+  get access() {
+    const access = getAccessJwtOptions(this.config);
+    return {
+      ttlMs: access.ttlMs,
+      secret: access.secret,
+      issuer: access.issuer,
+      audience: access.audience,
+      jwt: access.jwtModuleOptions,
+      jwtSign: access.jwtSignOptions,
     };
+  }
 
-    this.refresh = {
-      ttlMs: refreshCfg.ttlMs,
-      ttlSeconds: refreshCfg.ttlSeconds,
-      prefixSecret: refreshCfg.prefixSecret,
-    };
+  get refresh() {
+    return getRefreshTokenOptions(this.config);
+  }
 
-    this.cookies = cookieCfg;
+  get cookies() {
+    return getCookieConfig(this.config);
   }
 }

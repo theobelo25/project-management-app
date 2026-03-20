@@ -1,8 +1,22 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
 import {
   acceptInviteById,
+  addOrganizationMember,
+  clearNotification,
+  createOrganization,
+  createOrganizationInvite,
   declineInviteById,
+  deleteOrganization,
+  fetchAllUsers,
   fetchMe,
+  fetchNotifications,
+  fetchOrganization,
+  fetchOrganizations,
   fetchPendingInvites,
   fetchProject,
   fetchProjectMembers,
@@ -10,16 +24,25 @@ import {
   fetchTask,
   fetchTasks,
   fetchUsers,
+  leaveOrganization,
+  switchOrganization,
 } from "./client";
 import {
+  CreateOrganizationDto,
   FindTasksQuery,
   GetProjectsQueryDto,
+  NotificationView,
+  OrganizationView,
   PaginatedProjectsListView,
   PaginationResult,
   PendingInviteView,
   ProjectDetailView,
   ProjectMembersView,
   TaskView,
+  OrganizationDetailView,
+  OrganizationInviteView,
+  CreateOrganizationInviteDto,
+  UserView,
 } from "@repo/types";
 
 export const ME_QUERY_KEY = ["me"] as const;
@@ -46,15 +69,24 @@ export function usePendingInvitesQuery(enabled: boolean) {
   });
 }
 
+export const ORGANIZATIONS_QUERY_KEY = ["organizations", "list"] as const;
+
+export function useOrganizationsQuery(enabled: boolean) {
+  return useQuery<OrganizationView[]>({
+    queryKey: ORGANIZATIONS_QUERY_KEY,
+    queryFn: fetchOrganizations,
+    enabled,
+    staleTime: 10 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
 export function useAcceptInviteByIdMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (inviteId: string) => acceptInviteById(inviteId),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: PENDING_INVITES_QUERY_KEY,
-      });
-      await queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
+      await queryClient.invalidateQueries();
     },
   });
 }
@@ -66,6 +98,71 @@ export function useDeclineInviteByIdMutation() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: PENDING_INVITES_QUERY_KEY,
+      });
+    },
+  });
+}
+
+export function useSwitchOrganizationMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (organizationId: string) => switchOrganization(organizationId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries();
+    },
+  });
+}
+
+export function useCreateOrganizationMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (dto: CreateOrganizationDto) => createOrganization(dto),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries();
+    },
+  });
+}
+
+export function useLeaveOrganizationMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (organizationId: string) => leaveOrganization(organizationId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries();
+    },
+  });
+}
+
+export function useDeleteOrganizationMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (organizationId: string) =>
+      deleteOrganization(organizationId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries();
+    },
+  });
+}
+
+export const NOTIFICATIONS_QUERY_KEY = ["notifications"] as const;
+
+export function useNotificationsQuery(enabled: boolean) {
+  return useQuery<NotificationView[]>({
+    queryKey: NOTIFICATIONS_QUERY_KEY,
+    queryFn: fetchNotifications,
+    enabled,
+    staleTime: 10 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useClearNotificationMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (notificationId: string) => clearNotification(notificationId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: NOTIFICATIONS_QUERY_KEY,
       });
     },
   });
@@ -207,3 +304,45 @@ export const DEFAULT_PROJECTS_LIST_QUERY: GetProjectsQueryDto = {
   filter: "all",
   sort: "updated-desc",
 };
+
+export const ORGANIZATION_QUERY_KEY = (id: string) =>
+  ["organizations", "detail", id] as const;
+export function useOrganizationQuery(
+  organizationId: string | null,
+  enabled: boolean,
+) {
+  return useQuery<OrganizationDetailView>({
+    queryKey: ORGANIZATION_QUERY_KEY(organizationId ?? ""),
+    queryFn: () => fetchOrganization(organizationId!),
+    enabled: enabled && !!organizationId,
+    staleTime: 10 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+export function useAllUsersSearchQuery(search: string) {
+  const enabled = search.trim().length >= 2;
+  return useQuery<UserView[]>({
+    queryKey: ["users", "search", "global", search.trim()],
+    queryFn: () => fetchAllUsers(search),
+    enabled,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+export function useAddOrganizationMemberMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (variables: { organizationId: string; userId: string }) =>
+      addOrganizationMember(variables.organizationId, {
+        userId: variables.userId,
+      }),
+    onSuccess: async (_data, variables) => {
+      await queryClient.invalidateQueries({
+        queryKey: ORGANIZATION_QUERY_KEY(variables.organizationId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ORGANIZATIONS_QUERY_KEY,
+      });
+    },
+  });
+}

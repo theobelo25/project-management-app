@@ -1,5 +1,4 @@
-import { TaskAssigneeParamsSchema } from '@repo/types';
-import { createZodDto } from '@api/common';
+import { TaskAssigneeParamsSchema, createZodDto } from '@repo/types';
 
 export class TaskAssigneeParamsDto extends createZodDto(
   TaskAssigneeParamsSchema,

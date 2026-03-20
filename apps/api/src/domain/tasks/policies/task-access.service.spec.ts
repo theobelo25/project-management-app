@@ -2,10 +2,13 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { ProjectRole } from '@repo/database';
 
+import { AuthUser } from '@repo/types';
 import { TaskAccessService } from './task-access.service';
 import { TasksRepository } from '../repositories/tasks.repository';
 import { ProjectsRepository } from '@api/domain/projects/repositories/projects.repository';
 import { TaskAccessContext } from '../types/tasks.repository.types';
+import { TaskAccessRules } from './task-access.rules';
+import { TaskAccessContextLoader } from './task-access-context.loader';
 
 describe('TaskAccessService', () => {
   let service: TaskAccessService;
@@ -23,6 +26,16 @@ describe('TaskAccessService', () => {
     debug: jest.Mock;
   };
 
+  let contextLoader: {
+    findProjectWithMemberRole: jest.Mock;
+    findTaskAccessContext: jest.Mock;
+  };
+
+  const user: AuthUser = {
+    id: 'user-1',
+    orgId: 'org-1',
+  };
+
   const makeTaskAccessContext = (
     overrides: Partial<TaskAccessContext> = {},
   ): TaskAccessContext =>
@@ -32,6 +45,7 @@ describe('TaskAccessService', () => {
       createdById: 'creator-1',
       assignees: [],
       project: {
+        orgId: user.orgId,
         ownerId: 'owner-1',
         currentUserRole: ProjectRole.MEMBER,
       },
@@ -39,6 +53,17 @@ describe('TaskAccessService', () => {
     }) as TaskAccessContext;
 
   beforeEach(() => {
+    contextLoader = {
+      findProjectWithMemberRole: jest.fn(),
+      findTaskAccessContext: jest.fn(),
+    };
+
+    service = new TaskAccessService(
+      contextLoader as unknown as TaskAccessContextLoader,
+      logger as unknown as PinoLogger,
+      new TaskAccessRules(),
+    );
+
     tasksRepository = {
       findByIdWithAccessContext: jest.fn(),
     };
@@ -51,35 +76,31 @@ describe('TaskAccessService', () => {
       warn: jest.fn(),
       debug: jest.fn(),
     };
-
-    service = new TaskAccessService(
-      tasksRepository as unknown as TasksRepository,
-      projectsRepository as unknown as ProjectsRepository,
-      logger as unknown as PinoLogger,
-    );
   });
 
   describe('assertCanCreateInProject', () => {
     it('allows the project owner to create a task', async () => {
       projectsRepository.findByIdWithMemberRole.mockResolvedValue({
         id: 'project-1',
-        ownerId: 'user-1',
+        ownerId: user.id,
         currentUserRole: null,
       });
 
       await expect(
-        service.assertCanCreateInProject('user-1', 'project-1'),
+        service.assertCanCreateInProject(user, 'project-1'),
       ).resolves.toBeUndefined();
 
       expect(projectsRepository.findByIdWithMemberRole).toHaveBeenCalledWith(
         'project-1',
-        'user-1',
+        user.id,
+        user.orgId,
       );
+
       expect(logger.debug).toHaveBeenCalledWith(
         {
           event: 'task.access.create_project.allowed',
           projectId: 'project-1',
-          userId: 'user-1',
+          userId: user.id,
           role: ProjectRole.OWNER,
         },
         'Task create access granted',
@@ -94,14 +115,14 @@ describe('TaskAccessService', () => {
       });
 
       await expect(
-        service.assertCanCreateInProject('user-1', 'project-1'),
+        service.assertCanCreateInProject(user, 'project-1'),
       ).resolves.toBeUndefined();
 
       expect(logger.debug).toHaveBeenCalledWith(
         {
           event: 'task.access.create_project.allowed',
           projectId: 'project-1',
-          userId: 'user-1',
+          userId: user.id,
           role: ProjectRole.ADMIN,
         },
         'Task create access granted',
@@ -116,14 +137,14 @@ describe('TaskAccessService', () => {
       });
 
       await expect(
-        service.assertCanCreateInProject('user-1', 'project-1'),
+        service.assertCanCreateInProject(user, 'project-1'),
       ).resolves.toBeUndefined();
 
       expect(logger.debug).toHaveBeenCalledWith(
         {
           event: 'task.access.create_project.allowed',
           projectId: 'project-1',
-          userId: 'user-1',
+          userId: user.id,
           role: ProjectRole.MEMBER,
         },
         'Task create access granted',
@@ -134,14 +155,14 @@ describe('TaskAccessService', () => {
       projectsRepository.findByIdWithMemberRole.mockResolvedValue(null);
 
       await expect(
-        service.assertCanCreateInProject('user-1', 'project-1'),
+        service.assertCanCreateInProject(user, 'project-1'),
       ).rejects.toThrow(NotFoundException);
 
       expect(logger.warn).toHaveBeenCalledWith(
         {
           event: 'task.access.create_project.not_found',
           projectId: 'project-1',
-          userId: 'user-1',
+          userId: user.id,
         },
         'Project not found during task create access check',
       );
@@ -155,14 +176,14 @@ describe('TaskAccessService', () => {
       });
 
       await expect(
-        service.assertCanCreateInProject('user-1', 'project-1'),
+        service.assertCanCreateInProject(user, 'project-1'),
       ).rejects.toThrow(ForbiddenException);
 
       expect(logger.warn).toHaveBeenCalledWith(
         {
           event: 'task.access.create_project.forbidden',
           projectId: 'project-1',
-          userId: 'user-1',
+          userId: user.id,
         },
         'Task create access denied: user has no project access',
       );
@@ -178,14 +199,14 @@ describe('TaskAccessService', () => {
       });
 
       await expect(
-        service.assertCanReadProject('user-1', 'project-1'),
+        service.assertCanReadProject(user, 'project-1'),
       ).resolves.toBeUndefined();
 
       expect(logger.debug).toHaveBeenCalledWith(
         {
           event: 'task.access.read_project.allowed',
           projectId: 'project-1',
-          userId: 'user-1',
+          userId: user.id,
           role: ProjectRole.MEMBER,
         },
         'Task project read access granted',
@@ -196,14 +217,14 @@ describe('TaskAccessService', () => {
       projectsRepository.findByIdWithMemberRole.mockResolvedValue(null);
 
       await expect(
-        service.assertCanReadProject('user-1', 'project-1'),
+        service.assertCanReadProject(user, 'project-1'),
       ).rejects.toThrow(NotFoundException);
 
       expect(logger.warn).toHaveBeenCalledWith(
         {
           event: 'task.access.read_project.not_found',
           projectId: 'project-1',
-          userId: 'user-1',
+          userId: user.id,
         },
         'Project not found during task project read access check',
       );
@@ -217,14 +238,14 @@ describe('TaskAccessService', () => {
       });
 
       await expect(
-        service.assertCanReadProject('user-1', 'project-1'),
+        service.assertCanReadProject(user, 'project-1'),
       ).rejects.toThrow(ForbiddenException);
 
       expect(logger.warn).toHaveBeenCalledWith(
         {
           event: 'task.access.read_project.forbidden',
           projectId: 'project-1',
-          userId: 'user-1',
+          userId: user.id,
         },
         'Task project read access denied',
       );
@@ -235,7 +256,8 @@ describe('TaskAccessService', () => {
     it('returns the task when the user is the project owner', async () => {
       const task = makeTaskAccessContext({
         project: {
-          ownerId: 'user-1',
+          orgId: user.orgId,
+          ownerId: user.id,
           currentUserRole: null,
         },
       });
@@ -243,14 +265,14 @@ describe('TaskAccessService', () => {
       tasksRepository.findByIdWithAccessContext.mockResolvedValue(task);
 
       await expect(
-        service.getAccessibleTaskOrThrow('task-1', 'user-1'),
+        service.getAccessibleTaskOrThrow('task-1', user),
       ).resolves.toEqual(task);
 
       expect(logger.debug).toHaveBeenCalledWith(
         {
           event: 'task.access.read.allowed',
           taskId: 'task-1',
-          userId: 'user-1',
+          userId: user.id,
           projectId: task.projectId,
           currentUserRole: task.project.currentUserRole,
         },
@@ -261,6 +283,7 @@ describe('TaskAccessService', () => {
     it('returns the task when the user has a project role', async () => {
       const task = makeTaskAccessContext({
         project: {
+          orgId: user.orgId,
           ownerId: 'owner-1',
           currentUserRole: ProjectRole.MEMBER,
         },
@@ -269,14 +292,14 @@ describe('TaskAccessService', () => {
       tasksRepository.findByIdWithAccessContext.mockResolvedValue(task);
 
       await expect(
-        service.getAccessibleTaskOrThrow('task-1', 'user-1'),
+        service.getAccessibleTaskOrThrow('task-1', user),
       ).resolves.toEqual(task);
 
       expect(logger.debug).toHaveBeenCalledWith(
         {
           event: 'task.access.read.allowed',
           taskId: 'task-1',
-          userId: 'user-1',
+          userId: user.id,
           projectId: task.projectId,
           currentUserRole: ProjectRole.MEMBER,
         },
@@ -288,14 +311,14 @@ describe('TaskAccessService', () => {
       tasksRepository.findByIdWithAccessContext.mockResolvedValue(null);
 
       await expect(
-        service.getAccessibleTaskOrThrow('task-1', 'user-1'),
+        service.getAccessibleTaskOrThrow('task-1', user),
       ).rejects.toThrow(NotFoundException);
 
       expect(logger.warn).toHaveBeenCalledWith(
         {
           event: 'task.access.read.not_found',
           taskId: 'task-1',
-          userId: 'user-1',
+          userId: user.id,
         },
         'Task not found during access check',
       );
@@ -304,6 +327,7 @@ describe('TaskAccessService', () => {
     it('throws ForbiddenException when the user cannot read the task', async () => {
       const task = makeTaskAccessContext({
         project: {
+          orgId: user.orgId,
           ownerId: 'owner-1',
           currentUserRole: null,
         },
@@ -312,14 +336,14 @@ describe('TaskAccessService', () => {
       tasksRepository.findByIdWithAccessContext.mockResolvedValue(task);
 
       await expect(
-        service.getAccessibleTaskOrThrow('task-1', 'user-1'),
+        service.getAccessibleTaskOrThrow('task-1', user),
       ).rejects.toThrow(ForbiddenException);
 
       expect(logger.warn).toHaveBeenCalledWith(
         {
           event: 'task.access.read.forbidden',
           taskId: 'task-1',
-          userId: 'user-1',
+          userId: user.id,
           projectId: task.projectId,
           currentUserRole: task.project.currentUserRole,
           ownerId: task.project.ownerId,
@@ -335,7 +359,7 @@ describe('TaskAccessService', () => {
       tasksRepository.findByIdWithAccessContext.mockResolvedValue(task);
 
       await expect(
-        service.assertCanRead('task-1', 'user-1'),
+        service.assertCanRead('task-1', user),
       ).resolves.toBeUndefined();
     });
   });
@@ -344,7 +368,8 @@ describe('TaskAccessService', () => {
     it('allows the project owner to update a task', async () => {
       const task = makeTaskAccessContext({
         project: {
-          ownerId: 'user-1',
+          orgId: user.orgId,
+          ownerId: user.id,
           currentUserRole: null,
         },
       });
@@ -352,14 +377,14 @@ describe('TaskAccessService', () => {
       tasksRepository.findByIdWithAccessContext.mockResolvedValue(task);
 
       await expect(
-        service.assertCanUpdate('task-1', 'user-1'),
+        service.assertCanUpdate('task-1', user),
       ).resolves.toBeUndefined();
 
       expect(logger.debug).toHaveBeenCalledWith(
         {
           event: 'task.access.update.allowed',
           taskId: 'task-1',
-          userId: 'user-1',
+          userId: user.id,
           projectId: task.projectId,
           currentUserRole: task.project.currentUserRole,
         },
@@ -370,6 +395,7 @@ describe('TaskAccessService', () => {
     it('allows an admin to update a task', async () => {
       const task = makeTaskAccessContext({
         project: {
+          orgId: user.orgId,
           ownerId: 'owner-1',
           currentUserRole: ProjectRole.ADMIN,
         },
@@ -378,14 +404,14 @@ describe('TaskAccessService', () => {
       tasksRepository.findByIdWithAccessContext.mockResolvedValue(task);
 
       await expect(
-        service.assertCanUpdate('task-1', 'user-1'),
+        service.assertCanUpdate('task-1', user),
       ).resolves.toBeUndefined();
 
       expect(logger.debug).toHaveBeenCalledWith(
         {
           event: 'task.access.update.allowed',
           taskId: 'task-1',
-          userId: 'user-1',
+          userId: user.id,
           projectId: task.projectId,
           currentUserRole: ProjectRole.ADMIN,
         },
@@ -396,23 +422,24 @@ describe('TaskAccessService', () => {
     it('allows an assignee to update a task', async () => {
       const task = makeTaskAccessContext({
         project: {
+          orgId: user.orgId,
           ownerId: 'owner-1',
           currentUserRole: ProjectRole.MEMBER,
         },
-        assignees: [{ userId: 'user-1' }],
+        assignees: [{ userId: user.id }],
       });
 
       tasksRepository.findByIdWithAccessContext.mockResolvedValue(task);
 
       await expect(
-        service.assertCanUpdate('task-1', 'user-1'),
+        service.assertCanUpdate('task-1', user),
       ).resolves.toBeUndefined();
 
       expect(logger.debug).toHaveBeenCalledWith(
         {
           event: 'task.access.update.allowed',
           taskId: 'task-1',
-          userId: 'user-1',
+          userId: user.id,
           projectId: task.projectId,
           currentUserRole: ProjectRole.MEMBER,
         },
@@ -424,6 +451,7 @@ describe('TaskAccessService', () => {
       const task = makeTaskAccessContext({
         createdById: 'creator-1',
         project: {
+          orgId: user.orgId,
           ownerId: 'owner-1',
           currentUserRole: ProjectRole.MEMBER,
         },
@@ -432,7 +460,7 @@ describe('TaskAccessService', () => {
 
       tasksRepository.findByIdWithAccessContext.mockResolvedValue(task);
 
-      await expect(service.assertCanUpdate('task-1', 'user-1')).rejects.toThrow(
+      await expect(service.assertCanUpdate('task-1', user)).rejects.toThrow(
         ForbiddenException,
       );
 
@@ -440,7 +468,7 @@ describe('TaskAccessService', () => {
         {
           event: 'task.access.update.forbidden',
           taskId: 'task-1',
-          userId: 'user-1',
+          userId: user.id,
           projectId: task.projectId,
           currentUserRole: task.project.currentUserRole,
           createdById: task.createdById,
@@ -454,7 +482,8 @@ describe('TaskAccessService', () => {
     it('allows the project owner to delete a task', async () => {
       const task = makeTaskAccessContext({
         project: {
-          ownerId: 'user-1',
+          orgId: user.orgId,
+          ownerId: user.id,
           currentUserRole: null,
         },
       });
@@ -462,14 +491,14 @@ describe('TaskAccessService', () => {
       tasksRepository.findByIdWithAccessContext.mockResolvedValue(task);
 
       await expect(
-        service.assertCanDelete('task-1', 'user-1'),
+        service.assertCanDelete('task-1', user),
       ).resolves.toBeUndefined();
 
       expect(logger.debug).toHaveBeenCalledWith(
         {
           event: 'task.access.delete.allowed',
           taskId: 'task-1',
-          userId: 'user-1',
+          userId: user.id,
           projectId: task.projectId,
           currentUserRole: task.project.currentUserRole,
         },
@@ -480,6 +509,7 @@ describe('TaskAccessService', () => {
     it('allows an admin to delete a task', async () => {
       const task = makeTaskAccessContext({
         project: {
+          orgId: user.orgId,
           ownerId: 'owner-1',
           currentUserRole: ProjectRole.ADMIN,
         },
@@ -488,14 +518,14 @@ describe('TaskAccessService', () => {
       tasksRepository.findByIdWithAccessContext.mockResolvedValue(task);
 
       await expect(
-        service.assertCanDelete('task-1', 'user-1'),
+        service.assertCanDelete('task-1', user),
       ).resolves.toBeUndefined();
 
       expect(logger.debug).toHaveBeenCalledWith(
         {
           event: 'task.access.delete.allowed',
           taskId: 'task-1',
-          userId: 'user-1',
+          userId: user.id,
           projectId: task.projectId,
           currentUserRole: ProjectRole.ADMIN,
         },
@@ -505,8 +535,9 @@ describe('TaskAccessService', () => {
 
     it('allows the task creator to delete a task', async () => {
       const task = makeTaskAccessContext({
-        createdById: 'user-1',
+        createdById: user.id,
         project: {
+          orgId: user.orgId,
           ownerId: 'owner-1',
           currentUserRole: ProjectRole.MEMBER,
         },
@@ -515,16 +546,16 @@ describe('TaskAccessService', () => {
       tasksRepository.findByIdWithAccessContext.mockResolvedValue(task);
 
       await expect(
-        service.assertCanDelete('task-1', 'user-1'),
+        service.assertCanDelete('task-1', user),
       ).resolves.toBeUndefined();
 
       expect(logger.debug).toHaveBeenCalledWith(
         {
           event: 'task.access.delete.allowed',
           taskId: 'task-1',
-          userId: 'user-1',
+          userId: user.id,
           projectId: task.projectId,
-          currentUserRole: task.project.currentUserRole,
+          currentUserRole: ProjectRole.MEMBER,
         },
         'Task delete access granted',
       );
@@ -534,6 +565,7 @@ describe('TaskAccessService', () => {
       const task = makeTaskAccessContext({
         createdById: 'creator-1',
         project: {
+          orgId: user.orgId,
           ownerId: 'owner-1',
           currentUserRole: ProjectRole.MEMBER,
         },
@@ -541,7 +573,7 @@ describe('TaskAccessService', () => {
 
       tasksRepository.findByIdWithAccessContext.mockResolvedValue(task);
 
-      await expect(service.assertCanDelete('task-1', 'user-1')).rejects.toThrow(
+      await expect(service.assertCanDelete('task-1', user)).rejects.toThrow(
         ForbiddenException,
       );
 
@@ -549,7 +581,7 @@ describe('TaskAccessService', () => {
         {
           event: 'task.access.delete.forbidden',
           taskId: 'task-1',
-          userId: 'user-1',
+          userId: user.id,
           projectId: task.projectId,
           currentUserRole: task.project.currentUserRole,
           createdById: task.createdById,
@@ -563,7 +595,8 @@ describe('TaskAccessService', () => {
     it('allows the project owner to assign a task', async () => {
       const task = makeTaskAccessContext({
         project: {
-          ownerId: 'user-1',
+          orgId: user.orgId,
+          ownerId: user.id,
           currentUserRole: null,
         },
       });
@@ -571,14 +604,14 @@ describe('TaskAccessService', () => {
       tasksRepository.findByIdWithAccessContext.mockResolvedValue(task);
 
       await expect(
-        service.assertCanAssign('task-1', 'user-1'),
+        service.assertCanAssign('task-1', user),
       ).resolves.toBeUndefined();
 
       expect(logger.debug).toHaveBeenCalledWith(
         {
           event: 'task.access.assign.allowed',
           taskId: 'task-1',
-          userId: 'user-1',
+          userId: user.id,
           projectId: task.projectId,
           currentUserRole: task.project.currentUserRole,
         },
@@ -589,6 +622,7 @@ describe('TaskAccessService', () => {
     it('allows an admin to assign a task', async () => {
       const task = makeTaskAccessContext({
         project: {
+          orgId: user.orgId,
           ownerId: 'owner-1',
           currentUserRole: ProjectRole.ADMIN,
         },
@@ -597,14 +631,14 @@ describe('TaskAccessService', () => {
       tasksRepository.findByIdWithAccessContext.mockResolvedValue(task);
 
       await expect(
-        service.assertCanAssign('task-1', 'user-1'),
+        service.assertCanAssign('task-1', user),
       ).resolves.toBeUndefined();
 
       expect(logger.debug).toHaveBeenCalledWith(
         {
           event: 'task.access.assign.allowed',
           taskId: 'task-1',
-          userId: 'user-1',
+          userId: user.id,
           projectId: task.projectId,
           currentUserRole: ProjectRole.ADMIN,
         },
@@ -615,6 +649,7 @@ describe('TaskAccessService', () => {
     it('throws ForbiddenException when a non-admin non-owner tries to assign a task', async () => {
       const task = makeTaskAccessContext({
         project: {
+          orgId: user.orgId,
           ownerId: 'owner-1',
           currentUserRole: ProjectRole.MEMBER,
         },
@@ -622,7 +657,7 @@ describe('TaskAccessService', () => {
 
       tasksRepository.findByIdWithAccessContext.mockResolvedValue(task);
 
-      await expect(service.assertCanAssign('task-1', 'user-1')).rejects.toThrow(
+      await expect(service.assertCanAssign('task-1', user)).rejects.toThrow(
         ForbiddenException,
       );
 
@@ -630,7 +665,7 @@ describe('TaskAccessService', () => {
         {
           event: 'task.access.assign.forbidden',
           taskId: 'task-1',
-          userId: 'user-1',
+          userId: user.id,
           projectId: task.projectId,
           currentUserRole: task.project.currentUserRole,
         },

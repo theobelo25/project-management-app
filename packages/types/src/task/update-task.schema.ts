@@ -21,12 +21,18 @@ export const UpdateTaskSchema = z.object({
     .optional()
     .nullable()
     .transform((val) => {
-      if (val == null) return undefined;
-      if (typeof val === "string" && val === "") return undefined;
+      // IMPORTANT:
+      // - `undefined` => omitted => "no change"
+      // - `null` and `""` => explicit clear => mapper will set dueDate: null
+      if (val === undefined) return undefined;
+      if (val === null) return null;
+      if (typeof val === "string" && val === "") return null;
+
       const date =
         val instanceof Date
           ? val
           : new Date(val.length === 10 ? `${val}T12:00:00.000Z` : val);
+
       return Number.isNaN(date.getTime()) ? undefined : date;
     }),
 
