@@ -1,6 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PRISMA, Db } from '@api/prisma';
 import { PrismaClient } from '@repo/database';
+import { getPaginationParams } from '@api/common';
 import {
   OrganizationDetailView,
   OrganizationMemberView,
@@ -9,6 +10,7 @@ import {
   PaginatedOrganizationMembersView,
   OrganizationSummaryView,
 } from '@repo/types';
+import type { PaginationQuery } from '@repo/types';
 
 import { OrganizationMembershipsRepository } from './organization-memberships.repository';
 import { OWNER_ROLE } from '../constants/organization-roles';
@@ -214,15 +216,13 @@ export class PrismaOrganizationMembershipsRepository extends OrganizationMembers
 
   async listMembersPaginated(
     organizationId: string,
-    page: number,
-    limit: number,
+    query: PaginationQuery,
     db?: Db,
   ): Promise<PaginatedOrganizationMembersView> {
     const prisma = db ?? this.prisma;
 
-    const pageSize = Math.max(1, Math.min(limit, 100));
-    const currentPage = Math.max(1, page);
-    const skip = (currentPage - 1) * pageSize;
+    const { skip, take, page: currentPage, limit: pageSize } =
+      getPaginationParams(query);
 
     const [total, memberships] = await Promise.all([
       prisma.organizationMembership.count({ where: { organizationId } }),
@@ -230,7 +230,7 @@ export class PrismaOrganizationMembershipsRepository extends OrganizationMembers
         where: { organizationId },
         orderBy: { createdAt: 'asc' },
         skip,
-        take: pageSize,
+        take,
         select: {
           role: true,
           createdAt: true,

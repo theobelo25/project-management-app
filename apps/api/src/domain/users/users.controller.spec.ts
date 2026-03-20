@@ -4,7 +4,7 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { AuthUser, UserView } from '@repo/types';
 import { NotFoundException } from '@nestjs/common';
-import { GetUsersQueryDto } from './dto';
+import { GetUsersQueryDto, GlobalUsersSearchQueryDto } from './dto';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -12,7 +12,7 @@ describe('UsersController', () => {
   let usersService: {
     getUsersForOrg: jest.Mock;
     searchUsers: jest.Mock;
-    findById: jest.Mock;
+    requireById: jest.Mock;
   };
 
   const authUser: AuthUser = {
@@ -34,7 +34,7 @@ describe('UsersController', () => {
     usersService = {
       getUsersForOrg: jest.fn(),
       searchUsers: jest.fn(),
-      findById: jest.fn(),
+      requireById: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -82,45 +82,49 @@ describe('UsersController', () => {
   });
 
   describe('searchAllUsers', () => {
-    it('delegates to searchUsers with trimmed query', async () => {
+    it('delegates to searchUsers with validated query (simulates pipe output)', async () => {
       usersService.searchUsers.mockResolvedValue([userView]);
 
       const result = await controller.searchAllUsers({
         search: 'bob',
-      } as GetUsersQueryDto);
+      } as GlobalUsersSearchQueryDto);
 
       expect(usersService.searchUsers).toHaveBeenCalledWith('bob');
       expect(result).toEqual([userView]);
     });
 
-    it('passes empty string when search is missing', async () => {
+    it('delegates minimum-length search (2 chars)', async () => {
       usersService.searchUsers.mockResolvedValue([]);
 
-      await controller.searchAllUsers({} as GetUsersQueryDto);
+      await controller.searchAllUsers({
+        search: 'ab',
+      } as GlobalUsersSearchQueryDto);
 
-      expect(usersService.searchUsers).toHaveBeenCalledWith('');
+      expect(usersService.searchUsers).toHaveBeenCalledWith('ab');
     });
   });
 
   describe('findById', () => {
     it('returns a user by id from the service', async () => {
-      usersService.findById.mockResolvedValue(userView);
+      usersService.requireById.mockResolvedValue(userView);
 
       const result = await controller.findById({ id: userView.id });
 
-      expect(usersService.findById).toHaveBeenCalledWith(userView.id);
+      expect(usersService.requireById).toHaveBeenCalledWith(userView.id);
       expect(result).toEqual(userView);
     });
 
-    it('throws NotFoundException when the service returns null', async () => {
+    it('propagates NotFoundException when the service throws', async () => {
       const missingId = '3415c2fc-4067-4c4f-a7e1-748afc4e9b73';
-      usersService.findById.mockResolvedValue(null);
+      usersService.requireById.mockRejectedValue(
+        new NotFoundException('User not found'),
+      );
 
       await expect(controller.findById({ id: missingId })).rejects.toThrow(
         NotFoundException,
       );
 
-      expect(usersService.findById).toHaveBeenCalledWith(missingId);
+      expect(usersService.requireById).toHaveBeenCalledWith(missingId);
     });
   });
 });

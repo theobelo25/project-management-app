@@ -3,3 +3,4 @@ export * from "./update-user.schema";
 export * from "./user.types";
 export * from "./get-users-query.schema";
 export * from "./user-id-param.schema";
+export * from "./global-users-search-query.schema";

@@ -10,6 +10,8 @@ import { PRISMA, Db } from '@api/prisma';
 import { Prisma, PrismaClient } from '@repo/database';
 import { toPrivateUser, toUserView } from '../mappers/user.mapper';
 
+const GLOBAL_USER_SEARCH_LIMIT = 50;
+
 type UserWithActiveOrg = Prisma.UserGetPayload<{
   include: { activeOrganization: true };
 }>;
@@ -139,8 +141,7 @@ export class PrismaUsersRepository implements UsersRepository {
   async searchUsers(search: string, tx?: Db): Promise<UserView[]> {
     const prisma = (tx ?? this.prisma) as PrismaClient;
     const term = search.trim();
-    if (!term) return this.getAllUsers(tx);
-
+    if (!term) return []; // never call getAllUsers()
     const users = await prisma.user.findMany({
       where: {
         OR: [
@@ -148,9 +149,9 @@ export class PrismaUsersRepository implements UsersRepository {
           { email: { contains: term, mode: 'insensitive' } },
         ],
       },
+      take: GLOBAL_USER_SEARCH_LIMIT,
       include: { activeOrganization: true },
     });
-
     return users.map((u: UserWithActiveOrg) => toUserView(u));
   }
 

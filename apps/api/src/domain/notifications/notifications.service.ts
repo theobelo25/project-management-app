@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { NotificationsRepository } from './repositories/notifications.repository';
 import { NotificationView } from '@repo/types';
 import type { Prisma } from '@repo/database';
@@ -18,13 +18,15 @@ export class NotificationsService {
     return toNotificationViews(rows);
   }
 
-  async clearForUser(userId: string, notificationId: string): Promise<boolean> {
+  async clearForUser(userId: string, notificationId: string): Promise<void> {
     const clearedCount = await this.notificationsRepository.clear(
       notificationId,
       userId,
     );
 
-    return clearedCount > 0;
+    if (clearedCount === 0) {
+      throw new NotFoundException('Notification not found');
+    }
   }
 
   async notifyTaskAssigned(

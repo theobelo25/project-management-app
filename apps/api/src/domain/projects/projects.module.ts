@@ -19,6 +19,7 @@ import { ProjectsCommandsService } from './services/projects-commands.service';
 import { ProjectsQueriesService } from './services/projects-queries.service';
 import { UsersService } from '../users/users.service';
 import { TasksModule } from '../tasks/tasks.module';
+import { ProjectsFacade } from './projects.facade';
 
 @Module({
   imports: [UsersModule, PrismaModule, forwardRef(() => TasksModule)],
@@ -32,6 +33,7 @@ import { TasksModule } from '../tasks/tasks.module';
     ProjectAccessService,
     ProjectRoleGuard,
     PrismaProjectsRepository,
+    ProjectsFacade,
     {
       provide: PROJECT_AUTHORIZATION_REPOSITORY,
       useExisting: PrismaProjectsRepository,

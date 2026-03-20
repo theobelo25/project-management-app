@@ -7,6 +7,7 @@ import {
   PaginatedOrganizationMembersView,
   OrganizationSummaryView,
 } from '@repo/types';
+import type { PaginationQuery } from '@repo/types';
 
 export abstract class OrganizationMembershipsRepository {
   abstract listOrganizationsForUser(
@@ -67,8 +68,7 @@ export abstract class OrganizationMembershipsRepository {
   // New: member list with pagination
   abstract listMembersPaginated(
     organizationId: string,
-    page: number,
-    limit: number,
+    query: PaginationQuery,
     db?: Db,
   ): Promise<PaginatedOrganizationMembersView>;
 

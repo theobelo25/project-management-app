@@ -7,6 +7,7 @@ import {
 import { Db, UNIT_OF_WORK } from '@api/prisma';
 import type { UnitOfWork } from '@api/prisma/uow/unit-of-work.interface';
 
+import type { PaginationQuery } from '@repo/types';
 import { OrganizationErrorMessages } from '../constants/error-messages';
 import { OrganizationMembershipsRepository } from '../repositories/organization-memberships.repository';
 import { runInTx } from '../utils/run-in-tx.util';
@@ -86,9 +87,13 @@ export class OrganizationMembershipsQueriesService {
     });
   }
 
-  listMembers(organizationId: string, page: number, limit: number, db?: Db) {
+  listMembers(
+    organizationId: string,
+    query: PaginationQuery,
+    db?: Db,
+  ) {
     return runInTx(this.uow, db, (tx) =>
-      this.repository.listMembersPaginated(organizationId, page, limit, tx),
+      this.repository.listMembersPaginated(organizationId, query, tx),
     );
   }
 }

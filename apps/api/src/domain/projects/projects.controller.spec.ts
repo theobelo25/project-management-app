@@ -97,6 +97,9 @@ describe('ProjectsController', () => {
         page: 1,
         pageSize: 20,
         includeArchived: false,
+        search: undefined,
+        filter: 'all',
+        sort: 'updated-desc',
       };
 
       const response = {
@@ -202,9 +205,11 @@ describe('ProjectsController', () => {
 
       projectMembersService.getMembers.mockResolvedValue(response);
 
-      const result = await controller.getMembers(user as any, {
-        id: 'project-1',
-      });
+      const result = await controller.getMembers(
+        user as any,
+        { id: 'project-1' } as any,
+        projectView as any, // ProjectWithRole
+      );
 
       expect(projectMembersService.getMembers).toHaveBeenCalledWith(
         'project-1',

@@ -3,7 +3,7 @@ import { OrganizationMembershipsQueriesService } from './organization-membership
 import { OrganizationMembershipsAuthorizationService } from './organization-memberships-authorization.service';
 import { OrganizationMembershipsMutationsService } from './organization-memberships-mutations.service';
 import { Db } from '@api/prisma';
-import { OrganizationRole } from '@repo/types';
+import type { OrganizationRole, PaginationQuery } from '@repo/types';
 
 @Injectable()
 export class OrganizationMembershipsService {
@@ -31,8 +31,12 @@ export class OrganizationMembershipsService {
   }
 
   // New: paginated members list
-  listMembers(organizationId: string, page: number, limit: number, db?: Db) {
-    return this.queries.listMembers(organizationId, page, limit, db);
+  listMembers(
+    organizationId: string,
+    query: PaginationQuery,
+    db?: Db,
+  ) {
+    return this.queries.listMembers(organizationId, query, db);
   }
 
   assertMembership(userId: string, organizationId: string, db?: Db) {
