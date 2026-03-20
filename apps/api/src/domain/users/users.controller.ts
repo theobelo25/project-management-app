@@ -13,11 +13,11 @@ import { GetUsersQueryDto } from './dto';
 import { AuthUser } from '@repo/types';
 
 @Controller('users')
+@UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard)
   async getUsers(
     @CurrentUser() user: AuthUser,
     @Query() query: GetUsersQueryDto,
@@ -26,7 +26,6 @@ export class UsersController {
   }
 
   @Get('search')
-  @UseGuards(JwtAuthGuard)
   async searchAllUsers(@Query() query: GetUsersQueryDto) {
     return this.usersService.searchUsers(query.search ?? '');
   }
