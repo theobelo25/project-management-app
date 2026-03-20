@@ -9,4 +9,5 @@ export type NotificationView = {
   createdAt: string; // ISO
 };
 
-export type ClearNotificationResponse = { success: true };
+// `POST /notifications/:id/clear` follows the `204 No Content` convention.
+export type ClearNotificationResponse = void;

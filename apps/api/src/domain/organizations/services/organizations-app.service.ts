@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AuthUser, SuccessResponse } from '@repo/types';
+import { AuthUser } from '@repo/types';
 
 import { OrganizationsDomainService } from '../organizations.service';
 import { OrganizationMembershipsService } from './organization-memberships.service';
@@ -18,35 +18,31 @@ export class OrganizationsApplicationService {
   async createOrganization(
     user: AuthUser,
     dto: CreateOrganizationDto,
-  ): Promise<SuccessResponse> {
+  ): Promise<void> {
     await this.organizationsService.createOrganization(user.id, dto.name);
-    return { success: true };
   }
 
   async switchOrganization(
     user: AuthUser,
     params: SwitchOrganizationParamsDto,
-  ): Promise<SuccessResponse> {
+  ): Promise<void> {
     await this.organizationMembershipsService.setActiveOrganization(
       user.id,
       params.id,
     );
-    return { success: true };
   }
 
   async leaveOrganization(
     user: AuthUser,
     params: OrganizationParamsDto,
-  ): Promise<SuccessResponse> {
+  ): Promise<void> {
     await this.organizationsService.leaveOrganization(user.id, params.id);
-    return { success: true };
   }
 
   async deleteOrganization(
     user: AuthUser,
     params: OrganizationParamsDto,
-  ): Promise<SuccessResponse> {
+  ): Promise<void> {
     await this.organizationsService.deleteOrganization(user.id, params.id);
-    return { success: true };
   }
 }

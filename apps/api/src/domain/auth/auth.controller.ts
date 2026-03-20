@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Post,
   Req,
   Res,
@@ -13,7 +14,6 @@ import {
   UserView,
   SignupInputDto,
   LoginRequestDto as LoginInput,
-  SuccessResponse,
   COOKIE,
   AuthSession,
 } from '@repo/types';
@@ -70,10 +70,11 @@ export class AuthController {
   }
 
   @Post('logout')
+  @HttpCode(204)
   async logout(
     @Req() req: Request,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<SuccessResponse> {
+  ): Promise<void> {
     const rawRefreshToken = req.cookies?.[COOKIE.REFRESH];
 
     if (typeof rawRefreshToken === 'string')
@@ -81,8 +82,6 @@ export class AuthController {
 
     this.cookieService.clearAccessCookie(response);
     this.cookieService.clearRefreshCookie(response);
-
-    return { success: true };
   }
 
   @Get('me')

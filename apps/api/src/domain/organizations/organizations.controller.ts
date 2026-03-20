@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
@@ -19,7 +20,6 @@ import {
   OrganizationSummaryView,
   PaginatedOrganizationMembersView,
   PendingInviteView,
-  SuccessResponse,
 } from '@repo/types';
 import { OrganizationInvitesService } from './services/organization-invites.service';
 import {
@@ -82,43 +82,43 @@ export class OrganizationsController {
   // Existing: accept by token
   @RefreshOrganizationsAccessCookie()
   @Post('invites/accept')
+  @HttpCode(204)
   async acceptInvite(
     @CurrentUser() user: AuthUser,
     @Body() dto: AcceptOrganizationInviteDto,
-  ): Promise<SuccessResponse> {
+  ): Promise<void> {
     await this.organizationInvitesService.acceptInvite(user.id, dto.token);
-    return { success: true };
   }
 
   // Existing: accept by id
   @RefreshOrganizationsAccessCookie()
   @Post('invites/:id/accept')
+  @HttpCode(204)
   async acceptInviteById(
     @CurrentUser() user: AuthUser,
     @Param() params: InviteIdParamsDto,
-  ): Promise<SuccessResponse> {
+  ): Promise<void> {
     await this.organizationInvitesService.acceptInviteById(user.id, params.id);
-    return { success: true };
   }
 
   // Existing: decline by id
   @Post('invites/:id/decline')
+  @HttpCode(204)
   async declineInviteById(
     @CurrentUser() user: AuthUser,
     @Param() params: InviteIdParamsDto,
-  ): Promise<SuccessResponse> {
+  ): Promise<void> {
     await this.organizationInvitesService.declineInviteById(user.id, params.id);
-    return { success: true };
   }
 
   // New: revoke invite by id (admin/owner)
   @Post('invites/:id/revoke')
+  @HttpCode(204)
   async revokeInviteById(
     @CurrentUser() user: AuthUser,
     @Param() params: InviteIdParamsDto,
-  ): Promise<SuccessResponse> {
+  ): Promise<void> {
     await this.organizationInvitesService.revokeInvite(user, params.id);
-    return { success: true };
   }
 
   // ---- Orgs ----
@@ -174,11 +174,12 @@ export class OrganizationsController {
 
   @RefreshOrganizationsAccessCookie()
   @Post()
+  @HttpCode(204)
   async createOrganization(
     @CurrentUser() user: AuthUser,
     @Body() dto: CreateOrganizationDto,
-  ): Promise<SuccessResponse> {
-    return this.organizationsAppService.createOrganization(user, dto);
+  ): Promise<void> {
+    await this.organizationsAppService.createOrganization(user, dto);
   }
 
   @Post(':id/members')
@@ -196,58 +197,61 @@ export class OrganizationsController {
 
   // New: remove member
   @Delete(':id/members/:memberId')
+  @HttpCode(204)
   async removeMember(
     @CurrentUser() user: AuthUser,
     @Param() params: OrganizationMemberParamsDto,
-  ): Promise<SuccessResponse> {
+  ): Promise<void> {
     await this.organizationMembershipsService.removeMember(
       user.id,
       params.id,
       params.memberId,
     );
-    return { success: true };
   }
 
   // New: change member role
   @Patch(':id/members/:memberId/role')
+  @HttpCode(204)
   async updateMemberRole(
     @CurrentUser() user: AuthUser,
     @Param() params: OrganizationMemberParamsDto,
     @Body() body: UpdateOrganizationMemberRoleDto,
-  ): Promise<SuccessResponse> {
+  ): Promise<void> {
     await this.organizationMembershipsService.updateMemberRole(
       user.id,
       params.id,
       params.memberId,
       body.role,
     );
-    return { success: true };
   }
 
   @RefreshOrganizationsAccessCookie()
   @Post(':id/switch')
+  @HttpCode(204)
   async switchOrganization(
     @CurrentUser() user: AuthUser,
     @Param() params: SwitchOrganizationParamsDto,
-  ): Promise<SuccessResponse> {
-    return this.organizationsAppService.switchOrganization(user, params);
+  ): Promise<void> {
+    await this.organizationsAppService.switchOrganization(user, params);
   }
 
   @RefreshOrganizationsAccessCookie()
   @Post(':id/leave')
+  @HttpCode(204)
   async leaveOrganization(
     @CurrentUser() user: AuthUser,
     @Param() params: OrganizationParamsDto,
-  ): Promise<SuccessResponse> {
-    return this.organizationsAppService.leaveOrganization(user, params);
+  ): Promise<void> {
+    await this.organizationsAppService.leaveOrganization(user, params);
   }
 
   @RefreshOrganizationsAccessCookie()
   @Delete(':id')
+  @HttpCode(204)
   async deleteOrganization(
     @CurrentUser() user: AuthUser,
     @Param() params: OrganizationParamsDto,
-  ): Promise<SuccessResponse> {
-    return this.organizationsAppService.deleteOrganization(user, params);
+  ): Promise<void> {
+    await this.organizationsAppService.deleteOrganization(user, params);
   }
 }

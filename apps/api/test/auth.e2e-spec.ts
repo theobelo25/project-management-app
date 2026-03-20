@@ -71,8 +71,9 @@ describe('Auth E2E', () => {
 
     const logoutResponse = await agent.post('/auth/logout');
 
-    expect(logoutResponse.status).toBe(201);
-    expect(logoutResponse.body).toEqual({ success: true });
+    expect(logoutResponse.status).toBe(204);
+    expect(logoutResponse.body).toEqual({});
+    expect(logoutResponse.text).toBe('');
 
     const postLogoutRefreshResponse = await agent.post('/auth/refresh');
 
