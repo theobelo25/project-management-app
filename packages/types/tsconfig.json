@@ -3,6 +3,7 @@
   "compilerOptions": {
     "module": "CommonJS",
     "moduleResolution": "Node",
+    "typeRoots": ["${configDir}/node_modules/@types"],
     "declaration": true,
     "sourceMap": true,
     "outDir": "./dist",
