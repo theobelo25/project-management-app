@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { PrismaModule } from '@api/prisma';
 import { ProjectsService } from './projects.service';
 import { ProjectMembersService } from './services/project-members.service';
 import { ProjectOwnershipService } from './services/project-ownership.service';
@@ -14,7 +15,7 @@ import { ProjectsFacade } from './projects.facade';
 import { ProjectsPersistenceModule } from './projects-persistence.module';
 
 @Module({
-  imports: [UsersModule, ProjectsPersistenceModule, TasksModule],
+  imports: [PrismaModule, UsersModule, ProjectsPersistenceModule, TasksModule],
   controllers: [ProjectsController],
   providers: [
     ProjectsService,

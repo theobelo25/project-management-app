@@ -6,6 +6,7 @@ import {
   CreateProjectDto,
   GetProjectsQueryDto,
   PaginatedProjectsListView,
+  ProjectDetailView,
   ProjectMembersView,
   ProjectMemberView,
   ProjectView,
@@ -45,7 +46,7 @@ export class ProjectsFacade {
   async findByIdDetail(
     projectId: string,
     user: AuthUser,
-  ): Promise<ProjectView> {
+  ): Promise<ProjectDetailView> {
     return this.projectsService.findDetailById(projectId, user);
   }
 

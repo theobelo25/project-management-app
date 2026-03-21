@@ -24,6 +24,7 @@ import { AuthRepository } from './repositories/auth.repository';
 import { PrismaModule } from '@api/prisma';
 
 import { OrganizationWorkspaceBootstrapModule } from '../organizations/organization-workspace-bootstrap.module';
+import { OrganizationsModule } from '../organizations/organizations.module';
 
 import { RefreshTokenRepositoryFacade } from './repositories/refresh-token.repository';
 import { AuthCookiesInterceptor } from './interceptors/auth-cookies.interceptor';
@@ -37,6 +38,7 @@ import { AuthorizedUserForOrgService } from './authorized-user-for-org.service';
     PrismaModule,
 
     OrganizationWorkspaceBootstrapModule,
+    OrganizationsModule,
 
     JwtModule.registerAsync({
       inject: [ConfigService],

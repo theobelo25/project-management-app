@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 
 import { AppModule } from '../src/app.module';
 import { PRISMA } from '../src/prisma/types/prisma.constants';
-import { COOKIE } from '../src/domain/auth/cookies/cookies.constants';
+import { COOKIE } from '@repo/types';
 import { prisma } from '@repo/database';
 import { ZodValidationPipe } from '@api/common';
 import { AppExceptionFilter } from '@api/common/filters/app-exception.filter';

@@ -16,6 +16,7 @@ import { ZodSerializerDto } from 'nestjs-zod';
 import {
   AuthUser,
   PaginatedProjectsListView,
+  ProjectDetailView,
   ProjectMembersView,
   ProjectMemberView,
   ProjectView,
@@ -38,6 +39,7 @@ import { ProjectWithRole } from './types/projects.repository.types';
 import { ProjectsFacade } from './projects.facade';
 import {
   PaginatedProjectsListResponseDto,
+  ProjectDetailViewResponseDto,
   ProjectMemberResponseDto,
   ProjectMembersResponseDto,
   ProjectViewResponseDto,
@@ -70,11 +72,11 @@ export class ProjectsController {
   }
 
   @Get(':id')
-  @ZodSerializerDto(ProjectViewResponseDto)
+  @ZodSerializerDto(ProjectDetailViewResponseDto)
   async findById(
     @CurrentUser() user: AuthUser,
     @Param() params: ProjectIdParamDto,
-  ): Promise<ProjectView> {
+  ): Promise<ProjectDetailView> {
     return this.projectsFacade.findByIdDetail(params.id, user);
   }
 

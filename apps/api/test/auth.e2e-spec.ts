@@ -5,7 +5,7 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PRISMA } from '../src/prisma/types/prisma.constants';
 import { PrismaClient } from '@repo/database';
-import { COOKIE } from '../src/domain/auth/cookies/cookies.constants';
+import { COOKIE } from '@repo/types';
 import cookieParser from 'cookie-parser';
 
 describe('Auth E2E', () => {

@@ -1,4 +1,5 @@
-import { ProjectMemberParamSchema, createZodDto } from '@repo/types';
+import { ProjectMemberParamSchema } from '@repo/types';
+import { createZodDto } from '@api/common/zod/zod-dto.util';
 
 export class ProjectMemberParamDto extends createZodDto(
   ProjectMemberParamSchema,

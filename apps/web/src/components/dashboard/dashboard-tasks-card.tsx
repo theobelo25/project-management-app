@@ -11,6 +11,7 @@ import {
 function formatStatus(status: string): string {
   if (status === "IN_PROGRESS") return "In progress";
   if (status === "TODO") return "Todo";
+  if (status === "REVIEW") return "Review";
   if (status === "DONE") return "Done";
   return status;
 }
@@ -36,7 +37,9 @@ export function DashboardTasksCard({ tasks }: Props) {
           >
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">{task.title}</p>
-              <p className="text-xs text-muted-foreground">{task.status}</p>
+              <p className="text-xs text-muted-foreground">
+              {formatStatus(task.status)}
+            </p>
             </div>
           </div>
         ))}

@@ -11,30 +11,27 @@ export const UpdateTaskSchema = z.object({
 
   priority: TaskPrioritySchema.optional(),
 
-  dueDate: z
-    .union([
-      z.string().datetime(),
-      z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-      z.literal(""),
-      z.coerce.date(), // accepts Date or string that can be parsed to Date
-    ])
-    .optional()
-    .nullable()
-    .transform((val) => {
-      // IMPORTANT:
-      // - `undefined` => omitted => "no change"
-      // - `null` and `""` => explicit clear => mapper will set dueDate: null
-      if (val === undefined) return undefined;
-      if (val === null) return null;
-      if (typeof val === "string" && val === "") return null;
+  dueDate: z.preprocess(
+    (val) => (val instanceof Date ? val.toISOString() : val),
+    z
+      .union([
+        z.string().datetime(),
+        z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        z.literal(""),
+      ])
+      .optional()
+      .nullable()
+      .transform((val) => {
+        if (val === undefined) return undefined;
+        if (val === null) return null;
+        if (val === "") return null;
 
-      const date =
-        val instanceof Date
-          ? val
-          : new Date(val.length === 10 ? `${val}T12:00:00.000Z` : val);
-
-      return Number.isNaN(date.getTime()) ? undefined : date;
-    }),
+        const date = new Date(
+          val.length === 10 ? `${val}T12:00:00.000Z` : val,
+        );
+        return Number.isNaN(date.getTime()) ? undefined : date;
+      }),
+  ),
 
   position: z.number().int().nonnegative().optional(),
 });

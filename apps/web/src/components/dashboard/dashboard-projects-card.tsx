@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import type { ProjectListItemView } from "packages/types/dist";
+import type { ProjectListItemView } from "@repo/types";
 
 type Props = { projects: ProjectListItemView[] };
 

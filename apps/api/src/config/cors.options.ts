@@ -11,7 +11,7 @@ export function getCorsOptions(config: ConfigService): CorsOptionsConfig {
   return {
     origins: raw
       .split(',')
-      .map((o) => o.trim())
+      .map((o: string) => o.trim())
       .filter(Boolean),
     credentials: true,
   };

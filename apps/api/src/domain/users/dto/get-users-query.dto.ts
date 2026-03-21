@@ -1,3 +1,4 @@
-import { GetUsersQuerySchema, createZodDto } from '@repo/types';
+import { GetUsersQuerySchema } from '@repo/types';
+import { createZodDto } from '@api/common/zod/zod-dto.util';
 
 export class GetUsersQueryDto extends createZodDto(GetUsersQuerySchema) {}
