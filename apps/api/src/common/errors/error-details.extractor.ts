@@ -2,7 +2,6 @@ import { isRecord } from '../utils/type-guards';
 
 export type ExtractedErrorDetails = {
   message?: string;
-  /** Nest ValidationPipe / class-validator often returns `message` as string[] */
   validationMessages?: string[];
   error?: string;
   details?: unknown;

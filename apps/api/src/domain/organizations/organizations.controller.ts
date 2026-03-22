@@ -82,7 +82,6 @@ export class OrganizationsController {
     return this.organizationInvitesService.createInvite(user, dto.email);
   }
 
-  // New: list invites created for the current org (admin/owner)
   @Get('invites/sent')
   @Throttle({ global: { ttl: 60_000, limit: 60 } })
   @ZodSerializerDto(OrganizationInviteAdminListResponseDto)
@@ -92,7 +91,6 @@ export class OrganizationsController {
     return this.organizationInvitesService.listInvitesForOrg(user);
   }
 
-  // Existing: invites pending for the current user email
   @Get('invites')
   @Throttle({ global: { ttl: 60_000, limit: 60 } })
   @ZodSerializerDto(PendingInviteListResponseDto)
@@ -102,7 +100,6 @@ export class OrganizationsController {
     return this.organizationInvitesService.getPendingInvitesForUser(user.id);
   }
 
-  // Existing: accept by token
   @RefreshOrganizationsAccessCookie()
   @Post('invites/accept')
   @HttpCode(204)
@@ -114,7 +111,6 @@ export class OrganizationsController {
     await this.organizationInvitesService.acceptInvite(user.id, dto.token);
   }
 
-  // Existing: accept by id
   @RefreshOrganizationsAccessCookie()
   @Post('invites/:id/accept')
   @HttpCode(204)
@@ -126,7 +122,6 @@ export class OrganizationsController {
     await this.organizationInvitesService.acceptInviteById(user.id, params.id);
   }
 
-  // Existing: decline by id
   @Post('invites/:id/decline')
   @HttpCode(204)
   @Throttle({ global: { ttl: 60_000, limit: 10 } })
@@ -137,7 +132,6 @@ export class OrganizationsController {
     await this.organizationInvitesService.declineInviteById(user.id, params.id);
   }
 
-  // New: revoke invite by id (admin/owner)
   @Post('invites/:id/revoke')
   @HttpCode(204)
   @Throttle({ global: { ttl: 60_000, limit: 10 } })
@@ -162,7 +156,6 @@ export class OrganizationsController {
     );
   }
 
-  // New: summary endpoint (no members list)
   @Get(':id/summary')
   @ZodSerializerDto(OrganizationSummaryResponseDto)
   async getOrganizationSummary(
@@ -175,7 +168,6 @@ export class OrganizationsController {
     );
   }
 
-  // New: members list paginated
   @Get(':id/members')
   @ZodSerializerDto(PaginatedOrganizationMembersResponseDto)
   async listMembers(
@@ -218,7 +210,6 @@ export class OrganizationsController {
     );
   }
 
-  // New: remove member
   @Delete(':id/members/:memberId')
   @HttpCode(204)
   async removeMember(
@@ -232,7 +223,6 @@ export class OrganizationsController {
     );
   }
 
-  // New: change member role
   @Patch(':id/members/:memberId/role')
   @HttpCode(204)
   async updateMemberRole(

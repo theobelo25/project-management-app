@@ -25,12 +25,10 @@ export class OrganizationMembershipsService {
     return this.queries.getOrganizationDetails(userId, organizationId, db);
   }
 
-  // New: summary without members list
   getOrganizationSummary(userId: string, organizationId: string, db?: Db) {
     return this.queries.getOrganizationSummary(userId, organizationId, db);
   }
 
-  // New: paginated members list
   listMembers(
     organizationId: string,
     query: PaginationQuery,
@@ -75,7 +73,6 @@ export class OrganizationMembershipsService {
     );
   }
 
-  // New: remove member
   removeMember(
     actorUserId: string,
     organizationId: string,
@@ -90,7 +87,6 @@ export class OrganizationMembershipsService {
     );
   }
 
-  // New: update member role
   updateMemberRole(
     actorUserId: string,
     organizationId: string,

@@ -45,7 +45,6 @@ export class OrganizationsAccessCookieRefreshInterceptor implements NestIntercep
   private async refreshCookie(userId: string, response: Response) {
     const updatedUser = await this.usersService.findById(userId);
     if (!updatedUser) {
-      // Auth state is inconsistent; treat as unauthorized rather than 500.
       throw new UnauthorizedException(
         'User not found while refreshing access cookie',
       );

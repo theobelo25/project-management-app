@@ -16,8 +16,6 @@ import { PinoLogger } from 'nestjs-pino';
 @Injectable()
 export class RefreshTokensService {
   private lastCleanupAtMs = 0;
-
-  // Adjust based on your traffic; this prevents a DB cleanup on every request.
   private readonly cleanupCooldownMs = 120_000;
 
   constructor(
@@ -102,7 +100,6 @@ export class RefreshTokensService {
   private async cleanupExpiredRevokedTokensIfDue(tx?: Db) {
     const nowMs = Date.now();
 
-    // if we cleaned recently, skip
     if (nowMs - this.lastCleanupAtMs < this.cleanupCooldownMs) return;
 
     this.lastCleanupAtMs = nowMs;

@@ -3,18 +3,16 @@ import {
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
-import type { Request } from 'express';
 
-type RefreshRequestUser = { rawRefreshToken: string };
+type RefreshAuthUser = { rawRefreshToken: string };
 
 export const CurrentRefreshToken = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext): string => {
-    const request = ctx
+    const { user } = ctx
       .switchToHttp()
-      .getRequest<Request & { user?: RefreshRequestUser }>();
+      .getRequest<{ user?: RefreshAuthUser }>();
 
-    const token = request.user?.rawRefreshToken;
-
+    const token = user?.rawRefreshToken;
     if (typeof token !== 'string' || token.length === 0) {
       throw new UnauthorizedException('Refresh token missing');
     }

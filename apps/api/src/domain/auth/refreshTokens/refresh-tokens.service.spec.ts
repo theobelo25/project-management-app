@@ -1,6 +1,5 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { AuthConfigService } from '@api/config';
-import { HASHING_SERVICE } from '../hashing/hashing.service.interface';
 import { RefreshTokensService } from './refresh-tokens.service';
 import { PinoLogger } from 'nestjs-pino';
 

@@ -36,6 +36,8 @@ describe('AccessTokensService', () => {
 
   const user: UserView = {
     id: '1415c2fc-4067-4c4f-a7e1-748afc4e9b71',
+    orgId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    organizationName: 'Acme',
     email: 'test@example.com',
     name: 'Theo',
     createdAt: new Date('2026-03-01T00:00:00.000Z'),
@@ -92,6 +94,7 @@ describe('AccessTokensService', () => {
       expect(jwtService.sign).toHaveBeenCalledWith(
         {
           sub: user.id,
+          orgId: user.orgId,
         },
         authConfig.access.jwtSign,
       );
@@ -104,7 +107,7 @@ describe('AccessTokensService', () => {
       });
     });
 
-    it('only includes sub in the token payload', () => {
+    it('only includes sub and orgId in the token payload', () => {
       jwtService.sign.mockReturnValue('signed-access-token');
 
       service.sign(user);
@@ -112,12 +115,13 @@ describe('AccessTokensService', () => {
       expect(jwtService.sign).toHaveBeenCalledWith(
         {
           sub: user.id,
+          orgId: user.orgId,
         },
         authConfig.access.jwtSign,
       );
 
       const payload = jwtService.sign.mock.calls[0][0];
-      expect(payload).toEqual({ sub: user.id });
+      expect(payload).toEqual({ sub: user.id, orgId: user.orgId });
       expect(payload).not.toHaveProperty('email');
       expect(payload).not.toHaveProperty('name');
       expect(payload).not.toHaveProperty('createdAt');

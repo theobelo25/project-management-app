@@ -47,7 +47,6 @@ export class AuthService {
     return this.uow.transaction(async (tx) => {
       await this.assertEmailAvailable(dto.email, tx);
 
-      // Naming policy lives in organizations domain
       const org =
         await this.organizationWorkspaceBootstrap.createInitialOrganizationForUserName(
           dto.name,
