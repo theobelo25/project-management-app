@@ -1,9 +1,9 @@
-"use client";
-import Link from "next/link";
+'use client';
+import Link from 'next/link';
 
-import { Button } from "../ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { logout } from "@web/lib/api/client";
+import { Button } from '../ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { logout } from '@web/lib/api/client';
 import {
   ME_QUERY_KEY,
   useAcceptInviteByIdMutation,
@@ -14,21 +14,21 @@ import {
   useOrganizationsQuery,
   usePendingInvitesQuery,
   useSwitchOrganizationMutation,
-} from "@web/lib/api/queries";
-import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { ROUTES } from "@web/lib/routes";
-import { toast } from "sonner";
-import { Bell, Check, X } from "lucide-react";
-import * as React from "react";
-import { CreateOrganizationDialog } from "@web/components/organizations/create-organization-dialog";
+} from '@web/lib/api/queries';
+import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+import { ROUTES } from '@web/lib/routes';
+import { toast } from 'sonner';
+import { Bell, Check, X } from 'lucide-react';
+import * as React from 'react';
+import { CreateOrganizationDialog } from '@web/components/organizations/create-organization-dialog';
 
 const authItems = [
-  { href: ROUTES.signin, label: "Sign in", primary: false },
-  { href: ROUTES.signup, label: "Sign up", primary: true },
+  { href: ROUTES.signin, label: 'Sign in', primary: false },
+  { href: ROUTES.signup, label: 'Sign up', primary: true },
 ] as const;
 
-type SecondaryNavVariant = "bar" | "drawer";
+type SecondaryNavVariant = 'bar' | 'drawer';
 
 interface SecondaryNavProps {
   variant?: SecondaryNavVariant;
@@ -92,13 +92,13 @@ function OrganizationSwitcher({
 
           try {
             await switchOrganizationMutation.mutateAsync(nextOrganizationId);
-            toast.success("Organization switched");
+            toast.success('Organization switched');
             router.replace(ROUTES.dashboard);
           } catch (error) {
             toast.error(
               error instanceof Error
                 ? error.message
-                : "Failed to switch organization",
+                : 'Failed to switch organization',
             );
           } finally {
             setIsSwitching(false);
@@ -149,7 +149,7 @@ function NotificationsPopover({ enabled }: { enabled: boolean }) {
           <Bell className="size-4" />
           {count > 0 ? (
             <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
-              {count > 9 ? "9+" : count}
+              {count > 9 ? '9+' : count}
             </span>
           ) : null}
         </Button>
@@ -204,13 +204,13 @@ function NotificationsPopover({ enabled }: { enabled: boolean }) {
                         onClick={async () => {
                           try {
                             await acceptMutation.mutateAsync(invite.id);
-                            toast.success("Invite accepted");
+                            toast.success('Invite accepted');
                             setOpen(false);
                           } catch (e) {
                             toast.error(
                               e instanceof Error
                                 ? e.message
-                                : "Failed to accept invite",
+                                : 'Failed to accept invite',
                             );
                           }
                         }}
@@ -227,12 +227,12 @@ function NotificationsPopover({ enabled }: { enabled: boolean }) {
                         onClick={async () => {
                           try {
                             await declineMutation.mutateAsync(invite.id);
-                            toast.success("Invite declined");
+                            toast.success('Invite declined');
                           } catch (e) {
                             toast.error(
                               e instanceof Error
                                 ? e.message
-                                : "Failed to decline invite",
+                                : 'Failed to decline invite',
                             );
                           }
                         }}
@@ -287,12 +287,12 @@ function NotificationsPopover({ enabled }: { enabled: boolean }) {
                       onClick={async () => {
                         try {
                           await clearMutation.mutateAsync(n.id);
-                          toast.success("Notification cleared");
+                          toast.success('Notification cleared');
                         } catch (e) {
                           toast.error(
                             e instanceof Error
                               ? e.message
-                              : "Failed to clear notification",
+                              : 'Failed to clear notification',
                           );
                         }
                       }}
@@ -311,7 +311,7 @@ function NotificationsPopover({ enabled }: { enabled: boolean }) {
 }
 
 export function SecondaryNav({
-  variant = "bar",
+  variant = 'bar',
 }: SecondaryNavVariant extends never ? never : SecondaryNavProps) {
   const { data: user, isPending } = useMeQuery();
   const queryClient = useQueryClient();
@@ -322,11 +322,11 @@ export function SecondaryNav({
   const handleLogoutClick = () => {
     logout();
     queryClient.setQueryData(ME_QUERY_KEY, null);
-    toast.success("Logout successfull!");
-    router.push("/");
+    toast.success('Logout successfull!');
+    router.push('/');
   };
 
-  if (variant === "drawer") {
+  if (variant === 'drawer') {
     return (
       <>
         {isPending ? (
@@ -347,8 +347,8 @@ export function SecondaryNav({
                 href={href}
                 className={
                   primary
-                    ? "block rounded-lg bg-primary px-3 py-2 text-center text-sm font-medium text-primary-foreground hover:bg-primary/90"
-                    : "block rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
+                    ? 'block rounded-lg bg-primary px-3 py-2 text-center text-sm font-medium text-primary-foreground hover:bg-primary/90'
+                    : 'block rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-muted'
                 }
               >
                 {label}

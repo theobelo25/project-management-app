@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useProjectQuery } from "@web/lib/api/queries";
-import { ProjectMembersCard } from "./project-members-card";
-import { ProjectOverviewCard } from "./project-overview-card";
-import { ProjectStats } from "./project-stats";
-import { RecentTasksCard } from "./recent-tasks-card";
+import { useProjectQuery } from '@web/lib/api/queries';
+import { ProjectMembersCard } from './project-members-card';
+import { ProjectOverviewCard } from './project-overview-card';
+import { ProjectStats } from './project-stats';
+import { RecentTasksCard } from './recent-tasks-card';
 
 type ProjectDetailContentProps = {
   projectId: string;
@@ -28,7 +28,7 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
         role="alert"
         className="flex items-center justify-center py-12 text-destructive"
       >
-        {error?.message ?? "Project not found"}
+        {error?.message ?? 'Project not found'}
       </div>
     );
   }
@@ -48,10 +48,7 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
         <RecentTasksCard project={project} recentTasks={recentTasks} />
         <ProjectMembersCard project={project} members={members} />
         <div className="lg:col-span-2">
-          <ProjectOverviewCard
-            project={project}
-            openTasks={project.openTasks}
-          />
+          <ProjectOverviewCard project={project} />
         </div>
       </section>
     </div>

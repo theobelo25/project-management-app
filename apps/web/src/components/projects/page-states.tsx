@@ -1,15 +1,15 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 type PageMessageProps = {
   children: ReactNode;
   className?: string;
-  role?: "status" | "alert";
-  "aria-live"?: "polite";
+  role?: 'status' | 'alert';
+  'aria-live'?: 'polite';
 };
 function PageMessage({
   children,
-  className = "",
+  className = '',
   role,
-  "aria-live": ariaLive,
+  'aria-live': ariaLive,
 }: PageMessageProps) {
   return (
     <div
@@ -51,7 +51,7 @@ export function InvalidProjectMessage() {
 }
 export function PageStateContainer({
   children,
-  className = "flex flex-col gap-8 my-4",
+  className = 'flex flex-col gap-8 my-4',
 }: {
   children: ReactNode;
   className?: string;

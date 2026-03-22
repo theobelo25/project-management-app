@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from 'react';
 
 import {
   InviteMemberDialog,
   type ProjectMember,
   ProjectMembersTable,
-} from "@web/components/projects/members";
-import type { ProjectRole } from "@repo/types";
-import { cn } from "@web/lib/utils";
-import { useRemoveProjectMember } from "@web/lib/api/mutations/use-remove-project-member";
-import { useUpdateProjectMemberRole } from "@web/lib/api/mutations/use-update-project-member-role";
+} from '@web/components/projects/members';
+import type { ProjectRole } from '@repo/types';
+import { cn } from '@web/lib/utils';
+import { useRemoveProjectMember } from '@web/lib/api/mutations/use-remove-project-member';
+import { useUpdateProjectMemberRole } from '@web/lib/api/mutations/use-update-project-member-role';
 
 type ProjectMembersManagerProps = {
   projectId: string;
@@ -30,7 +30,7 @@ export function ProjectMembersManager({
   const [optimisticMembers, setOptimisticMembers] = useState(members);
 
   const canManageMembers =
-    currentUserRole === "OWNER" || currentUserRole === "ADMIN";
+    currentUserRole === 'OWNER' || currentUserRole === 'ADMIN';
 
   const changeRoleMutation = useUpdateProjectMemberRole(projectId, {
     onError: () => {
@@ -48,7 +48,7 @@ export function ProjectMembersManager({
     changeRoleMutation.isPending || removeMemberMutation.isPending;
 
   const handleChangeRole = useCallback(
-    (memberId: string, role: Exclude<ProjectRole, "OWNER">) => {
+    (memberId: string, role: Exclude<ProjectRole, 'OWNER'>) => {
       setOptimisticMembers((prev) =>
         prev.map((member) =>
           member.id === memberId ? { ...member, role } : member,
@@ -77,10 +77,10 @@ export function ProjectMembersManager({
     <div className="space-y-4">
       <div
         className={cn(
-          "flex flex-col gap-4 sm:flex-row sm:items-start",
+          'flex flex-col gap-4 sm:flex-row sm:items-start',
           title != null || description != null
-            ? "sm:justify-between"
-            : "sm:justify-end",
+            ? 'sm:justify-between'
+            : 'sm:justify-end',
         )}
       >
         {title != null || description != null ? (

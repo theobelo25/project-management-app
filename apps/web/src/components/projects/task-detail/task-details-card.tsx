@@ -1,4 +1,4 @@
-import { Calendar, Circle, User, Hash } from "lucide-react";
+import { Calendar, Circle, User, Hash } from 'lucide-react';
 
 import {
   Card,
@@ -6,19 +6,19 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@web/components/ui/card";
-import type { TaskView } from "@repo/types";
+} from '@web/components/ui/card';
+import type { TaskView } from '@repo/types';
 
-import { formatTaskStatus } from "../utils/format";
+import { formatTaskStatus } from '../utils/format';
 
 function formatDueDate(iso: string | null): string {
-  if (!iso) return "No due date";
+  if (!iso) return 'No due date';
   const d = new Date(iso);
-  return new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(d);
+  return new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(d);
 }
 
 type TaskDetailsCardProps = {
-  task: Pick<TaskView, "id" | "description" | "status" | "dueDate">;
+  task: Pick<TaskView, 'id' | 'description' | 'status' | 'dueDate'>;
   assignee?: {
     name: string;
   } | null;
@@ -41,7 +41,7 @@ export function TaskDetailsCard({ task, assignee }: TaskDetailsCardProps) {
           </h2>
           <div className="rounded-xl border bg-muted/20 p-4">
             <p className="whitespace-pre-wrap text-sm leading-6">
-              {task.description || "No description provided."}
+              {task.description || 'No description provided.'}
             </p>
           </div>
         </div>
@@ -60,7 +60,7 @@ export function TaskDetailsCard({ task, assignee }: TaskDetailsCardProps) {
               <User className="h-4 w-4" />
               <span className="text-sm">Assignee</span>
             </div>
-            <p className="font-medium">{assignee?.name || "Unassigned"}</p>
+            <p className="font-medium">{assignee?.name || 'Unassigned'}</p>
           </div>
 
           <div className="rounded-xl border p-4">

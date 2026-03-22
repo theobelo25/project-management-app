@@ -1,4 +1,4 @@
-import { Calendar } from "lucide-react";
+import { Calendar } from 'lucide-react';
 
 import {
   Card,
@@ -6,15 +6,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@web/components/ui/card";
+} from '@web/components/ui/card';
 
-import { formatDate, formatDistanceToNow } from "../utils/format";
-
-function formatDueDate(iso: string | null): string {
-  if (!iso) return "No due date";
-  const d = new Date(iso);
-  return new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(d);
-}
+import { formatDate, formatDistanceToNow } from '../utils/format';
 
 type TaskActivityCardProps = {
   task: {
@@ -66,10 +60,10 @@ export function TaskActivityCard({ task }: TaskActivityCardProps) {
             <span>Due date</span>
           </div>
           <span className="font-medium tabular-nums">
-            {dueDate ? formatDate(dueDate.toISOString()) : "—"}
+            {dueDate ? formatDate(dueDate.toISOString()) : '—'}
           </span>
           <span className="text-xs text-muted-foreground tabular-nums">
-            {dueDate ? formatDistanceToNow(dueDate) : "—"}
+            {dueDate ? formatDistanceToNow(dueDate) : '—'}
           </span>
         </div>
       </CardContent>

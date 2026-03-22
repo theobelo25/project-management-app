@@ -1,5 +1,5 @@
-import type { TaskListItem } from "@web/components/projects/tasks";
-import type { TaskView } from "@repo/types";
+import type { TaskListItem } from '@web/components/projects/tasks';
+import type { TaskView } from '@repo/types';
 
 export function taskViewToListItem(task: TaskView): TaskListItem {
   const firstAssignee = task.assignees?.[0];

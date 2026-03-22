@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState, type ReactNode } from "react";
-import { Plus } from "lucide-react";
+import { useState, type ReactNode } from 'react';
+import { Plus } from 'lucide-react';
 
-import { Button } from "@web/components/ui/button";
+import { Button } from '@web/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@web/components/ui/dialog";
+} from '@web/components/ui/dialog';
 
 type CreateEntityDialogProps = {
   triggerLabel: string;

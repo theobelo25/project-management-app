@@ -1,22 +1,16 @@
-import Link from "next/link";
-import { Button } from "../ui/button";
+import Link from 'next/link';
+import type { TaskStatus } from '@repo/types';
+import { formatTaskStatus } from '@web/components/projects/utils';
+import { Button } from '../ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/card";
+} from '../ui/card';
 
-function formatStatus(status: string): string {
-  if (status === "IN_PROGRESS") return "In progress";
-  if (status === "TODO") return "Todo";
-  if (status === "REVIEW") return "Review";
-  if (status === "DONE") return "Done";
-  return status;
-}
-
-type TaskItem = { id: string; title: string; status: string };
+type TaskItem = { id: string; title: string; status: TaskStatus };
 type Props = { tasks: TaskItem[] };
 
 export function DashboardTasksCard({ tasks }: Props) {
@@ -38,8 +32,8 @@ export function DashboardTasksCard({ tasks }: Props) {
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">{task.title}</p>
               <p className="text-xs text-muted-foreground">
-              {formatStatus(task.status)}
-            </p>
+                {formatTaskStatus(task.status)}
+              </p>
             </div>
           </div>
         ))}

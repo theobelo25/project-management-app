@@ -1,4 +1,4 @@
-import type { ProjectRole } from "@repo/types";
+import type { ProjectRole } from '@repo/types';
 
 export type ProjectMember = {
   id: string;

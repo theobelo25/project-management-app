@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
-import { BackLink } from "./back-link";
+import type { ReactNode } from 'react';
+import { BackLink } from './back-link';
 
 type PageHeaderProps = {
   /** Optional back link (e.g. BackLink), or use backHref + backLabel. */
@@ -38,9 +38,9 @@ export function PageHeader({
       {resolvedBackLink ? <div>{resolvedBackLink}</div> : null}
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className={badge ? "space-y-3" : "space-y-1"}>
+        <div className={badge ? 'space-y-3' : 'space-y-1'}>
           <div
-            className={badge ? "flex flex-wrap items-center gap-3" : undefined}
+            className={badge ? 'flex flex-wrap items-center gap-3' : undefined}
           >
             <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
             {badge ?? null}

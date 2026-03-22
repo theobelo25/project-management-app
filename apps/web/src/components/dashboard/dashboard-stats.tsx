@@ -1,11 +1,11 @@
-import { CheckCircle2, Circle, FolderKanban } from "lucide-react";
+import { CheckCircle2, Circle, FolderKanban } from 'lucide-react';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/card";
+} from '../ui/card';
 
 const ICON_MAP = {
   projects: FolderKanban,

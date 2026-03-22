@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useDeferredValue, useId, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
+import { useDeferredValue, useId, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 
-import { getInitials } from "@web/components/projects/utils";
-import { Button } from "@web/components/ui/button";
+import { getInitials } from '@web/components/projects/utils';
+import { Button } from '@web/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -13,14 +13,14 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@web/components/ui/command";
+} from '@web/components/ui/command';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@web/components/ui/popover";
-import { fetchAllUsers, fetchUsers } from "@web/lib/api/client";
-import { cn } from "@web/lib/utils";
+} from '@web/components/ui/popover';
+import { fetchAllUsers, fetchUsers } from '@web/lib/api/client';
+import { cn } from '@web/lib/utils';
 
 export type UserSearchResult = {
   id: string;
@@ -28,7 +28,7 @@ export type UserSearchResult = {
   email: string;
 };
 
-type UserSearchScope = "org" | "global";
+type UserSearchScope = 'org' | 'global';
 
 type UserSearchComboboxProps = {
   id?: string;
@@ -47,21 +47,21 @@ export function UserSearchCombobox({
   disabled = false,
   excludeUserIds,
   selectedUserDisplay = null,
-  scope = "org",
+  scope = 'org',
 }: UserSearchComboboxProps) {
   const generatedId = useId();
   const id = idProp ?? generatedId;
 
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const deferredSearch = useDeferredValue(search);
   const searchTerm = deferredSearch.trim();
 
   const usersQuery = useQuery<UserSearchResult[]>({
-    queryKey: ["users", scope, searchTerm] as const,
+    queryKey: ['users', scope, searchTerm] as const,
     queryFn: async () => {
       const users =
-        scope === "global"
+        scope === 'global'
           ? await fetchAllUsers(searchTerm)
           : await fetchUsers(searchTerm);
 
@@ -100,7 +100,7 @@ export function UserSearchCombobox({
       open={open}
       onOpenChange={(nextOpen) => {
         setOpen(nextOpen);
-        if (!nextOpen) setSearch("");
+        if (!nextOpen) setSearch('');
       }}
     >
       <PopoverTrigger asChild>
@@ -173,8 +173,8 @@ export function UserSearchCombobox({
                     </div>
                     <Check
                       className={cn(
-                        "h-4 w-4",
-                        value === user.id ? "opacity-100" : "opacity-0",
+                        'h-4 w-4',
+                        value === user.id ? 'opacity-100' : 'opacity-0',
                       )}
                     />
                   </CommandItem>

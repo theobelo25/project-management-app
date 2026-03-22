@@ -1,21 +1,20 @@
-"use client";
-import { useParams } from "next/navigation";
-import { useProjectMembersQuery, useProjectQuery } from "@web/lib/api/queries";
+'use client';
+import { useParams } from 'next/navigation';
+import { useProjectMembersQuery, useProjectQuery } from '@web/lib/api/queries';
 
 import {
   GeneralSettingsCard,
   MemberSettingsCard,
   DangerZoneCard,
   PermissionsSummaryCard,
-} from "@web/components/projects/settings";
-import { ProjectRole } from "@repo/types";
-import { mapMembersWithRole } from "@web/components/projects/utils/map-member-with-role";
-import { PageLoader } from "@web/components/layout/page-loader";
-import { PageError } from "@web/components/layout/page-error";
+} from '@web/components/projects/settings';
+import { mapMembersWithRole } from '@web/components/projects/utils/map-member-with-role';
+import { PageLoader } from '@web/components/layout/page-loader';
+import { PageError } from '@web/components/layout/page-error';
 
 export default function ProjectSettingsPage() {
   const params = useParams();
-  const id = typeof params?.id === "string" ? params.id : null;
+  const id = typeof params?.id === 'string' ? params.id : null;
   const { data: project, isLoading, isError, error } = useProjectQuery(id);
   const { data: membersData } = useProjectMembersQuery(id);
   const membersWithRole = mapMembersWithRole({
@@ -24,17 +23,17 @@ export default function ProjectSettingsPage() {
   });
 
   const canManageMembers =
-    project?.currentUserRole === "OWNER" ||
-    project?.currentUserRole === "ADMIN";
+    project?.currentUserRole === 'OWNER' ||
+    project?.currentUserRole === 'ADMIN';
 
-  const canDeleteProject = project?.currentUserRole === "OWNER";
+  const canDeleteProject = project?.currentUserRole === 'OWNER';
 
   if (!id) return null;
   if (isLoading) {
     return <PageLoader />;
   }
   if (isError || !project) {
-    return <PageError message={error?.message ?? "Project not found"} />;
+    return <PageError message={error?.message ?? 'Project not found'} />;
   }
 
   return (

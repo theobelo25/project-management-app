@@ -1,5 +1,5 @@
-import type { TaskView } from "@repo/types";
-import type { BoardTask } from "./types";
+import type { TaskView } from '@repo/types';
+import type { BoardTask } from './types';
 
 export function taskViewToBoardTask(task: TaskView): BoardTask {
   const firstAssignee = task.assignees?.[0];

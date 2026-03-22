@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
-import { PageLayout } from "@web/components/layout/page-layout";
+import type { ReactNode } from 'react';
+import { PageLayout } from '@web/components/layout/page-layout';
 
 type LayoutProps = {
   children: ReactNode;

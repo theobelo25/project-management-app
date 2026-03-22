@@ -1,10 +1,10 @@
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
 
-import { Button } from "@web/components/ui/button";
-import { Input } from "@web/components/ui/input";
-import { Label } from "@web/components/ui/label";
-import { Textarea } from "@web/components/ui/textarea";
-import { useUpdateProject } from "@web/lib/api/mutations/use-update-project";
+import { Button } from '@web/components/ui/button';
+import { Input } from '@web/components/ui/input';
+import { Label } from '@web/components/ui/label';
+import { Textarea } from '@web/components/ui/textarea';
+import { useUpdateProject } from '@web/lib/api/mutations/use-update-project';
 
 export function GeneralSettingsForm({
   projectId,
@@ -22,9 +22,9 @@ export function GeneralSettingsForm({
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
-    const name = (form.elements.namedItem("name") as HTMLInputElement).value;
+    const name = (form.elements.namedItem('name') as HTMLInputElement).value;
     const description = (
-      form.elements.namedItem("description") as HTMLTextAreaElement
+      form.elements.namedItem('description') as HTMLTextAreaElement
     ).value;
     updateMutation.mutate({ name, description: description || null });
   };
@@ -47,7 +47,7 @@ export function GeneralSettingsForm({
       </div>
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button type="submit" disabled={updateMutation.isPending}>
-          {updateMutation.isPending ? "Saving…" : "Save Changes"}
+          {updateMutation.isPending ? 'Saving…' : 'Save Changes'}
         </Button>
         <Button type="button" variant="outline" onClick={() => router.back()}>
           Cancel

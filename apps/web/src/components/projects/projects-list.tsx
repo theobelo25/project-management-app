@@ -1,6 +1,6 @@
-import { ProjectCard, ProjectsEmptyState } from "@web/components/projects";
-import type { ProjectListItemView } from "@repo/types";
-import { PROJECTS_EMPTY_STATE } from "./constants";
+import { ProjectCard, ProjectsEmptyState } from '@web/components/projects';
+import type { ProjectListItemView } from '@repo/types';
+import { PROJECTS_EMPTY_STATE } from './constants';
 
 type ProjectsListProps = {
   projects: ProjectListItemView[];

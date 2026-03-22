@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { z } from "zod";
-import { CreateEntityDialog } from "@web/components/projects/create-entity-dialog";
-import { TaskForm } from "@web/components/projects/tasks";
-import { useCreateTask } from "@web/lib/api/mutations/use-create-task";
-import { CreateTaskSchema, type CreateTaskDto } from "@repo/types";
-import type { TaskStatus } from "@repo/types";
+import { z } from 'zod';
+import { CreateEntityDialog } from '@web/components/projects/create-entity-dialog';
+import { TaskForm } from '@web/components/projects/tasks';
+import { useCreateTask } from '@web/lib/api/mutations/use-create-task';
+import { CreateTaskSchema, type CreateTaskDto } from '@repo/types';
+import type { TaskStatus } from '@repo/types';
 
 const CreateTaskFormSchema = CreateTaskSchema.extend({
   dueDate: z.string().optional().nullable(),
@@ -43,9 +43,9 @@ export function CreateTaskDialog({
           isLoading={createTaskMutation.isPending}
           errorMessage={createTaskMutation.error?.message ?? null}
           defaultValues={{
-            title: "",
-            description: "",
-            dueDate: "",
+            title: '',
+            description: '',
+            dueDate: '',
             ...(defaultStatus != null && { status: defaultStatus }),
           }}
           onSubmit={async (values) => {

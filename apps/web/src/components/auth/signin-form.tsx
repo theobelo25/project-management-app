@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { signin } from "@web/lib/api/client";
+import { signin } from '@web/lib/api/client';
 
-import { LoginRequestSchema, LoginRequestDto } from "@repo/types";
+import { LoginRequestSchema, LoginRequestDto } from '@repo/types';
 
-import { Button } from "@web/components/ui/button";
-import { Input } from "@web/components/ui/input";
-import { Label } from "@web/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { ME_QUERY_KEY } from "@web/lib/api/queries";
-import { toast } from "sonner";
-import { ROUTES } from "@web/lib/routes";
+import { Button } from '@web/components/ui/button';
+import { Input } from '@web/components/ui/input';
+import { Label } from '@web/components/ui/label';
+import { Eye, EyeOff } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ME_QUERY_KEY } from '@web/lib/api/queries';
+import { toast } from 'sonner';
+import { ROUTES } from '@web/lib/routes';
 
 type SignInFormProps = {
   isLoading?: boolean;
@@ -27,17 +27,17 @@ export default function SignInForm({ isLoading = false }: SignInFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") ?? ROUTES.projects;
+  const callbackUrl = searchParams.get('callbackUrl') ?? ROUTES.projects;
 
   const signinMutation = useMutation({
     mutationFn: signin,
     onSuccess: (data) => {
       queryClient.setQueryData(ME_QUERY_KEY, data);
-      toast.success("Signin successful!");
+      toast.success('Signin successful!');
       router.push(callbackUrl);
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Signin failed.");
+      toast.error(error.message || 'Signin failed.');
     },
   });
 
@@ -52,10 +52,10 @@ export default function SignInForm({ isLoading = false }: SignInFormProps) {
   } = useForm<LoginRequestDto>({
     resolver: standardSchemaResolver(LoginRequestSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
-    mode: "onBlur",
+    mode: 'onBlur',
   });
 
   const submitting = isSubmitting || isLoading;
@@ -70,7 +70,7 @@ export default function SignInForm({ isLoading = false }: SignInFormProps) {
           autoComplete="email"
           placeholder="theo@example.com"
           aria-invalid={!!errors.email}
-          {...register("email")}
+          {...register('email')}
         />
         {errors.email && (
           <p className="text-sm text-destructive">{errors.email.message}</p>
@@ -82,18 +82,18 @@ export default function SignInForm({ isLoading = false }: SignInFormProps) {
         <div className="relative">
           <Input
             id="password"
-            type={showPassword ? "text" : "password"}
+            type={showPassword ? 'text' : 'password'}
             autoComplete="current-password"
             placeholder="Enter your password"
             className="pr-10"
             aria-invalid={!!errors.password}
-            {...register("password")}
+            {...register('password')}
           />
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
             className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground"
-            aria-label={showPassword ? "Hide password" : "Show password"}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             {showPassword ? (
               <EyeOff className="h-4 w-4" />
@@ -112,7 +112,7 @@ export default function SignInForm({ isLoading = false }: SignInFormProps) {
         className="w-full"
         disabled={submitting || signinMutation.isPending}
       >
-        {submitting || signinMutation.isPending ? "Signing In..." : "Sign In"}
+        {submitting || signinMutation.isPending ? 'Signing In...' : 'Sign In'}
       </Button>
     </form>
   );

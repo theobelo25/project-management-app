@@ -1,11 +1,11 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { unassignTaskUser } from "@web/lib/api/client";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { unassignTaskUser } from '@web/lib/api/client';
 import {
   PROJECT_QUERY_KEY,
   PROJECT_TASKS_QUERY_KEY,
   TASK_QUERY_KEY,
-} from "@web/lib/api/queries";
+} from '@web/lib/api/queries';
 
 type Variables = {
   taskId: string;
@@ -32,11 +32,11 @@ export function useUnassignTaskUser(projectId: string, options: Options = {}) {
         queryKey: PROJECT_QUERY_KEY(projectId),
       });
 
-      toast.success("Assignee updated");
+      toast.success('Assignee updated');
       options.onSuccess?.();
     },
     onError: (error: Error) => {
-      toast.error(error.message ?? "Failed to update assignee");
+      toast.error(error.message ?? 'Failed to update assignee');
       options.onError?.(error);
     },
   });

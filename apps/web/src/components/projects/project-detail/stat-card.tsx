@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 import {
   Card,
@@ -6,7 +6,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@web/components/ui/card";
+} from '@web/components/ui/card';
 
 export interface StatCardProps {
   /** Short label above the value, e.g. "Total Tasks" */

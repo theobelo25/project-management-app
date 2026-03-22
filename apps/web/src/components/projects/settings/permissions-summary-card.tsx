@@ -1,4 +1,4 @@
-import { Users } from "lucide-react";
+import { Users } from 'lucide-react';
 
 import {
   Card,
@@ -6,10 +6,10 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@web/components/ui/card";
-import type { ProjectRole } from "@repo/types";
+} from '@web/components/ui/card';
+import type { ProjectRole } from '@repo/types';
 
-import { formatProjectRole } from "@web/components/projects/utils";
+import { formatProjectRole } from '@web/components/projects/utils';
 
 type PermissionsSummaryCardProps = {
   project: {
@@ -38,11 +38,11 @@ export function PermissionsSummaryCard({
               {formatProjectRole(project.currentUserRole)}
             </p>
             <p className="text-sm text-muted-foreground">
-              {project.currentUserRole === "OWNER"
-                ? "You can manage settings, members, and destructive actions."
-                : project.currentUserRole === "ADMIN"
-                  ? "You can manage members and update project details."
-                  : "You can view project details but have limited administrative access."}
+              {project.currentUserRole === 'OWNER'
+                ? 'You can manage settings, members, and destructive actions.'
+                : project.currentUserRole === 'ADMIN'
+                  ? 'You can manage members and update project details.'
+                  : 'You can view project details but have limited administrative access.'}
             </p>
           </div>
         </div>

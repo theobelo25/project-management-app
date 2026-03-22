@@ -1,18 +1,18 @@
-import Link from "next/link";
+import Link from 'next/link';
 
-import { getInitials } from "@web/components/projects/utils";
-import { Button } from "@web/components/ui/button";
+import { getInitials } from '@web/components/projects/utils';
+import { Button } from '@web/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@web/components/ui/card";
-import type { ProjectDetailMember, ProjectDetailView } from "@repo/types";
+} from '@web/components/ui/card';
+import type { ProjectDetailMember, ProjectDetailView } from '@repo/types';
 
 export interface ProjectMembersCardProps {
-  project: Pick<ProjectDetailView, "id">;
+  project: Pick<ProjectDetailView, 'id'>;
   members: ProjectDetailMember[];
 }
 
@@ -49,7 +49,7 @@ export function ProjectMembersCard({
               <div className="min-w-0">
                 <p className="truncate font-medium">{member.name}</p>
                 <p className="truncate text-sm text-muted-foreground">
-                  {member.email ?? ""}
+                  {member.email ?? ''}
                 </p>
               </div>
             </div>

@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { UserPlus } from "lucide-react";
+import { useState } from 'react';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
+import { UserPlus } from 'lucide-react';
 
 import {
   UserSearchCombobox,
   type UserSearchResult,
-} from "@web/components/projects/members";
-import { Button } from "@web/components/ui/button";
+} from '@web/components/projects/members';
+import { Button } from '@web/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -17,17 +17,17 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@web/components/ui/dialog";
-import { Label } from "@web/components/ui/label";
+} from '@web/components/ui/dialog';
+import { Label } from '@web/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@web/components/ui/select";
-import { AddProjectMemberSchema, type AddProjectMemberDto } from "@repo/types";
-import { useAddProjectMember } from "@web/lib/api/mutations/use-add-project-member";
+} from '@web/components/ui/select';
+import { AddProjectMemberSchema, type AddProjectMemberDto } from '@repo/types';
+import { useAddProjectMember } from '@web/lib/api/mutations/use-add-project-member';
 
 type InviteMemberDialogProps = {
   projectId: string;
@@ -36,7 +36,7 @@ type InviteMemberDialogProps = {
 
 type AddMemberFormValues = {
   userId: string;
-  role?: AddProjectMemberDto["role"];
+  role?: AddProjectMemberDto['role'];
 };
 
 export function InviteMemberDialog({
@@ -50,7 +50,7 @@ export function InviteMemberDialog({
 
   const addMemberMutation = useAddProjectMember(projectId, {
     onSuccess: () => {
-      reset({ userId: "", role: "MEMBER" });
+      reset({ userId: '', role: 'MEMBER' });
       setSelectedUser(null);
       setOpen(false);
     },
@@ -64,17 +64,17 @@ export function InviteMemberDialog({
     formState: { errors, isSubmitting },
   } = useForm<AddMemberFormValues>({
     resolver: standardSchemaResolver(AddProjectMemberSchema),
-    defaultValues: { userId: "", role: "MEMBER" },
-    mode: "onBlur",
+    defaultValues: { userId: '', role: 'MEMBER' },
+    mode: 'onBlur',
   });
 
-  const role = watch("role");
-  const userId = watch("userId");
+  const role = watch('role');
+  const userId = watch('userId');
 
   const onSubmit: SubmitHandler<AddMemberFormValues> = (values) => {
     addMemberMutation.mutate({
       userId: values.userId,
-      role: values.role ?? "MEMBER",
+      role: values.role ?? 'MEMBER',
     });
   };
 
@@ -92,7 +92,7 @@ export function InviteMemberDialog({
       onOpenChange={(nextOpen) => {
         setOpen(nextOpen);
         if (!nextOpen) {
-          reset({ userId: "", role: "MEMBER" });
+          reset({ userId: '', role: 'MEMBER' });
           setSelectedUser(null);
         }
       }}
@@ -135,7 +135,7 @@ export function InviteMemberDialog({
               value={userId}
               onChange={(user) => {
                 setSelectedUser(user);
-                setValue("userId", user.id, {
+                setValue('userId', user.id, {
                   shouldValidate: true,
                   shouldDirty: true,
                 });
@@ -157,7 +157,7 @@ export function InviteMemberDialog({
             <Select
               value={role}
               onValueChange={(value) =>
-                setValue("role", value as AddProjectMemberDto["role"], {
+                setValue('role', value as AddProjectMemberDto['role'], {
                   shouldValidate: true,
                   shouldDirty: true,
                 })
@@ -178,7 +178,7 @@ export function InviteMemberDialog({
             className="w-full"
             disabled={submitting || !userId}
           >
-            {submitting ? "Adding..." : "Add Member"}
+            {submitting ? 'Adding...' : 'Add Member'}
           </Button>
         </form>
       </DialogContent>

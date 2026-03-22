@@ -2,7 +2,7 @@ import type {
   ProjectRole,
   ProjectDetailView,
   ProjectMembersView,
-} from "@repo/types";
+} from '@repo/types';
 
 export type MemberWithRole = {
   id: string;
@@ -12,8 +12,8 @@ export type MemberWithRole = {
 };
 
 export function mapMembersWithRole(params: {
-  projectMembers?: ProjectDetailView["members"];
-  membersItems?: ProjectMembersView["items"];
+  projectMembers?: ProjectDetailView['members'];
+  membersItems?: ProjectMembersView['items'];
 }): MemberWithRole[] {
   const { projectMembers, membersItems } = params;
 
@@ -25,8 +25,8 @@ export function mapMembersWithRole(params: {
     return {
       id: member.id,
       name: member.name,
-      email: "email" in member ? member.email : undefined,
-      role: roleItem?.role ?? "MEMBER",
+      email: 'email' in member ? member.email : undefined,
+      role: roleItem?.role ?? 'MEMBER',
     };
   });
 }

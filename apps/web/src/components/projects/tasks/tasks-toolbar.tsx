@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Select,
@@ -6,16 +6,17 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@web/components/ui/select";
+} from '@web/components/ui/select';
 
-import { FilterToolbar } from "@web/components/projects/filter-toolbar";
+import { FilterToolbar } from '@web/components/projects/filter-toolbar';
+import type { TaskStatus } from '@repo/types';
 
-export type TasksFilterStatus = "all" | "TODO" | "IN_PROGRESS" | "DONE";
+export type TasksFilterStatus = 'all' | TaskStatus;
 export type TasksSort =
-  | "updated-desc"
-  | "created-desc"
-  | "title-asc"
-  | "status-asc";
+  | 'updated-desc'
+  | 'created-desc'
+  | 'title-asc'
+  | 'status-asc';
 
 type TasksToolbarAssignee = {
   id: string;
@@ -49,9 +50,9 @@ export function TasksToolbar({
 }: TasksToolbarProps) {
   const hasActiveFilters =
     search.trim().length > 0 ||
-    status !== "all" ||
-    assigneeId !== "all" ||
-    sort !== "updated-desc";
+    status !== 'all' ||
+    assigneeId !== 'all' ||
+    sort !== 'updated-desc';
 
   return (
     <FilterToolbar
@@ -76,6 +77,7 @@ export function TasksToolbar({
               <SelectItem value="all">All statuses</SelectItem>
               <SelectItem value="TODO">Todo</SelectItem>
               <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+              <SelectItem value="REVIEW">Review</SelectItem>
               <SelectItem value="DONE">Done</SelectItem>
             </SelectContent>
           </Select>

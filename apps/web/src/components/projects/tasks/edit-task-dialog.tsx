@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Pencil } from "lucide-react";
+import { useState } from 'react';
+import { Pencil } from 'lucide-react';
 
-import { TaskForm } from "@web/components/projects/tasks";
-import { Button } from "@web/components/ui/button";
+import { TaskForm } from '@web/components/projects/tasks';
+import { Button } from '@web/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -12,9 +12,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@web/components/ui/dialog";
-import { useUpdateTask } from "@web/lib/api/mutations/use-update-task";
-import { UpdateTaskSchema, type UpdateTaskInput } from "@repo/types";
+} from '@web/components/ui/dialog';
+import { useUpdateTask } from '@web/lib/api/mutations/use-update-task';
+import { UpdateTaskSchema, type UpdateTaskInput } from '@repo/types';
 
 type EditTaskDialogProps = {
   projectId: string;
@@ -77,12 +77,12 @@ export function EditTaskDialog({
           defaultValues={
             {
               title: task.title,
-              description: task.description ?? "",
-              dueDate: task.dueDate ? task.dueDate.slice(0, 10) : "",
+              description: task.description ?? '',
+              dueDate: task.dueDate ? task.dueDate.slice(0, 10) : '',
             } as unknown as Partial<UpdateTaskInput>
           }
           onSubmit={async (values) => {
-            const payload = UpdateTaskSchema.parse(values) as UpdateTaskInput;
+            const payload = UpdateTaskSchema.parse(values);
             await updateTaskMutation.mutateAsync(payload);
           }}
         />

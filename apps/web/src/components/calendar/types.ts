@@ -1,10 +1,10 @@
-export type CalendarTaskStatus = "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE";
+import type { TaskStatus } from '@repo/types';
 
 export type CalendarTask = {
   id: string;
   title: string;
   dueDate: string;
-  status: CalendarTaskStatus;
+  status: TaskStatus;
 };
 
 export type CalendarDay = {

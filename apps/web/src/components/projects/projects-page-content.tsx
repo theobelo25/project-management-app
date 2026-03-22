@@ -1,31 +1,30 @@
-"use client";
+'use client';
 
-import { useCallback, useMemo } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useMemo } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import type {
   GetProjectsQueryDto,
   PaginatedProjectsListView,
   ProjectListItemView,
-} from "@repo/types";
+} from '@repo/types';
 
 import {
-  parseProjectsSearchParams,
   buildProjectsSearchParams,
   type ProjectsFilter as ParamFilter,
   type ProjectsSort as ParamSort,
-} from "@web/app/(protected)/projects/params";
+} from '@web/app/(protected)/projects/params';
 import {
   ProjectsToolbar,
   ProjectsList,
   ProjectsPagination,
   type ProjectsFilter,
   type ProjectsSort,
-} from "@web/components/projects";
-import { Button } from "@web/components/ui/button";
+} from '@web/components/projects';
+import { Button } from '@web/components/ui/button';
 import {
   useProjectsQuery,
   PROJECTS_LIST_PAGE_SIZE,
-} from "@web/lib/api/queries";
+} from '@web/lib/api/queries';
 
 type ProjectsPageContentProps = {
   initialData: PaginatedProjectsListView | null;
@@ -56,9 +55,9 @@ export function ProjectsPageContent({
   const { page, search, filter, sort } = useMemo(
     () => ({
       page: initialQuery.page ?? 1,
-      search: initialQuery.search ?? "",
-      filter: (initialQuery.filter ?? "all") as ParamFilter,
-      sort: (initialQuery.sort ?? "updated-desc") as ParamSort,
+      search: initialQuery.search ?? '',
+      filter: (initialQuery.filter ?? 'all') as ParamFilter,
+      sort: (initialQuery.sort ?? 'updated-desc') as ParamSort,
     }),
     [
       initialQuery.page,
@@ -72,7 +71,7 @@ export function ProjectsPageContent({
     () => ({
       page,
       pageSize: PROJECTS_LIST_PAGE_SIZE,
-      includeArchived: filter === "archived",
+      includeArchived: filter === 'archived',
       search: search.trim() || undefined,
       filter,
       sort,
@@ -125,9 +124,9 @@ export function ProjectsPageContent({
   const handleClear = useCallback(() => {
     updateUrl({
       page: 1,
-      search: "",
-      filter: "all",
-      sort: "updated-desc",
+      search: '',
+      filter: 'all',
+      sort: 'updated-desc',
     });
   }, [updateUrl]);
 
@@ -145,7 +144,7 @@ export function ProjectsPageContent({
       <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
         <p className="font-medium">Failed to load projects</p>
         <p className="text-sm mt-1">
-          {error?.message ?? "Something went wrong."}
+          {error?.message ?? 'Something went wrong.'}
         </p>
         <Button
           type="button"

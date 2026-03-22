@@ -1,8 +1,8 @@
 export function getInitials(name: string): string {
   return name
-    .split(" ")
+    .split(' ')
     .map((p) => p[0])
-    .join("")
+    .join('')
     .slice(0, 2)
     .toUpperCase();
 }

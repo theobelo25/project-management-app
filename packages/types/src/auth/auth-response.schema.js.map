@@ -1,0 +1,1 @@
+{"version":3,"file":"auth-response.schema.js","sourceRoot":"","sources":["auth-response.schema.ts"],"names":[],"mappings":";;;AAAA,6BAAwB;AACxB,uEAA8D;AAEjD,QAAA,iBAAiB,GAAG,OAAC,CAAC,MAAM,CAAC;IACxC,IAAI,EAAE,qCAAc;IACpB,WAAW,EAAE,OAAC,CAAC,MAAM,EAAE;IACvB,YAAY,EAAE,OAAC,CAAC,MAAM,EAAE;CACzB,CAAC,CAAC"}

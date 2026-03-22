@@ -1,5 +1,5 @@
-import { Button } from "@web/components/ui/button";
-import { useRemoveProjectMember } from "@web/lib/api/mutations/use-remove-project-member";
+import { Button } from '@web/components/ui/button';
+import { useRemoveProjectMember } from '@web/lib/api/mutations/use-remove-project-member';
 
 export function RemoveMemberButton({
   projectId,
@@ -18,7 +18,7 @@ export function RemoveMemberButton({
       onClick={() => removeMutation.mutate(userId)}
       disabled={removeMutation.isPending}
     >
-      {removeMutation.isPending ? "Removing…" : "Remove"}
+      {removeMutation.isPending ? 'Removing…' : 'Remove'}
     </Button>
   );
 }

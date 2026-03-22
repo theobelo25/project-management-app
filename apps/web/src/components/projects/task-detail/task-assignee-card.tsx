@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useState } from 'react';
 
 import {
   Card,
@@ -8,20 +8,20 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@web/components/ui/card";
-import { Button } from "@web/components/ui/button";
+} from '@web/components/ui/card';
+import { Button } from '@web/components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@web/components/ui/select";
+} from '@web/components/ui/select';
 
-import type { ProjectDetailMember } from "@repo/types";
-import { getInitials } from "../utils/string";
-import { useAssignTaskUser } from "@web/lib/api/mutations/use-assign-task-user";
-import { useUnassignTaskUser } from "@web/lib/api/mutations/use-unassign-task-user";
+import type { ProjectDetailMember } from '@repo/types';
+import { getInitials } from '../utils/string';
+import { useAssignTaskUser } from '@web/lib/api/mutations/use-assign-task-user';
+import { useUnassignTaskUser } from '@web/lib/api/mutations/use-unassign-task-user';
 
 type TaskAssigneeCardProps = {
   projectId: string;
@@ -45,14 +45,6 @@ export function TaskAssigneeCard({
   const unassignMutation = useUnassignTaskUser(projectId);
 
   const isBusy = assignMutation.isPending || unassignMutation.isPending;
-
-  // Local select value so we can reset it back to placeholder after selection.
-  const [selectValue, setSelectValue] = useState<string | undefined>(undefined);
-
-  // When task changes, ensure select shows placeholder.
-  useEffect(() => {
-    setSelectValue(undefined);
-  }, [taskId]);
 
   return (
     <Card>

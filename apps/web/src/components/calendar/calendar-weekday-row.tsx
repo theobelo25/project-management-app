@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { WEEK_DAYS } from "./constants";
+import { WEEK_DAYS } from './constants';
 
 export function CalendarWeekdayRow() {
   return (

@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
 import {
   InvalidProjectMessage,
   PageErrorMessage,
   PageLoadingMessage,
-} from "@web/components/projects";
+} from '@web/components/projects';
 import {
   type ProjectMember,
   ProjectMembersManager,
-} from "@web/components/projects/members";
-import { useProjectMembersQuery, useProjectQuery } from "@web/lib/api/queries";
-import type { ProjectRole } from "@repo/types";
+} from '@web/components/projects/members';
+import { useProjectMembersQuery, useProjectQuery } from '@web/lib/api/queries';
+import type { ProjectRole } from '@repo/types';
 
 function mergeMembersWithRoles(
   projectMembers: { id: string; name: string; email?: string }[],
@@ -20,8 +20,8 @@ function mergeMembersWithRoles(
   return projectMembers.map((m) => ({
     id: m.id,
     name: m.name,
-    email: m.email ?? "",
-    role: roleByUserId.get(m.id) ?? "MEMBER",
+    email: m.email ?? '',
+    role: roleByUserId.get(m.id) ?? 'MEMBER',
   }));
 }
 
@@ -50,12 +50,12 @@ export function ProjectMembersPageContent({
     project?.members && membersData?.items
       ? mergeMembersWithRoles(project.members, membersData.items)
       : [];
-  const currentUserRole = project?.currentUserRole ?? "MEMBER";
+  const currentUserRole = project?.currentUserRole ?? 'MEMBER';
 
   const isLoading = isProjectLoading || isMembersLoading;
   const isError = isProjectError || isMembersError;
   const errorMessage =
-    projectError?.message ?? membersError?.message ?? "Something went wrong";
+    projectError?.message ?? membersError?.message ?? 'Something went wrong';
 
   return (
     <div className="flex flex-col gap-8">

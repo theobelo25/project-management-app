@@ -1,4 +1,4 @@
-import { TaskDetailPageContent } from "@web/components/projects/task-detail";
+import { TaskDetailPageContent } from '@web/components/projects/task-detail';
 
 type PageProps = {
   params: Promise<{ id: string; taskId: string }>;

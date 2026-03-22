@@ -1,47 +1,41 @@
-import Link from "next/link";
-import type { Metadata } from "next";
+import Link from 'next/link';
+import type { Metadata } from 'next';
 
-import {
-  ArrowRight,
-  CheckCircle2,
-  FolderKanban,
-  LayoutDashboard,
-  Users,
-} from "lucide-react";
-import { Button } from "@web/components/ui/button";
+import { ArrowRight, CheckCircle2, FolderKanban, Users } from 'lucide-react';
+import { Button } from '@web/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@web/components/ui/card";
-import { PageLayout } from "@web/components/layout/page-layout";
-import { ROUTES } from "@web/lib/routes";
+} from '@web/components/ui/card';
+import { PageLayout } from '@web/components/layout/page-layout';
+import { ROUTES } from '@web/lib/routes';
 
 export const metadata: Metadata = {
-  title: "Home",
+  title: 'Home',
   description:
-    "Planning makes perfect. Track your next project with ease using Nudge.",
+    'Planning makes perfect. Track your next project with ease using Nudge.',
 };
 
 const features = [
   {
-    title: "Organize projects clearly",
+    title: 'Organize projects clearly',
     description:
-      "Create projects, keep work structured, and give every team a clear place to collaborate.",
+      'Create projects, keep work structured, and give every team a clear place to collaborate.',
     icon: FolderKanban,
   },
   {
-    title: "Track tasks with confidence",
+    title: 'Track tasks with confidence',
     description:
-      "Manage open work, monitor progress, and keep important tasks from slipping through the cracks.",
+      'Manage open work, monitor progress, and keep important tasks from slipping through the cracks.',
     icon: CheckCircle2,
   },
   {
-    title: "Built for team collaboration",
+    title: 'Built for team collaboration',
     description:
-      "Support members, permissions, and shared visibility so everyone stays aligned.",
+      'Support members, permissions, and shared visibility so everyone stays aligned.',
     icon: Users,
   },
 ];

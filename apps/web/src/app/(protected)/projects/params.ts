@@ -1,15 +1,15 @@
 export const PROJECTS_SEARCH_PARAMS = {
-  page: "page",
-  search: "q",
-  filter: "filter",
-  sort: "sort",
+  page: 'page',
+  search: 'q',
+  filter: 'filter',
+  sort: 'sort',
 } as const;
 
-export type ProjectsFilter = "all" | "owned" | "member" | "archived";
-export type ProjectsSort = "updated-desc" | "created-desc" | "name-asc";
+export type ProjectsFilter = 'all' | 'owned' | 'member' | 'archived';
+export type ProjectsSort = 'updated-desc' | 'created-desc' | 'name-asc';
 
-const DEFAULT_FILTER: ProjectsFilter = "all";
-const DEFAULT_SORT: ProjectsSort = "updated-desc";
+const DEFAULT_FILTER: ProjectsFilter = 'all';
+const DEFAULT_SORT: ProjectsSort = 'updated-desc';
 
 export function parseProjectsSearchParams(
   searchParams: Record<string, string | string[] | undefined>,
@@ -19,18 +19,18 @@ export function parseProjectsSearchParams(
     Number(searchParams[PROJECTS_SEARCH_PARAMS.page]) || 1,
   );
   const search =
-    typeof searchParams[PROJECTS_SEARCH_PARAMS.search] === "string"
+    typeof searchParams[PROJECTS_SEARCH_PARAMS.search] === 'string'
       ? searchParams[PROJECTS_SEARCH_PARAMS.search]
-      : "";
+      : '';
   const filter =
-    searchParams[PROJECTS_SEARCH_PARAMS.filter] === "owned" ||
-    searchParams[PROJECTS_SEARCH_PARAMS.filter] === "member" ||
-    searchParams[PROJECTS_SEARCH_PARAMS.filter] === "archived"
+    searchParams[PROJECTS_SEARCH_PARAMS.filter] === 'owned' ||
+    searchParams[PROJECTS_SEARCH_PARAMS.filter] === 'member' ||
+    searchParams[PROJECTS_SEARCH_PARAMS.filter] === 'archived'
       ? (searchParams[PROJECTS_SEARCH_PARAMS.filter] as ProjectsFilter)
       : DEFAULT_FILTER;
   const sort =
-    searchParams[PROJECTS_SEARCH_PARAMS.sort] === "created-desc" ||
-    searchParams[PROJECTS_SEARCH_PARAMS.sort] === "name-asc"
+    searchParams[PROJECTS_SEARCH_PARAMS.sort] === 'created-desc' ||
+    searchParams[PROJECTS_SEARCH_PARAMS.sort] === 'name-asc'
       ? (searchParams[PROJECTS_SEARCH_PARAMS.sort] as ProjectsSort)
       : DEFAULT_SORT;
   return { page, search, filter, sort };

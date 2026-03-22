@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useParams, usePathname } from "next/navigation";
-import { useProjectQuery } from "@web/lib/api/queries";
+import { useParams, usePathname } from 'next/navigation';
+import { useProjectQuery } from '@web/lib/api/queries';
 import {
   CreateProjectDialog,
   PageHeader,
@@ -9,21 +9,21 @@ import {
   useTaskDetail,
   HeaderSkeleton,
   ProjectLayoutHeader,
-} from "@web/components/projects";
-import { ROUTES } from "@web/lib/routes";
+} from '@web/components/projects';
+import { ROUTES } from '@web/lib/routes';
 
 export function ProjectsUnifiedHeader() {
   const params = useParams();
   const pathname = usePathname();
-  const projectId = typeof params?.id === "string" ? params.id : null;
+  const projectId = typeof params?.id === 'string' ? params.id : null;
   const { taskForHeader } = useTaskDetail();
   const { data: project, isLoading: projectLoading } =
     useProjectQuery(projectId);
 
-  const tasksHref = projectId ? `${ROUTES.projects}/${projectId}/tasks` : "";
+  const tasksHref = projectId ? `${ROUTES.projects}/${projectId}/tasks` : '';
   const isTaskDetail =
     !!projectId &&
-    !!pathname?.startsWith(tasksHref + "/") &&
+    !!pathname?.startsWith(tasksHref + '/') &&
     pathname !== tasksHref;
 
   if (isTaskDetail) {
@@ -56,7 +56,7 @@ export function ProjectsUnifiedHeader() {
         name: project.name,
         description: project.description ?? undefined,
         currentUserRole:
-          "currentUserRole" in project ? project.currentUserRole : undefined,
+          'currentUserRole' in project ? project.currentUserRole : undefined,
       }
     : null;
 

@@ -1,5 +1,5 @@
-import type { TaskView } from "@repo/types";
-import type { CalendarTask } from "./types";
+import type { TaskView } from '@repo/types';
+import type { CalendarTask } from './types';
 
 /**
  * Converts API TaskView to CalendarTask. Returns null if task has no due date

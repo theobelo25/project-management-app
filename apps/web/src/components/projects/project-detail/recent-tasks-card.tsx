@@ -1,19 +1,19 @@
-import Link from "next/link";
+import Link from 'next/link';
 
-import { formatTaskStatus } from "@web/components/projects/utils";
-import { Badge } from "@web/components/ui/badge";
-import { Button } from "@web/components/ui/button";
+import { formatTaskStatus } from '@web/components/projects/utils';
+import { Badge } from '@web/components/ui/badge';
+import { Button } from '@web/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@web/components/ui/card";
-import type { ProjectDetailView, ProjectRecentTask } from "@repo/types";
+} from '@web/components/ui/card';
+import type { ProjectDetailView, ProjectRecentTask } from '@repo/types';
 
 export interface RecentTasksCardProps {
-  project: Pick<ProjectDetailView, "id">;
+  project: Pick<ProjectDetailView, 'id'>;
   recentTasks: ProjectRecentTask[];
 }
 

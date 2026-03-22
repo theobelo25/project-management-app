@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { CardHeader, CardTitle } from "@web/components/ui/card";
-import { Button } from "@web/components/ui/button";
+import { CardHeader, CardTitle } from '@web/components/ui/card';
+import { Button } from '@web/components/ui/button';
 
 type CalendarMonthHeaderProps = {
   monthLabel: string;

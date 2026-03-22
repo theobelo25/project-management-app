@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
+import { useState } from 'react';
+import Link from 'next/link';
 
 import {
   DestructiveDropdownItem,
   RowActionsMenu,
-} from "@web/components/projects/row-actions-menu";
-import { EditTaskDialog } from "@web/components/projects/tasks";
-import { DropdownMenuItem } from "@web/components/ui/dropdown-menu";
+} from '@web/components/projects/row-actions-menu';
+import { EditTaskDialog } from '@web/components/projects/tasks';
+import { DropdownMenuItem } from '@web/components/ui/dropdown-menu';
 
 type TaskRowActionsProps = {
   projectId: string;

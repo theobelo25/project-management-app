@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal } from 'lucide-react';
 
-import { Button } from "@web/components/ui/button";
+import { Button } from '@web/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@web/components/ui/dropdown-menu";
+} from '@web/components/ui/dropdown-menu';
 
 type RowActionsMenuProps = {
   ariaLabel: string;

@@ -1,20 +1,20 @@
-import Link from "next/link";
+import Link from 'next/link';
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "../ui/sheet";
-import { Button } from "../ui/button";
-import { Menu } from "lucide-react";
-import { SecondaryNav } from "./secondary-nav";
-import { ROUTES } from "@web/lib/routes";
+} from '../ui/sheet';
+import { Button } from '../ui/button';
+import { Menu } from 'lucide-react';
+import { SecondaryNav } from './secondary-nav';
+import { ROUTES } from '@web/lib/routes';
 
 const navItems = [
-  { href: ROUTES.dashboard, label: "Dashboard" },
-  { href: ROUTES.projects, label: "Projects" },
-  { href: ROUTES.organizations, label: "Organizations" },
+  { href: ROUTES.dashboard, label: 'Dashboard' },
+  { href: ROUTES.projects, label: 'Projects' },
+  { href: ROUTES.organizations, label: 'Organizations' },
 ] as const;
 
 function NavLinks() {

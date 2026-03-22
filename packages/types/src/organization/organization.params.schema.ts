@@ -1,12 +1,13 @@
 import { z } from "zod";
 
-export const OrganizationParamsSchema = z.object({
-  id: z.uuid(),
-});
+import { UuidIdParamSchema } from "../common/uuid-id-param.schema";
 
-export const SwitchOrganizationParamsSchema = z.object({
-  id: z.uuid(),
-});
+export const OrganizationParamsSchema = UuidIdParamSchema;
+
+export const SwitchOrganizationParamsSchema = UuidIdParamSchema;
+
+/** Invite id in routes like `organizations/invites/:id/...`. */
+export const InviteIdParamsSchema = UuidIdParamSchema;
 
 export const OrganizationMemberParamsSchema = z.object({
   id: z.uuid(),

@@ -1,11 +1,11 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { updateTask } from "@web/lib/api/client";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { updateTask } from '@web/lib/api/client';
 import {
   PROJECT_QUERY_KEY,
   PROJECT_TASKS_QUERY_KEY,
   TASK_QUERY_KEY,
-} from "@web/lib/api/queries";
+} from '@web/lib/api/queries';
 
 type Variables = {
   taskId: string;
@@ -35,11 +35,11 @@ export function useUpdateTaskDueDate(projectId: string, options: Options = {}) {
       await queryClient.invalidateQueries({
         queryKey: TASK_QUERY_KEY(taskId),
       });
-      toast.success("Due date updated");
+      toast.success('Due date updated');
       options.onSuccess?.();
     },
     onError: (error: Error) => {
-      toast.error(error.message ?? "Failed to update due date");
+      toast.error(error.message ?? 'Failed to update due date');
       options.onError?.(error);
     },
   });

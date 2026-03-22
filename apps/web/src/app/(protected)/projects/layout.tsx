@@ -1,6 +1,6 @@
-import { PageLayout } from "@web/components/layout/page-layout";
-import { ProjectsUnifiedHeader } from "@web/components/projects/projects-header/projects-unified-header";
-import { TaskDetailProvider } from "@web/components/projects/projects-header/task-detail-header";
+import { PageLayout } from '@web/components/layout/page-layout';
+import { ProjectsUnifiedHeader } from '@web/components/projects/projects-header/projects-unified-header';
+import { TaskDetailProvider } from '@web/components/projects/projects-header/task-detail-header';
 
 type LayoutProps = {
   children: React.ReactNode;

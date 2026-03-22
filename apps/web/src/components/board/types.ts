@@ -1,4 +1,4 @@
-export type TaskStatus = "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE";
+import type { TaskStatus } from '@repo/types';
 
 export type BoardTask = {
   id: string;
@@ -9,10 +9,10 @@ export type BoardTask = {
 };
 
 export const BOARD_COLUMNS: { key: TaskStatus; title: string }[] = [
-  { key: "TODO", title: "Todo" },
-  { key: "IN_PROGRESS", title: "In Progress" },
-  { key: "REVIEW", title: "Review" },
-  { key: "DONE", title: "Done" },
+  { key: 'TODO', title: 'Todo' },
+  { key: 'IN_PROGRESS', title: 'In Progress' },
+  { key: 'REVIEW', title: 'Review' },
+  { key: 'DONE', title: 'Done' },
 ];
 
 export function groupTasksByStatus(
@@ -30,8 +30,5 @@ export function groupTasksByStatus(
   return map;
 }
 
-export const BOARD_COLUMNS_API: { key: TaskStatus; title: string }[] = [
-  { key: "TODO", title: "Todo" },
-  { key: "IN_PROGRESS", title: "In Progress" },
-  { key: "DONE", title: "Done" },
-];
+/** Same column set as the board UI; API tasks use full `TaskStatus` (no slimmer column list). */
+export const BOARD_COLUMNS_API: typeof BOARD_COLUMNS = BOARD_COLUMNS;

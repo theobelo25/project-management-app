@@ -1,8 +1,8 @@
-import { Button } from "@web/components/ui/button";
+import { Button } from '@web/components/ui/button';
 import {
   useArchiveProject,
   useUnarchiveProject,
-} from "@web/lib/api/mutations/use-archive-project";
+} from '@web/lib/api/mutations/use-archive-project';
 
 export function ArchiveButton({
   projectId,

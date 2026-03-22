@@ -2,19 +2,19 @@ import {
   QueryClient,
   dehydrate,
   type DehydratedState,
-} from "@tanstack/react-query";
+} from '@tanstack/react-query';
 import {
   fetchProjectServer,
   fetchProjectMembersServer,
   fetchTasksServer,
   fetchTaskServer,
-} from "./server-client";
+} from './server-client';
 import {
   PROJECT_QUERY_KEY,
   PROJECT_TASKS_QUERY_KEY,
   PROJECT_MEMBERS_QUERY_KEY,
   TASK_QUERY_KEY,
-} from "./queries";
+} from './queries';
 
 export function createServerQueryClient() {
   return new QueryClient({

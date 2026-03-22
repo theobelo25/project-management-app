@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { CreateEntityDialog } from "@web/components/projects/create-entity-dialog";
-import { ProjectForm } from "@web/components/projects/project-form";
+import { CreateEntityDialog } from '@web/components/projects/create-entity-dialog';
+import { ProjectForm } from '@web/components/projects/project-form';
 
 export function CreateProjectDialog() {
   return (

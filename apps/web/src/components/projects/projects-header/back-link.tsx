@@ -1,7 +1,7 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 
-import { Button } from "@web/components/ui/button";
+import { Button } from '@web/components/ui/button';
 
 type BackLinkProps = { href: string; children: React.ReactNode };
 

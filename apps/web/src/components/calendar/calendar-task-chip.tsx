@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useDraggable } from "@dnd-kit/core";
-import { CSS } from "@dnd-kit/utilities";
-import { getCalendarTaskStatusClasses } from "./format";
-import type { CalendarTask } from "./types";
+import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
+import { getCalendarTaskStatusClasses } from './format';
+import type { CalendarTask } from './types';
 
 type CalendarTaskChipProps = {
   task: CalendarTask;
@@ -33,10 +33,10 @@ export function CalendarTaskChip({
       style={style}
       className={`rounded-md border px-2 py-1 text-left text-xs transition ${
         isOverlay
-          ? "cursor-grab bg-card shadow-lg ring-2 ring-primary/20"
+          ? 'cursor-grab bg-card shadow-lg ring-2 ring-primary/20'
           : isDragging
-            ? "opacity-50"
-            : "hover:bg-muted cursor-grab active:cursor-grabbing"
+            ? 'opacity-50'
+            : 'hover:bg-muted cursor-grab active:cursor-grabbing'
       }`}
       {...(isOverlay ? {} : { ...listeners, ...attributes })}
     >
@@ -52,7 +52,7 @@ export function CalendarTaskChip({
         <div
           className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${getCalendarTaskStatusClasses(task.status)}`}
         >
-          {task.status.replace("_", " ")}
+          {task.status.replace('_', ' ')}
         </div>
       </button>
     </div>

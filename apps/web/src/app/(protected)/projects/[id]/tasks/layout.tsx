@@ -1,11 +1,11 @@
-import { notFound } from "next/navigation";
-import { HydrationBoundary } from "@tanstack/react-query";
+import { notFound } from 'next/navigation';
+import { HydrationBoundary } from '@tanstack/react-query';
 import {
   createServerQueryClient,
   prefetchProject,
   prefetchProjectTasks,
   dehydrateClient,
-} from "@web/lib/api/prefetch";
+} from '@web/lib/api/prefetch';
 
 const TASKS_PAGE_SIZE = 10;
 
@@ -27,8 +27,8 @@ export default async function ProjectTasksLayout({
       prefetchProjectTasks(client, projectId, 1, TASKS_PAGE_SIZE),
     ]);
   } catch (e) {
-    const message = e instanceof Error ? e.message : "";
-    if (message === "Project not found") notFound();
+    const message = e instanceof Error ? e.message : '';
+    if (message === 'Project not found') notFound();
     throw e;
   }
 

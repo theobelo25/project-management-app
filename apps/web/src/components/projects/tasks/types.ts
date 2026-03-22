@@ -1,4 +1,4 @@
-export type TaskStatus = "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE";
+import type { TaskStatus } from '@repo/types';
 
 export type TaskAssignee = {
   id: string;

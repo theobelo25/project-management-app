@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useForm } from "react-hook-form";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useForm } from 'react-hook-form';
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 
-import { Button } from "@web/components/ui/button";
-import { Input } from "@web/components/ui/input";
-import { Label } from "@web/components/ui/label";
-import { Textarea } from "@web/components/ui/textarea";
+import { Button } from '@web/components/ui/button';
+import { Input } from '@web/components/ui/input';
+import { Label } from '@web/components/ui/label';
+import { Textarea } from '@web/components/ui/textarea';
 import {
   CreateProjectSchema,
   type CreateProjectDto,
   type ProjectView,
-} from "@repo/types";
-import { useCreateProject } from "@web/lib/api/mutations/use-create-project";
+} from '@repo/types';
+import { useCreateProject } from '@web/lib/api/mutations/use-create-project';
 
 type ProjectFormProps = {
   isLoading?: boolean;
@@ -23,7 +23,7 @@ type ProjectFormProps = {
 export function ProjectForm({
   isLoading = false,
   onSuccess,
-  submitLabel = "Create Project",
+  submitLabel = 'Create Project',
 }: ProjectFormProps) {
   const createProjectMutation = useCreateProject({ onSuccess });
 
@@ -35,10 +35,10 @@ export function ProjectForm({
   } = useForm<CreateProjectDto>({
     resolver: standardSchemaResolver(CreateProjectSchema),
     defaultValues: {
-      name: "",
-      description: "",
+      name: '',
+      description: '',
     },
-    mode: "onBlur",
+    mode: 'onBlur',
   });
 
   const onSubmit = (values: CreateProjectDto) => {
@@ -53,8 +53,7 @@ export function ProjectForm({
   const submitting =
     isSubmitting || isLoading || createProjectMutation.isPending;
 
-  const rootError =
-    (createProjectMutation.error as Error | null)?.message ?? null;
+  const rootError = createProjectMutation.error?.message ?? null;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
@@ -70,7 +69,7 @@ export function ProjectForm({
           id="project-name"
           placeholder="e.g. Website Redesign"
           autoComplete="off"
-          {...register("name")}
+          {...register('name')}
           aria-invalid={!!errors.name}
         />
         {errors.name?.message ? (
@@ -84,7 +83,7 @@ export function ProjectForm({
           id="project-description"
           placeholder="Optional"
           rows={4}
-          {...register("description")}
+          {...register('description')}
           aria-invalid={!!errors.description}
         />
         {errors.description?.message ? (
@@ -95,7 +94,7 @@ export function ProjectForm({
       </div>
 
       <Button type="submit" className="w-full" disabled={submitting}>
-        {submitting ? "Creating…" : submitLabel}
+        {submitting ? 'Creating…' : submitLabel}
       </Button>
     </form>
   );

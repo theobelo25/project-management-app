@@ -4,8 +4,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@web/components/ui/card";
-import type { ReactNode } from "react";
+} from '@web/components/ui/card';
+import type { ReactNode } from 'react';
 
 type AuthCardProps = {
   /** Heading shown in the card (e.g. "Sign In" or "Sign Up") */

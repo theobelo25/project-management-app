@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
-import { cn } from "@web/lib/utils";
+import type { ReactNode } from 'react';
+import { cn } from '@web/lib/utils';
 
 type EmptyStateCardProps = {
   icon: ReactNode;
@@ -7,7 +7,7 @@ type EmptyStateCardProps = {
   description?: string;
   children?: ReactNode;
   /** Minimum height. Default "min-h-80". Use "min-h-[320px]" to match tasks. */
-  minHeight?: "min-h-80" | "min-h-[320px]";
+  minHeight?: 'min-h-80' | 'min-h-[320px]';
 };
 
 export function EmptyStateCard({
@@ -15,12 +15,12 @@ export function EmptyStateCard({
   title,
   description,
   children,
-  minHeight = "min-h-80",
+  minHeight = 'min-h-80',
 }: EmptyStateCardProps) {
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center rounded-xl border border-dashed bg-muted/20 px-6 text-center",
+        'flex flex-col items-center justify-center rounded-xl border border-dashed bg-muted/20 px-6 text-center',
         minHeight,
       )}
     >

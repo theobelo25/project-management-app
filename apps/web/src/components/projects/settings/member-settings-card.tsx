@@ -1,18 +1,18 @@
-import { InviteMemberDialog } from "@web/components/projects/members";
-import { RemoveMemberButton } from "@web/components/projects/settings";
+import { InviteMemberDialog } from '@web/components/projects/members';
+import { RemoveMemberButton } from '@web/components/projects/settings';
 import {
   formatProjectRole,
   getInitials,
   MemberWithRole,
-} from "@web/components/projects/utils";
-import { Badge } from "@web/components/ui/badge";
+} from '@web/components/projects/utils';
+import { Badge } from '@web/components/ui/badge';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@web/components/ui/card";
+} from '@web/components/ui/card';
 
 type MemberSettingsCardProps = {
   project: { id: string };
@@ -54,7 +54,7 @@ export function MemberSettingsCard({
               <div className="min-w-0">
                 <p className="truncate font-medium">{member.name}</p>
                 <p className="truncate text-sm text-muted-foreground">
-                  {member.email ?? "—"}
+                  {member.email ?? '—'}
                 </p>
               </div>
             </div>
@@ -62,7 +62,7 @@ export function MemberSettingsCard({
               <Badge variant="secondary">
                 {formatProjectRole(member.role)}
               </Badge>
-              {canManageMembers && member.role !== "OWNER" ? (
+              {canManageMembers && member.role !== 'OWNER' ? (
                 <RemoveMemberButton projectId={project.id} userId={member.id} />
               ) : null}
             </div>

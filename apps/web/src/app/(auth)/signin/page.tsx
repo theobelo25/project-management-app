@@ -1,13 +1,13 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { AuthCard } from "@web/components/auth/auth-card";
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { AuthCard } from '@web/components/auth/auth-card';
 
-import SignInForm from "@web/components/auth/signin-form";
-import { ROUTES } from "@web/lib/routes";
+import SignInForm from '@web/components/auth/signin-form';
+import { ROUTES } from '@web/lib/routes';
 
 export const metadata: Metadata = {
-  title: "Sign In",
-  description: "Sign in to your Nudge account to manage your projects.",
+  title: 'Sign In',
+  description: 'Sign in to your Nudge account to manage your projects.',
 };
 
 export default async function SignInPage({
@@ -25,7 +25,8 @@ export default async function SignInPage({
       title="Sign In"
       footer={
         <span>
-          Don't have an account? <Link href={signupHref}>Sign Up</Link> instead!
+          Don&apos;t have an account? <Link href={signupHref}>Sign Up</Link>{' '}
+          instead!
         </span>
       }
     >

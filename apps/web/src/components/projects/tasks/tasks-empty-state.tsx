@@ -1,6 +1,6 @@
-import { ClipboardList } from "lucide-react";
+import { ClipboardList } from 'lucide-react';
 
-import { EmptyStateCard } from "@web/components/projects";
+import { EmptyStateCard } from '@web/components/projects';
 
 type TasksEmptyStateProps = {
   title?: string;
@@ -8,8 +8,8 @@ type TasksEmptyStateProps = {
 };
 
 export function TasksEmptyState({
-  title = "No tasks yet",
-  description = "Create your first task to start tracking work in this project.",
+  title = 'No tasks yet',
+  description = 'Create your first task to start tracking work in this project.',
 }: TasksEmptyStateProps) {
   return (
     <EmptyStateCard

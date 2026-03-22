@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import Link from "next/link";
+import Link from 'next/link';
 import {
   Circle,
   CheckCircle2,
   FolderKanban,
   MoreHorizontal,
-} from "lucide-react";
+} from 'lucide-react';
 
-import { Badge } from "@web/components/ui/badge";
+import { Badge } from '@web/components/ui/badge';
 import {
   Card,
   CardAction,
@@ -17,23 +17,23 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@web/components/ui/card";
+} from '@web/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@web/components/ui/dropdown-menu";
+} from '@web/components/ui/dropdown-menu';
 import {
   formatProjectRole,
   formatUpdatedAt,
   getInitials,
-} from "@web/components/projects/utils";
+} from '@web/components/projects/utils';
 import type {
   ProjectListItemView,
   ProjectListMember,
   ProjectRole,
-} from "@repo/types";
+} from '@repo/types';
 
 type StatBlockProps = {
   icon: React.ReactNode;
@@ -130,7 +130,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
               </div>
 
               <CardDescription className="line-clamp-2">
-                {project.description || "No description provided."}
+                {project.description || 'No description provided.'}
               </CardDescription>
             </div>
 
@@ -163,13 +163,13 @@ export function ProjectCard({ project }: ProjectCardProps) {
             <MembersPreview members={project.members} />
             <span className="text-xs text-muted-foreground">
               {project.members.length} member
-              {project.members.length === 1 ? "" : "s"}
+              {project.members.length === 1 ? '' : 's'}
             </span>
           </div>
         </CardContent>
 
         <CardFooter className="flex items-center justify-between gap-3 border-t pt-4 text-sm">
-          <RoleBadge role={project.currentUserRole ?? "MEMBER"} />
+          <RoleBadge role={project.currentUserRole ?? 'MEMBER'} />
           <span className="text-muted-foreground">
             Updated {formatUpdatedAt(project.updatedAt)}
           </span>

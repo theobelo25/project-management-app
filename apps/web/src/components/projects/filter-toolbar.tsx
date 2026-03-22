@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Search, X } from "lucide-react";
+import { Search, X } from 'lucide-react';
 
-import { Button } from "@web/components/ui/button";
-import { Input } from "@web/components/ui/input";
+import { Button } from '@web/components/ui/button';
+import { Input } from '@web/components/ui/input';
 
 type FilterToolbarProps = {
   searchPlaceholder: string;
@@ -16,7 +16,7 @@ type FilterToolbarProps = {
   showClear: boolean;
   onClear?: () => void;
   /** Section layout: lg for projects, xl for tasks. */
-  breakpoint?: "lg" | "xl";
+  breakpoint?: 'lg' | 'xl';
 };
 
 export function FilterToolbar({
@@ -27,22 +27,22 @@ export function FilterToolbar({
   sortSlot,
   showClear,
   onClear,
-  breakpoint = "lg",
+  breakpoint = 'lg',
 }: FilterToolbarProps) {
   const sectionClass =
-    breakpoint === "xl"
-      ? "flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between mb-4"
-      : "flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between mb-4";
+    breakpoint === 'xl'
+      ? 'flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between mb-4'
+      : 'flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between mb-4';
 
   const filtersWrapperClass =
-    breakpoint === "xl"
-      ? "grid gap-3 sm:grid-cols-2 xl:flex xl:flex-1"
-      : "flex flex-1 flex-col gap-3 sm:flex-row";
+    breakpoint === 'xl'
+      ? 'grid gap-3 sm:grid-cols-2 xl:flex xl:flex-1'
+      : 'flex flex-1 flex-col gap-3 sm:flex-row';
 
   const searchWrapperClass =
-    breakpoint === "xl"
-      ? "relative w-full xl:max-w-sm"
-      : "relative w-full sm:max-w-sm";
+    breakpoint === 'xl'
+      ? 'relative w-full xl:max-w-sm'
+      : 'relative w-full sm:max-w-sm';
 
   return (
     <section className={sectionClass}>

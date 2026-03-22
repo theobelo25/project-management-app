@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { PageLayout } from "@web/components/layout/page-layout";
-import { Button } from "@web/components/ui/button";
+import Link from 'next/link';
+import { PageLayout } from '@web/components/layout/page-layout';
+import { Button } from '@web/components/ui/button';
 
 export default function NotFound() {
   return (

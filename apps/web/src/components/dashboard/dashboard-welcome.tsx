@@ -1,8 +1,4 @@
-import Link from "next/link";
-import { Button } from "../ui/button";
-import { Plus } from "lucide-react";
-import { CreateProjectDialog } from "@web/components/projects";
-import { CreateTaskDialog } from "../projects/tasks";
+import { CreateProjectDialog } from '@web/components/projects';
 
 export function DashboardWelcome() {
   return (

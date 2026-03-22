@@ -26,6 +26,8 @@ jest.mock('./mappers/task-assignment.mapper', () => ({
   toTaskAssignmentView: jest.fn(),
 }));
 
+const TASKS_LOG_CTX = { domain: 'tasks', component: 'TasksService' } as const;
+
 describe('TasksService', () => {
   let service: TasksService;
 
@@ -49,6 +51,7 @@ describe('TasksService', () => {
 
   let logger: {
     info: jest.Mock;
+    warn: jest.Mock;
   };
 
   const currentUser: AuthUser = { id: 'user-1', orgId: 'org-1' };
@@ -74,6 +77,7 @@ describe('TasksService', () => {
 
     logger = {
       info: jest.fn(),
+      warn: jest.fn(),
     };
 
     service = new TasksService(
@@ -121,6 +125,7 @@ describe('TasksService', () => {
       expect(tasksRepository.create).toHaveBeenCalledWith(createInput);
       expect(logger.info).toHaveBeenCalledWith(
         {
+          ...TASKS_LOG_CTX,
           event: 'task.created',
           taskId: task.id,
           createdById: task.createdById,
@@ -129,6 +134,61 @@ describe('TasksService', () => {
         'Task created successfully',
       );
       expect(toTaskView).toHaveBeenCalledWith(task);
+      expect(result).toEqual(taskView);
+      expect(taskAssigneePolicy.assertAssigneeInSameOrgOrThrow).not.toHaveBeenCalled();
+      expect(taskAssignmentNotifier.notifyTaskAssigned).not.toHaveBeenCalled();
+    });
+
+    it('validates assignees, notifies others on create when assigneeIds are set', async () => {
+      const dto: CreateTaskDto = {
+        title: 'T',
+        projectId: 'project-1' as any,
+        assigneeIds: ['user-2', 'user-1'],
+      };
+
+      const createInput = {
+        title: dto.title,
+        projectId: dto.projectId,
+        createdById: currentUser.id,
+        assigneeIds: ['user-2', 'user-1'],
+      };
+
+      const task = {
+        id: 'task-1',
+        title: dto.title,
+        projectId: dto.projectId,
+        createdById: currentUser.id,
+      };
+
+      const taskView: TaskView = { id: 'task-1', title: dto.title } as TaskView;
+
+      (toCreateTaskInput as jest.Mock).mockReturnValue(createInput);
+      tasksRepository.create.mockResolvedValue(task);
+      (toTaskView as jest.Mock).mockReturnValue(taskView);
+
+      const result = await service.create(currentUser, dto);
+
+      expect(taskAssigneePolicy.assertAssigneeInSameOrgOrThrow).toHaveBeenCalledTimes(
+        2,
+      );
+      expect(taskAssigneePolicy.assertAssigneeInSameOrgOrThrow).toHaveBeenCalledWith(
+        'user-2',
+        currentUser,
+      );
+      expect(taskAssigneePolicy.assertAssigneeInSameOrgOrThrow).toHaveBeenCalledWith(
+        'user-1',
+        currentUser,
+      );
+      expect(taskAssignmentNotifier.notifyTaskAssigned).toHaveBeenCalledTimes(1);
+      expect(taskAssignmentNotifier.notifyTaskAssigned).toHaveBeenCalledWith(
+        'user-2',
+        {
+          taskId: task.id,
+          taskTitle: task.title,
+          projectId: task.projectId,
+          assignedById: currentUser.id,
+        },
+      );
       expect(result).toEqual(taskView);
     });
   });
@@ -162,6 +222,7 @@ describe('TasksService', () => {
       expect(tasksRepository.update).toHaveBeenCalledWith(taskId, updateInput);
       expect(logger.info).toHaveBeenCalledWith(
         {
+          ...TASKS_LOG_CTX,
           event: 'task.updated',
           taskId: task.id,
           updatedById: currentUser.id,
@@ -243,6 +304,7 @@ describe('TasksService', () => {
       expect(tasksRepository.delete).toHaveBeenCalledWith(taskId);
       expect(logger.info).toHaveBeenCalledWith(
         {
+          ...TASKS_LOG_CTX,
           event: 'task.deleted',
           taskId,
           deletedById: currentUser.id,
@@ -306,6 +368,7 @@ describe('TasksService', () => {
 
       expect(logger.info).toHaveBeenCalledWith(
         {
+          ...TASKS_LOG_CTX,
           event: 'task.assignee.added',
           taskId,
           userId: assigneeUserId,
@@ -373,6 +436,7 @@ describe('TasksService', () => {
 
       expect(logger.info).toHaveBeenCalledWith(
         {
+          ...TASKS_LOG_CTX,
           event: 'task.assignee.removed',
           taskId,
           userId: assigneeUserId,

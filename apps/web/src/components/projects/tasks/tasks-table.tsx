@@ -1,22 +1,22 @@
-import Link from "next/link";
+import Link from 'next/link';
 
 import {
   type TaskListItem,
   TaskRowActions,
   TasksEmptyState,
-} from "@web/components/projects/tasks";
+} from '@web/components/projects/tasks';
 import {
   formatTaskStatus,
   formatUpdatedAt,
   getStatusBadgeVariant,
-} from "@web/components/projects/utils";
-import { Badge } from "@web/components/ui/badge";
+} from '@web/components/projects/utils';
+import { Badge } from '@web/components/ui/badge';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@web/components/ui/card";
+} from '@web/components/ui/card';
 
 type TasksTableProps = {
   projectId: string;
@@ -30,8 +30,8 @@ export function TasksTable({
   projectId,
   tasks,
   onDelete,
-  emptyTitle = "No tasks yet",
-  emptyDescription = "Create your first task to start tracking work in this project.",
+  emptyTitle = 'No tasks yet',
+  emptyDescription = 'Create your first task to start tracking work in this project.',
 }: TasksTableProps) {
   if (tasks.length === 0) {
     return (
@@ -70,7 +70,7 @@ export function TasksTable({
                       {task.title}
                     </p>
                     <p className="mt-1 truncate text-sm text-muted-foreground">
-                      {task.description || "No description provided."}
+                      {task.description || 'No description provided.'}
                     </p>
                   </Link>
                 </div>
@@ -82,7 +82,7 @@ export function TasksTable({
                 </div>
 
                 <div className="truncate text-sm text-muted-foreground">
-                  {task.assignee?.name || "Unassigned"}
+                  {task.assignee?.name || 'Unassigned'}
                 </div>
 
                 <div className="text-sm text-muted-foreground">
@@ -120,7 +120,7 @@ export function TasksTable({
                       {task.title}
                     </p>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {task.description || "No description provided."}
+                      {task.description || 'No description provided.'}
                     </p>
                   </Link>
                 </div>
@@ -143,7 +143,7 @@ export function TasksTable({
                   {formatTaskStatus(task.status)}
                 </Badge>
                 <span>•</span>
-                <span>{task.assignee?.name || "Unassigned"}</span>
+                <span>{task.assignee?.name || 'Unassigned'}</span>
                 <span>•</span>
                 <span>{formatUpdatedAt(task.updatedAt)}</span>
               </div>

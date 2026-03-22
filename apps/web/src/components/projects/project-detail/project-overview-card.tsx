@@ -1,23 +1,19 @@
-import { CreateTaskDialog } from "@web/components/projects/tasks";
-import { formatProjectRole } from "@web/components/projects/utils";
+import { CreateTaskDialog } from '@web/components/projects/tasks';
+import { formatProjectRole } from '@web/components/projects/utils';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@web/components/ui/card";
-import type { ProjectDetailView } from "@repo/types";
+} from '@web/components/ui/card';
+import type { ProjectDetailView } from '@repo/types';
 
 export interface ProjectOverviewCardProps {
-  project: Pick<ProjectDetailView, "id" | "currentUserRole">;
-  openTasks: number;
+  project: Pick<ProjectDetailView, 'id' | 'currentUserRole'>;
 }
 
-export function ProjectOverviewCard({
-  project,
-  openTasks,
-}: ProjectOverviewCardProps) {
+export function ProjectOverviewCard({ project }: ProjectOverviewCardProps) {
   return (
     <Card>
       <CardHeader>

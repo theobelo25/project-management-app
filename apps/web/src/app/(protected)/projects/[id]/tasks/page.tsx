@@ -1,4 +1,4 @@
-import { ProjectTasksPageContent } from "@web/components/projects/tasks";
+import { ProjectTasksPageContent } from '@web/components/projects/tasks';
 
 const PAGE_SIZE = 10;
 

@@ -1,17 +1,17 @@
-import { useState } from "react";
+import { useState } from 'react';
 import {
   ArchiveButton,
   DeleteProjectDialog,
   SettingsActionRow,
-} from "@web/components/projects/settings";
+} from '@web/components/projects/settings';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@web/components/ui/card";
-import { useDeleteProject } from "@web/lib/api/mutations/use-delete-project";
+} from '@web/components/ui/card';
+import { useDeleteProject } from '@web/lib/api/mutations/use-delete-project';
 
 type DangerZoneCardProps = {
   project: {

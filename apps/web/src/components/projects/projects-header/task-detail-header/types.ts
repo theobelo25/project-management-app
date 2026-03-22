@@ -1,6 +1,6 @@
-import type { TaskView } from "@repo/types";
+import type { TaskView } from '@repo/types';
 
-export type TaskForHeaderTask = Pick<TaskView, "title" | "status">;
+export type TaskForHeaderTask = Pick<TaskView, 'title' | 'status'>;
 
 export type TaskForHeader = {
   projectId: string;

@@ -1,17 +1,19 @@
-"use client";
+'use client';
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo } from 'react';
 import {
   InvalidProjectMessage,
   PageErrorMessage,
   PageLoadingMessage,
-} from "@web/components/projects";
-import { useProjectQuery, useProjectTasksQuery } from "@web/lib/api/queries";
-import { useUpdateTaskStatus } from "@web/lib/api/mutations/use-update-task-status";
-import { Board } from "./board";
-import { taskViewToBoardTask } from "./task-view-to-board-task";
-import { groupTasksByStatus, BOARD_COLUMNS } from "./types";
-import type { BoardTask, TaskStatus } from "./types";
+} from '@web/components/projects';
+import { useProjectQuery, useProjectTasksQuery } from '@web/lib/api/queries';
+import { useUpdateTaskStatus } from '@web/lib/api/mutations/use-update-task-status';
+import { Board } from './board';
+import { taskViewToBoardTask } from './task-view-to-board-task';
+import type { TaskStatus } from '@repo/types';
+
+import { groupTasksByStatus, BOARD_COLUMNS } from './types';
+import type { BoardTask } from './types';
 
 const BOARD_TASKS_LIMIT = 100;
 

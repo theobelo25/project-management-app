@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { Button } from "@web/components/ui/button";
+import { Button } from '@web/components/ui/button';
 
 type ProjectsPaginationProps = {
   page: number;
@@ -13,19 +13,19 @@ type ProjectsPaginationProps = {
 function getPageRange(
   currentPage: number,
   totalPages: number,
-): (number | "...")[] {
+): (number | '...')[] {
   if (totalPages <= 7) {
     return Array.from({ length: totalPages }, (_, i) => i + 1);
   }
 
   if (currentPage <= 3) {
-    return [1, 2, 3, 4, "...", totalPages];
+    return [1, 2, 3, 4, '...', totalPages];
   }
 
   if (currentPage >= totalPages - 2) {
     return [
       1,
-      "...",
+      '...',
       totalPages - 3,
       totalPages - 2,
       totalPages - 1,
@@ -35,11 +35,11 @@ function getPageRange(
 
   return [
     1,
-    "...",
+    '...',
     currentPage - 1,
     currentPage,
     currentPage + 1,
-    "...",
+    '...',
     totalPages,
   ];
 }
@@ -76,7 +76,7 @@ export function ProjectsPagination({
 
         <div className="flex items-center gap-2">
           {pages.map((item, index) =>
-            item === "..." ? (
+            item === '...' ? (
               <span
                 key={`ellipsis-${index}`}
                 className="px-2 text-sm text-muted-foreground"
@@ -88,9 +88,9 @@ export function ProjectsPagination({
                 key={item}
                 type="button"
                 size="sm"
-                variant={item === page ? "default" : "outline"}
+                variant={item === page ? 'default' : 'outline'}
                 onClick={() => onPageChange?.(item)}
-                aria-current={item === page ? "page" : undefined}
+                aria-current={item === page ? 'page' : undefined}
               >
                 {item}
               </Button>

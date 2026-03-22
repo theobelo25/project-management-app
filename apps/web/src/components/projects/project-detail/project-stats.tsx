@@ -1,8 +1,8 @@
-import { CheckCircle2, Circle, FolderKanban, Users } from "lucide-react";
+import { CheckCircle2, Circle, FolderKanban, Users } from 'lucide-react';
 
-import type { ProjectDetailMember } from "@repo/types";
+import type { ProjectDetailMember } from '@repo/types';
 
-import { StatCard } from "./stat-card";
+import { StatCard } from './stat-card';
 
 export interface ProjectStatsProps {
   totalTasks: number;

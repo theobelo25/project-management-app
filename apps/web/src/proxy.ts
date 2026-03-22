@@ -1,13 +1,13 @@
-import { COOKIE } from "@repo/types";
-import { NextRequest, NextResponse } from "next/server";
-import { ROUTES } from "@web/lib/routes";
+import { COOKIE } from '@repo/types';
+import { NextRequest, NextResponse } from 'next/server';
+import { ROUTES } from '@web/lib/routes';
 
 const ACCESS_COOKIE_NAME = COOKIE.AUTHENTICATION;
 
 const PROTECTED_PATHS = [
-  ROUTES.projects,
-  ROUTES.board,
   ROUTES.dashboard,
+  ROUTES.projects,
+  ROUTES.organizations,
 ] as const;
 const AUTH_PATHS = [ROUTES.signin, ROUTES.signup] as const;
 
@@ -25,11 +25,16 @@ function isAuthPath(pathname: string) {
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (pathname.startsWith('/api')) {
+    return NextResponse.next();
+  }
+
   const hasAuthCookie = request.cookies.has(ACCESS_COOKIE_NAME);
 
   if (isProtectedPath(pathname) && !hasAuthCookie) {
     const signInUrl = new URL(ROUTES.signin, request.url);
-    signInUrl.searchParams.set("callbackUrl", pathname);
+    signInUrl.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(signInUrl);
   }
 
@@ -42,6 +47,6 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:ico|png|jpg|jpeg|gif|svg|webp)$).*)",
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:ico|png|jpg|jpeg|gif|svg|webp)$).*)',
   ],
 };

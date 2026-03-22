@@ -1,15 +1,9 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  type QueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   acceptInviteById,
   addOrganizationMember,
   clearNotification,
   createOrganization,
-  createOrganizationInvite,
   declineInviteById,
   deleteOrganization,
   fetchAllUsers,
@@ -26,7 +20,7 @@ import {
   fetchUsers,
   leaveOrganization,
   switchOrganization,
-} from "./client";
+} from './client';
 import {
   CreateOrganizationDto,
   FindTasksQuery,
@@ -40,12 +34,10 @@ import {
   ProjectMembersView,
   TaskView,
   OrganizationDetailView,
-  OrganizationInviteView,
-  CreateOrganizationInviteDto,
   UserView,
-} from "@repo/types";
+} from '@repo/types';
 
-export const ME_QUERY_KEY = ["me"] as const;
+export const ME_QUERY_KEY = ['me'] as const;
 
 export function useMeQuery() {
   return useQuery({
@@ -57,7 +49,7 @@ export function useMeQuery() {
   });
 }
 
-export const PENDING_INVITES_QUERY_KEY = ["organizations", "invites"] as const;
+export const PENDING_INVITES_QUERY_KEY = ['organizations', 'invites'] as const;
 
 export function usePendingInvitesQuery(enabled: boolean) {
   return useQuery<PendingInviteView[]>({
@@ -69,7 +61,7 @@ export function usePendingInvitesQuery(enabled: boolean) {
   });
 }
 
-export const ORGANIZATIONS_QUERY_KEY = ["organizations", "list"] as const;
+export const ORGANIZATIONS_QUERY_KEY = ['organizations', 'list'] as const;
 
 export function useOrganizationsQuery(enabled: boolean) {
   return useQuery<OrganizationView[]>({
@@ -136,15 +128,14 @@ export function useLeaveOrganizationMutation() {
 export function useDeleteOrganizationMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (organizationId: string) =>
-      deleteOrganization(organizationId),
+    mutationFn: (organizationId: string) => deleteOrganization(organizationId),
     onSuccess: async () => {
       await queryClient.invalidateQueries();
     },
   });
 }
 
-export const NOTIFICATIONS_QUERY_KEY = ["notifications"] as const;
+export const NOTIFICATIONS_QUERY_KEY = ['notifications'] as const;
 
 export function useNotificationsQuery(enabled: boolean) {
   return useQuery<NotificationView[]>({
@@ -168,7 +159,7 @@ export function useClearNotificationMutation() {
   });
 }
 
-export const PROJECTS_QUERY_KEY = ["projects"] as const;
+export const PROJECTS_QUERY_KEY = ['projects'] as const;
 
 export function useProjectsQuery(
   query: GetProjectsQueryDto,
@@ -186,9 +177,9 @@ export function useProjectsQuery(
   });
 }
 
-export const PROJECT_QUERY_KEY = (id: string) => ["projects", id] as const;
+export const PROJECT_QUERY_KEY = (id: string) => ['projects', id] as const;
 export const PROJECT_TASKS_QUERY_KEY = (projectId: string) =>
-  ["projects", projectId, "tasks"] as const;
+  ['projects', projectId, 'tasks'] as const;
 
 export function useProjectQuery(
   projectId: string | null,
@@ -207,11 +198,11 @@ export function useProjectQuery(
   });
 }
 
-export const TASK_QUERY_KEY = (taskId: string) => ["tasks", taskId] as const;
+export const TASK_QUERY_KEY = (taskId: string) => ['tasks', taskId] as const;
 
 export function useProjectTasksQuery(
   projectId: string | null,
-  query: Omit<FindTasksQuery, "projectId"> & { projectId?: string },
+  query: Omit<FindTasksQuery, 'projectId'> & { projectId?: string },
   options?: {
     initialData?: PaginationResult<TaskView>;
     initialDataUpdatedAt?: number;
@@ -219,12 +210,12 @@ export function useProjectTasksQuery(
 ) {
   const effectiveQuery = {
     ...query,
-    projectId: projectId ?? "",
+    projectId: projectId ?? '',
     page: query.page ?? 1,
     limit: query.limit ?? 10,
   };
   return useQuery({
-    queryKey: [...PROJECT_TASKS_QUERY_KEY(projectId ?? ""), effectiveQuery],
+    queryKey: [...PROJECT_TASKS_QUERY_KEY(projectId ?? ''), effectiveQuery],
     queryFn: () => fetchTasks(effectiveQuery),
     enabled: !!projectId,
     staleTime: 30 * 1000,
@@ -241,7 +232,7 @@ export function useTaskQuery(
   },
 ) {
   return useQuery({
-    queryKey: TASK_QUERY_KEY(taskId ?? ""),
+    queryKey: TASK_QUERY_KEY(taskId ?? ''),
     queryFn: () => fetchTask(taskId!),
     enabled: !!taskId,
     staleTime: 30 * 1000,
@@ -251,7 +242,7 @@ export function useTaskQuery(
 }
 
 export const PROJECT_MEMBERS_QUERY_KEY = (projectId: string) =>
-  ["projects", projectId, "members"] as const;
+  ['projects', projectId, 'members'] as const;
 
 export function useProjectMembersQuery(
   projectId: string | null,
@@ -261,7 +252,7 @@ export function useProjectMembersQuery(
   },
 ) {
   return useQuery({
-    queryKey: PROJECT_MEMBERS_QUERY_KEY(projectId ?? ""),
+    queryKey: PROJECT_MEMBERS_QUERY_KEY(projectId ?? ''),
     queryFn: () => fetchProjectMembers(projectId!),
     enabled: !!projectId,
     staleTime: 30 * 1000,
@@ -272,8 +263,8 @@ export function useProjectMembersQuery(
 
 export const USERS_QUERY_KEY = (search?: string) =>
   search?.trim()
-    ? (["users", "search", search.trim()] as const)
-    : (["users"] as const);
+    ? (['users', 'search', search.trim()] as const)
+    : (['users'] as const);
 
 export function useUsersSearchQuery(search: string) {
   const enabled = search.trim().length >= 2;
@@ -290,8 +281,8 @@ export const DASHBOARD_PROJECTS_QUERY: GetProjectsQueryDto = {
   pageSize: 50,
   includeArchived: false,
   search: undefined,
-  filter: "all",
-  sort: "updated-desc",
+  filter: 'all',
+  sort: 'updated-desc',
 };
 export const DASHBOARD_TASKS_LIMIT = 5;
 
@@ -301,18 +292,18 @@ export const DEFAULT_PROJECTS_LIST_QUERY: GetProjectsQueryDto = {
   pageSize: PROJECTS_LIST_PAGE_SIZE,
   includeArchived: false,
   search: undefined,
-  filter: "all",
-  sort: "updated-desc",
+  filter: 'all',
+  sort: 'updated-desc',
 };
 
 export const ORGANIZATION_QUERY_KEY = (id: string) =>
-  ["organizations", "detail", id] as const;
+  ['organizations', 'detail', id] as const;
 export function useOrganizationQuery(
   organizationId: string | null,
   enabled: boolean,
 ) {
   return useQuery<OrganizationDetailView>({
-    queryKey: ORGANIZATION_QUERY_KEY(organizationId ?? ""),
+    queryKey: ORGANIZATION_QUERY_KEY(organizationId ?? ''),
     queryFn: () => fetchOrganization(organizationId!),
     enabled: enabled && !!organizationId,
     staleTime: 10 * 1000,
@@ -322,7 +313,7 @@ export function useOrganizationQuery(
 export function useAllUsersSearchQuery(search: string) {
   const enabled = search.trim().length >= 2;
   return useQuery<UserView[]>({
-    queryKey: ["users", "search", "global", search.trim()],
+    queryKey: ['users', 'search', 'global', search.trim()],
     queryFn: () => fetchAllUsers(search),
     enabled,
     staleTime: 60 * 1000,

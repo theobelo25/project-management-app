@@ -27,10 +27,7 @@ import { AuthCookiesInterceptor } from './interceptors/auth-cookies.interceptor'
 import { Throttle } from '@nestjs/throttler';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
-import {
-  AuthSessionResponseDto,
-  UserViewResponseDto,
-} from '@api/common/swagger/response-dtos';
+import { UserViewResponseDto } from '@api/common/swagger/response-dtos';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -44,7 +41,7 @@ export class AuthController {
   @Public()
   @UseInterceptors(AuthCookiesInterceptor)
   @Throttle({ global: { ttl: 60_000, limit: 60 } })
-  @ZodSerializerDto(AuthSessionResponseDto)
+  @ZodSerializerDto(UserViewResponseDto)
   async signup(@Body() body: SignupRequestDto): Promise<AuthSession> {
     const signupInput: SignupInputDto = {
       email: body.email,
@@ -59,7 +56,7 @@ export class AuthController {
   @Public()
   @UseInterceptors(AuthCookiesInterceptor)
   @Throttle({ global: { ttl: 60_000, limit: 20 } })
-  @ZodSerializerDto(AuthSessionResponseDto)
+  @ZodSerializerDto(UserViewResponseDto)
   async login(@Body() body: LoginRequestDto): Promise<AuthSession> {
     const loginInput: LoginInput = {
       email: body.email,
@@ -80,7 +77,7 @@ export class AuthController {
   @UseInterceptors(AuthCookiesInterceptor)
   @Throttle({ global: { ttl: 60_000, limit: 60 } })
   @ApiCookieAuth('Refresh')
-  @ZodSerializerDto(AuthSessionResponseDto)
+  @ZodSerializerDto(UserViewResponseDto)
   async refreshToken(
     @CurrentRefreshToken() rawRefreshToken: string,
   ): Promise<AuthSession> {

@@ -1,15 +1,15 @@
-import { GeneralSettingsForm } from "@web/components/projects/settings";
+import { GeneralSettingsForm } from '@web/components/projects/settings';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@web/components/ui/card";
-import type { ProjectDetailView } from "@repo/types";
+} from '@web/components/ui/card';
+import type { ProjectDetailView } from '@repo/types';
 
 type GeneralSettingsCardProps = {
-  project: Pick<ProjectDetailView, "id" | "name" | "description">;
+  project: Pick<ProjectDetailView, 'id' | 'name' | 'description'>;
 };
 
 export function GeneralSettingsCard({ project }: GeneralSettingsCardProps) {
@@ -25,7 +25,7 @@ export function GeneralSettingsCard({ project }: GeneralSettingsCardProps) {
         <GeneralSettingsForm
           projectId={project.id}
           defaultName={project.name}
-          defaultDescription={project.description ?? ""}
+          defaultDescription={project.description ?? ''}
         />
       </CardContent>
     </Card>

@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
+import Link from 'next/link';
+import { useParams, usePathname } from 'next/navigation';
 
-import { cn } from "@web/lib/utils";
-import { ROUTES } from "@web/lib/routes";
+import { cn } from '@web/lib/utils';
+import { ROUTES } from '@web/lib/routes';
 
 type ProjectSubnavItem = {
   label: string;
@@ -19,28 +19,28 @@ export function ProjectSubnav() {
   const projectId = params.id as string;
   const items: ProjectSubnavItem[] = [
     {
-      label: "Overview",
+      label: 'Overview',
       href: `${ROUTES.projects}/${projectId}`,
       exact: true,
     },
     {
-      label: "Board",
+      label: 'Board',
       href: `${ROUTES.projects}/${projectId}/board`,
     },
     {
-      label: "Calendar",
+      label: 'Calendar',
       href: `${ROUTES.projects}/${projectId}/calendar`,
     },
     {
-      label: "Tasks",
+      label: 'Tasks',
       href: `${ROUTES.projects}/${projectId}/tasks`,
     },
     {
-      label: "Members",
+      label: 'Members',
       href: `${ROUTES.projects}/${projectId}/members`,
     },
     {
-      label: "Settings",
+      label: 'Settings',
       href: `${ROUTES.projects}/${projectId}/settings`,
     },
   ];
@@ -57,10 +57,10 @@ export function ProjectSubnav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "inline-flex h-11 items-center border-b-2 px-3 text-sm font-medium whitespace-nowrap transition-colors",
+                'inline-flex h-11 items-center border-b-2 px-3 text-sm font-medium whitespace-nowrap transition-colors',
                 isActive
-                  ? "border-primary text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground",
+                  ? 'border-primary text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground',
               )}
             >
               {item.label}

@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { Pencil } from "lucide-react";
+import { Pencil } from 'lucide-react';
 
-import { PageHeader } from "@web/components/projects";
+import { PageHeader } from '@web/components/projects';
 import {
   formatTaskStatus,
   getStatusBadgeVariant,
-} from "@web/components/projects/utils";
-import { Badge } from "@web/components/ui/badge";
-import { Button } from "@web/components/ui/button";
-import { ROUTES } from "@web/lib/routes";
-import { useTaskDetail } from "./task-detail-context";
-import type { TaskForHeaderTask } from "./types";
+} from '@web/components/projects/utils';
+import { Badge } from '@web/components/ui/badge';
+import { Button } from '@web/components/ui/button';
+import { ROUTES } from '@web/lib/routes';
+import { useTaskDetail } from './task-detail-context';
+import type { TaskForHeaderTask } from './types';
 
 type TaskDetailHeaderProps = {
   projectId: string;

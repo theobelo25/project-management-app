@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { useForm, type FieldValues } from "react-hook-form";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useEffect } from 'react';
+import { useForm, type FieldValues } from 'react-hook-form';
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 
-import { Button } from "@web/components/ui/button";
-import { Input } from "@web/components/ui/input";
-import { Label } from "@web/components/ui/label";
-import { Textarea } from "@web/components/ui/textarea";
+import { Button } from '@web/components/ui/button';
+import { Input } from '@web/components/ui/input';
+import { Label } from '@web/components/ui/label';
+import { Textarea } from '@web/components/ui/textarea';
 
 type TaskFormProps<TValues extends FieldValues> = {
   projectId: string;
@@ -39,7 +39,7 @@ export function TaskForm<TValues extends FieldValues>({
       ...(defaultValues ?? {}),
       projectId,
     } as never,
-    mode: "onSubmit",
+    mode: 'onSubmit',
   });
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export function TaskForm<TValues extends FieldValues>({
           type="text"
           placeholder="Finish project toolbar"
           aria-invalid={!!(errors as any).title}
-          {...register("title" as never)}
+          {...register('title' as never)}
         />
         {(errors as any).title && (
           <p className="text-sm text-destructive">
@@ -76,7 +76,7 @@ export function TaskForm<TValues extends FieldValues>({
           placeholder="Add search, filter, and sort controls to the projects page"
           rows={4}
           aria-invalid={!!(errors as any).description}
-          {...register("description" as never)}
+          {...register('description' as never)}
         />
         {(errors as any).description && (
           <p className="text-sm text-destructive">
@@ -91,7 +91,7 @@ export function TaskForm<TValues extends FieldValues>({
           id="dueDate"
           type="date"
           aria-invalid={!!(errors as any).dueDate}
-          {...register("dueDate" as never)}
+          {...register('dueDate' as never)}
         />
         {(errors as any).dueDate && (
           <p className="text-sm text-destructive">
@@ -105,7 +105,7 @@ export function TaskForm<TValues extends FieldValues>({
       ) : null}
 
       <Button type="submit" className="w-full" disabled={submitting}>
-        {submitting ? `${submitLabel ?? "Save"}...` : (submitLabel ?? "Save")}
+        {submitting ? `${submitLabel ?? 'Save'}...` : (submitLabel ?? 'Save')}
       </Button>
     </form>
   );

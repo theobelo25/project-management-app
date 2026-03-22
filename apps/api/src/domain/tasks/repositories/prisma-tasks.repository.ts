@@ -117,12 +117,31 @@ function mapAccessPayloadToContext(
   };
 }
 
+function buildTaskUncheckedCreateInput(
+  data: CreateTaskInput,
+): Prisma.TaskUncheckedCreateInput {
+  const { assigneeIds, ...rest } = data;
+  const uniqueAssigneeIds =
+    assigneeIds && assigneeIds.length > 0 ? [...new Set(assigneeIds)] : [];
+
+  return {
+    ...rest,
+    ...(uniqueAssigneeIds.length > 0
+      ? {
+          assignees: {
+            create: uniqueAssigneeIds.map((userId) => ({ userId })),
+          },
+        }
+      : {}),
+  };
+}
+
 function createTask(
   prisma: PrismaLike,
   data: CreateTaskInput,
 ): Promise<TaskWithAssignees> {
   return prisma.task.create({
-    data,
+    data: buildTaskUncheckedCreateInput(data),
     include: taskWithAssigneesInclude,
   });
 }

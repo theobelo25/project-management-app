@@ -27,9 +27,11 @@ import {
   OrganizationInviteView,
   AddOrganizationMemberDto,
   OrganizationMemberView,
-} from "@repo/types";
+} from '@repo/types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+import { getPublicApiBaseUrl } from './public-api-url';
+
+const API_BASE = getPublicApiBaseUrl();
 
 type SessionExpiredHandler = () => void;
 let sessionExpiredHandler: SessionExpiredHandler | null = null;
@@ -45,8 +47,8 @@ async function doRefresh(): Promise<boolean> {
   refreshPromise = (async () => {
     try {
       const res = await fetch(`${API_BASE}/api/auth/refresh`, {
-        method: "POST",
-        credentials: "include",
+        method: 'POST',
+        credentials: 'include',
       });
       return res.ok;
     } finally {
@@ -57,7 +59,7 @@ async function doRefresh(): Promise<boolean> {
 }
 
 function isRefreshUrl(url: string): boolean {
-  return url.includes("/auth/refresh");
+  return url.includes('/auth/refresh');
 }
 
 export async function fetchWithAuth(
@@ -65,7 +67,7 @@ export async function fetchWithAuth(
   init?: RequestInit,
 ): Promise<Response> {
   const url =
-    typeof input === "string"
+    typeof input === 'string'
       ? input
       : input instanceof Request
         ? input.url
@@ -73,7 +75,7 @@ export async function fetchWithAuth(
 
   let res = await fetch(input, {
     ...init,
-    credentials: "include",
+    credentials: 'include',
   });
 
   if (res.status === 401 && !isRefreshUrl(url)) {
@@ -81,11 +83,11 @@ export async function fetchWithAuth(
     if (refreshed) {
       res = await fetch(input, {
         ...init,
-        credentials: "include",
+        credentials: 'include',
       });
     } else {
       sessionExpiredHandler?.();
-      throw new Error("Session expired");
+      throw new Error('Session expired');
     }
   }
 
@@ -95,15 +97,15 @@ export async function fetchWithAuth(
 // PUBLIC ROUTES
 export async function signup(dto: SignupRequestDto): Promise<UserView | null> {
   const res = await fetch(`${API_BASE}/api/auth/signup`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(dto),
-    credentials: "include",
+    credentials: 'include',
   });
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to sign up");
+    throw new Error(error.message ?? 'Failed to sign up');
   }
 
   return res.json();
@@ -111,15 +113,15 @@ export async function signup(dto: SignupRequestDto): Promise<UserView | null> {
 
 export async function signin(dto: LoginRequestDto): Promise<UserView | null> {
   const res = await fetch(`${API_BASE}/api/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(dto),
-    credentials: "include",
+    credentials: 'include',
   });
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to sign up");
+    throw new Error(error.message ?? 'Failed to sign in');
   }
 
   return res.json();
@@ -127,14 +129,14 @@ export async function signin(dto: LoginRequestDto): Promise<UserView | null> {
 
 export async function logout(): Promise<void> {
   const res = await fetch(`${API_BASE}/api/auth/logout`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
   });
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to sign up");
+    throw new Error(error.message ?? 'Failed to sign out');
   }
 
   return;
@@ -143,11 +145,11 @@ export async function logout(): Promise<void> {
 // PROTECTED ROUTES
 export async function fetchMe(): Promise<UserView | null> {
   const res = await fetchWithAuth(`${API_BASE}/api/auth/me`, {
-    credentials: "include",
+    credentials: 'include',
   });
 
   if (res.status === 401) return null;
-  if (!res.ok) throw new Error("Failed to fetch user");
+  if (!res.ok) throw new Error('Failed to fetch user');
 
   return res.json();
 }
@@ -155,57 +157,51 @@ export async function fetchMe(): Promise<UserView | null> {
 /** Invites (for org switching) */
 export async function fetchPendingInvites(): Promise<PendingInviteView[]> {
   const res = await fetchWithAuth(`${API_BASE}/api/organizations/invites`, {
-    credentials: "include",
+    credentials: 'include',
   });
-  if (!res.ok) throw new Error("Failed to fetch invites");
+  if (!res.ok) throw new Error('Failed to fetch invites');
   return res.json();
 }
 
-export async function acceptInviteById(
-  inviteId: string,
-): Promise<void> {
+export async function acceptInviteById(inviteId: string): Promise<void> {
   const res = await fetchWithAuth(
     `${API_BASE}/api/organizations/invites/${inviteId}/accept`,
-    { method: "POST", credentials: "include" },
+    { method: 'POST', credentials: 'include' },
   );
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to accept invite");
+    throw new Error(error.message ?? 'Failed to accept invite');
   }
 }
 
-export async function declineInviteById(
-  inviteId: string,
-): Promise<void> {
+export async function declineInviteById(inviteId: string): Promise<void> {
   const res = await fetchWithAuth(
     `${API_BASE}/api/organizations/invites/${inviteId}/decline`,
-    { method: "POST", credentials: "include" },
+    { method: 'POST', credentials: 'include' },
   );
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to decline invite");
+    throw new Error(error.message ?? 'Failed to decline invite');
   }
 }
 
 /** Notifications (task assigned, etc.) */
 export async function fetchNotifications(): Promise<NotificationView[]> {
   const res = await fetchWithAuth(`${API_BASE}/api/notifications`, {
-    credentials: "include",
+    credentials: 'include',
   });
-  if (!res.ok) throw new Error("Failed to fetch notifications");
+  if (!res.ok) throw new Error('Failed to fetch notifications');
   return res.json();
 }
 
-export async function clearNotification(
-  notificationId: string,
-): Promise<void> {
+export async function clearNotification(notificationId: string): Promise<void> {
   const res = await fetchWithAuth(
     `${API_BASE}/api/notifications/${notificationId}/clear`,
-    { method: "POST", credentials: "include" },
+    { method: 'POST', credentials: 'include' },
   );
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to clear notification");
+    throw new Error(error.message ?? 'Failed to clear notification');
   }
   return;
 }
@@ -214,19 +210,19 @@ export async function fetchProjects(
   query: GetProjectsQueryDto,
 ): Promise<PaginatedProjectsListView> {
   const params = new URLSearchParams();
-  params.set("page", String(query.page));
-  params.set("pageSize", String(query.pageSize));
+  params.set('page', String(query.page));
+  params.set('pageSize', String(query.pageSize));
   if (query.includeArchived !== undefined)
-    params.set("includeArchived", String(query.includeArchived));
-  if (query.search) params.set("search", query.search);
-  if (query.filter) params.set("filter", query.filter);
-  if (query.sort) params.set("sort", query.sort);
+    params.set('includeArchived', String(query.includeArchived));
+  if (query.search) params.set('search', query.search);
+  if (query.filter) params.set('filter', query.filter);
+  if (query.sort) params.set('sort', query.sort);
 
   const res = await fetchWithAuth(
     `${API_BASE}/api/projects?${params.toString()}`,
-    { credentials: "include" },
+    { credentials: 'include' },
   );
-  if (!res.ok) throw new Error("Failed to fetch projects");
+  if (!res.ok) throw new Error('Failed to fetch projects');
   return res.json();
 }
 
@@ -234,25 +230,25 @@ export async function createProject(
   dto: CreateProjectDto,
 ): Promise<ProjectView> {
   const res = await fetchWithAuth(`${API_BASE}/api/projects`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(dto),
-    credentials: "include",
+    credentials: 'include',
   });
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to create project");
+    throw new Error(error.message ?? 'Failed to create project');
   }
   return res.json();
 }
 
 export async function fetchProject(id: string): Promise<ProjectDetailView> {
   const res = await fetchWithAuth(`${API_BASE}/api/projects/${id}`, {
-    credentials: "include",
+    credentials: 'include',
   });
   if (!res.ok) {
-    if (res.status === 404) throw new Error("Project not found");
-    throw new Error("Failed to fetch project");
+    if (res.status === 404) throw new Error('Project not found');
+    throw new Error('Failed to fetch project');
   }
   return res.json();
 }
@@ -262,14 +258,14 @@ export async function createTask(
   dto: CreateTaskDto,
 ): Promise<TaskView> {
   const res = await fetchWithAuth(`${API_BASE}/api/tasks`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ...dto, projectId }),
-    credentials: "include",
+    credentials: 'include',
   });
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to create task");
+    throw new Error(error.message ?? 'Failed to create task');
   }
   return res.json();
 }
@@ -278,29 +274,29 @@ export async function fetchTasks(
   query: FindTasksQuery,
 ): Promise<PaginationResult<TaskView>> {
   const params = new URLSearchParams();
-  params.set("projectId", query.projectId);
-  params.set("page", String(query.page ?? 1));
-  params.set("limit", String(query.limit ?? 20));
-  if (query.status) params.set("status", query.status);
-  if (query.assigneeId) params.set("assigneeId", query.assigneeId);
-  if (query.search?.trim()) params.set("search", query.search.trim());
+  params.set('projectId', query.projectId);
+  params.set('page', String(query.page ?? 1));
+  params.set('limit', String(query.limit ?? 20));
+  if (query.status) params.set('status', query.status);
+  if (query.assigneeId) params.set('assigneeId', query.assigneeId);
+  if (query.search?.trim()) params.set('search', query.search.trim());
 
   const res = await fetchWithAuth(
     `${API_BASE}/api/tasks?${params.toString()}`,
-    { credentials: "include" },
+    { credentials: 'include' },
   );
 
-  if (!res.ok) throw new Error("Failed to fetch tasks");
+  if (!res.ok) throw new Error('Failed to fetch tasks');
   return res.json();
 }
 
 export async function fetchTask(taskId: string): Promise<TaskView> {
   const res = await fetchWithAuth(`${API_BASE}/api/tasks/${taskId}`, {
-    credentials: "include",
+    credentials: 'include',
   });
   if (!res.ok) {
-    if (res.status === 404) throw new Error("Task not found");
-    throw new Error("Failed to fetch task.");
+    if (res.status === 404) throw new Error('Task not found');
+    throw new Error('Failed to fetch task.');
   }
   return res.json();
 }
@@ -310,38 +306,38 @@ export async function updateProject(
   dto: UpdateProjectDto,
 ): Promise<ProjectView> {
   const res = await fetchWithAuth(`${API_BASE}/api/projects/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(dto),
-    credentials: "include",
+    credentials: 'include',
   });
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to update project");
+    throw new Error(error.message ?? 'Failed to update project');
   }
   return res.json();
 }
 
 export async function archiveProject(id: string): Promise<ProjectView> {
   const res = await fetchWithAuth(`${API_BASE}/api/projects/${id}/archive`, {
-    method: "PATCH",
-    credentials: "include",
+    method: 'PATCH',
+    credentials: 'include',
   });
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to archive project");
+    throw new Error(error.message ?? 'Failed to archive project');
   }
   return res.json();
 }
 
 export async function unarchiveProject(id: string): Promise<ProjectView> {
   const res = await fetchWithAuth(`${API_BASE}/api/projects/${id}/unarchive`, {
-    method: "PATCH",
-    credentials: "include",
+    method: 'PATCH',
+    credentials: 'include',
   });
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to unarchive project");
+    throw new Error(error.message ?? 'Failed to unarchive project');
   }
   return res.json();
 }
@@ -351,9 +347,9 @@ export async function fetchProjectMembers(
 ): Promise<ProjectMembersView> {
   const res = await fetchWithAuth(
     `${API_BASE}/api/projects/${projectId}/members`,
-    { credentials: "include" },
+    { credentials: 'include' },
   );
-  if (!res.ok) throw new Error("Failed to fetch project members");
+  if (!res.ok) throw new Error('Failed to fetch project members');
   return res.json();
 }
 
@@ -364,15 +360,15 @@ export async function addProjectMember(
   const res = await fetchWithAuth(
     `${API_BASE}/api/projects/${projectId}/members`,
     {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(dto),
-      credentials: "include",
+      credentials: 'include',
     },
   );
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to add member");
+    throw new Error(error.message ?? 'Failed to add member');
   }
   return res.json();
 }
@@ -385,15 +381,15 @@ export async function updateProjectMemberRole(
   const res = await fetchWithAuth(
     `${API_BASE}/api/projects/${projectId}/members/${userId}`,
     {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(dto),
-      credentials: "include",
+      credentials: 'include',
     },
   );
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to update role");
+    throw new Error(error.message ?? 'Failed to update role');
   }
   return res.json();
 }
@@ -404,11 +400,11 @@ export async function removeProjectMember(
 ): Promise<void> {
   const res = await fetchWithAuth(
     `${API_BASE}/api/projects/${projectId}/members/${userId}`,
-    { method: "DELETE", credentials: "include" },
+    { method: 'DELETE', credentials: 'include' },
   );
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to remove member");
+    throw new Error(error.message ?? 'Failed to remove member');
   }
 }
 
@@ -416,19 +412,19 @@ export async function fetchUsers(search?: string): Promise<UserView[]> {
   const url = search?.trim()
     ? `${API_BASE}/api/users?search=${encodeURIComponent(search.trim())}`
     : `${API_BASE}/api/users`;
-  const res = await fetchWithAuth(url, { credentials: "include" });
-  if (!res.ok) throw new Error("Failed to fetch users");
+  const res = await fetchWithAuth(url, { credentials: 'include' });
+  if (!res.ok) throw new Error('Failed to fetch users');
   return res.json();
 }
 
 export async function deleteTask(taskId: string): Promise<void> {
   const res = await fetchWithAuth(`${API_BASE}/api/tasks/${taskId}`, {
-    method: "DELETE",
-    credentials: "include",
+    method: 'DELETE',
+    credentials: 'include',
   });
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to delete task");
+    throw new Error(error.message ?? 'Failed to delete task');
   }
 }
 
@@ -438,17 +434,17 @@ export async function updateTask(
   payload: UpdateTaskInput,
 ): Promise<TaskView> {
   const response = await fetchWithAuth(`${API_BASE}/api/tasks/${taskId}`, {
-    method: "PATCH",
+    method: 'PATCH',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
-    credentials: "include",
+    credentials: 'include',
     body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
     const error = await response.json().catch(() => null);
-    throw new Error(error?.message ?? "Failed to update task");
+    throw new Error(error?.message ?? 'Failed to update task');
   }
 
   return response.json();
@@ -456,12 +452,12 @@ export async function updateTask(
 
 export async function deleteProject(projectId: string): Promise<void> {
   const res = await fetchWithAuth(`${API_BASE}/api/projects/${projectId}`, {
-    method: "DELETE",
-    credentials: "include",
+    method: 'DELETE',
+    credentials: 'include',
   });
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to delete project");
+    throw new Error(error.message ?? 'Failed to delete project');
   }
 }
 
@@ -472,13 +468,13 @@ export async function assignTaskUser(
   const res = await fetchWithAuth(
     `${API_BASE}/api/tasks/${taskId}/assignees/${userId}`,
     {
-      method: "POST",
-      credentials: "include",
+      method: 'POST',
+      credentials: 'include',
     },
   );
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to assign user to task");
+    throw new Error(error.message ?? 'Failed to assign user to task');
   }
   return res.json();
 }
@@ -490,21 +486,21 @@ export async function unassignTaskUser(
   const res = await fetchWithAuth(
     `${API_BASE}/api/tasks/${taskId}/assignees/${userId}`,
     {
-      method: "DELETE",
-      credentials: "include",
+      method: 'DELETE',
+      credentials: 'include',
     },
   );
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to unassign user from task");
+    throw new Error(error.message ?? 'Failed to unassign user from task');
   }
 }
 
 export async function fetchOrganizations(): Promise<OrganizationView[]> {
   const res = await fetchWithAuth(`${API_BASE}/api/organizations`, {
-    credentials: "include",
+    credentials: 'include',
   });
-  if (!res.ok) throw new Error("Failed to fetch organizations");
+  if (!res.ok) throw new Error('Failed to fetch organizations');
   return res.json();
 }
 
@@ -512,14 +508,14 @@ export async function createOrganization(
   dto: CreateOrganizationDto,
 ): Promise<void> {
   const res = await fetchWithAuth(`${API_BASE}/api/organizations`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(dto),
-    credentials: "include",
+    credentials: 'include',
   });
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to create organization");
+    throw new Error(error.message ?? 'Failed to create organization');
   }
 }
 
@@ -529,13 +525,13 @@ export async function switchOrganization(
   const res = await fetchWithAuth(
     `${API_BASE}/api/organizations/${organizationId}/switch`,
     {
-      method: "POST",
-      credentials: "include",
+      method: 'POST',
+      credentials: 'include',
     },
   );
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to switch organization");
+    throw new Error(error.message ?? 'Failed to switch organization');
   }
 }
 
@@ -545,12 +541,12 @@ export async function fetchOrganization(
   const res = await fetchWithAuth(
     `${API_BASE}/api/organizations/${organizationId}`,
     {
-      credentials: "include",
+      credentials: 'include',
     },
   );
   if (!res.ok) {
-    if (res.status === 404) throw new Error("Organization not found");
-    throw new Error("Failed to fetch organization");
+    if (res.status === 404) throw new Error('Organization not found');
+    throw new Error('Failed to fetch organization');
   }
   return res.json();
 }
@@ -558,30 +554,28 @@ export async function createOrganizationInvite(
   dto: CreateOrganizationInviteDto,
 ): Promise<OrganizationInviteView> {
   const res = await fetchWithAuth(`${API_BASE}/api/organizations/invites`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(dto),
-    credentials: "include",
+    credentials: 'include',
   });
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to create invite");
+    throw new Error(error.message ?? 'Failed to create invite');
   }
   return res.json();
 }
-export async function leaveOrganization(
-  organizationId: string,
-): Promise<void> {
+export async function leaveOrganization(organizationId: string): Promise<void> {
   const res = await fetchWithAuth(
     `${API_BASE}/api/organizations/${organizationId}/leave`,
     {
-      method: "POST",
-      credentials: "include",
+      method: 'POST',
+      credentials: 'include',
     },
   );
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to leave organization");
+    throw new Error(error.message ?? 'Failed to leave organization');
   }
 }
 export async function deleteOrganization(
@@ -590,13 +584,13 @@ export async function deleteOrganization(
   const res = await fetchWithAuth(
     `${API_BASE}/api/organizations/${organizationId}`,
     {
-      method: "DELETE",
-      credentials: "include",
+      method: 'DELETE',
+      credentials: 'include',
     },
   );
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to delete organization");
+    throw new Error(error.message ?? 'Failed to delete organization');
   }
 }
 
@@ -604,8 +598,8 @@ export async function fetchAllUsers(search?: string): Promise<UserView[]> {
   const url = search?.trim()
     ? `${API_BASE}/api/users/search?search=${encodeURIComponent(search.trim())}`
     : `${API_BASE}/api/users/search`;
-  const res = await fetchWithAuth(url, { credentials: "include" });
-  if (!res.ok) throw new Error("Failed to fetch users");
+  const res = await fetchWithAuth(url, { credentials: 'include' });
+  if (!res.ok) throw new Error('Failed to fetch users');
   return res.json();
 }
 export async function addOrganizationMember(
@@ -615,15 +609,15 @@ export async function addOrganizationMember(
   const res = await fetchWithAuth(
     `${API_BASE}/api/organizations/${organizationId}/members`,
     {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(dto),
-      credentials: "include",
+      credentials: 'include',
     },
   );
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? "Failed to add member");
+    throw new Error(error.message ?? 'Failed to add member');
   }
   return res.json();
 }

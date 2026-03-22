@@ -1,10 +1,10 @@
 // apps/web/src/app/(protected)/projects/error.tsx
 
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { PageLayout } from "@web/components/layout/page-layout";
-import { Button } from "@web/components/ui/button";
+import { useEffect } from 'react';
+import { PageLayout } from '@web/components/layout/page-layout';
+import { Button } from '@web/components/ui/button';
 
 export default function ProjectsError({
   error,
@@ -14,7 +14,7 @@ export default function ProjectsError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("Projects page error:", error);
+    console.error('Projects page error:', error);
   }, [error]);
 
   return (

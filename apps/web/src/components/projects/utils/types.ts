@@ -1,9 +1,9 @@
-import { ProjectRole } from "@repo/types";
+import type { ProjectRole, TaskStatus } from '@repo/types';
 
 export type ProjectTask = {
   id: string;
   title: string;
-  status: "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE";
+  status: TaskStatus;
 };
 
 export type MemberWithRole = {

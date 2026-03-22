@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useDraggable } from "@dnd-kit/core";
-import { CSS } from "@dnd-kit/utilities";
+import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@web/components/ui/card";
-import type { BoardTask } from "./types";
+} from '@web/components/ui/card';
+import type { BoardTask } from './types';
 
 type BoardCardProps = {
   task: BoardTask;
@@ -48,7 +48,7 @@ export function BoardCard({ task, isOverlay = false }: BoardCardProps) {
       ref={setNodeRef}
       style={style}
       className={`cursor-grab active:cursor-grabbing transition hover:bg-muted/60 ${
-        isDragging ? "opacity-50" : ""
+        isDragging ? 'opacity-50' : ''
       }`}
       {...listeners}
       {...attributes}

@@ -1,11 +1,11 @@
-import { notFound } from "next/navigation";
-import { HydrationBoundary } from "@tanstack/react-query";
+import { notFound } from 'next/navigation';
+import { HydrationBoundary } from '@tanstack/react-query';
 import {
   createServerQueryClient,
   prefetchProject,
   prefetchProjectMembers,
   dehydrateClient,
-} from "@web/lib/api/prefetch";
+} from '@web/lib/api/prefetch';
 
 type LayoutProps = {
   children: React.ReactNode;
@@ -25,8 +25,8 @@ export default async function ProjectMembersLayout({
       prefetchProjectMembers(client, projectId),
     ]);
   } catch (e) {
-    const message = e instanceof Error ? e.message : "";
-    if (message === "Project not found") notFound();
+    const message = e instanceof Error ? e.message : '';
+    if (message === 'Project not found') notFound();
     throw e;
   }
 

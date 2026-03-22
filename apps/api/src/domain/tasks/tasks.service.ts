@@ -51,8 +51,44 @@ export class TasksService {
    */
 
   async create(user: AuthUser, dto: CreateTaskDto): Promise<TaskView> {
+    const assigneeIds =
+      dto.assigneeIds && dto.assigneeIds.length > 0
+        ? [...new Set(dto.assigneeIds)]
+        : [];
+
+    for (const assigneeUserId of assigneeIds) {
+      await this.taskAssigneePolicy.assertAssigneeInSameOrgOrThrow(
+        assigneeUserId,
+        user,
+      );
+    }
+
     const input = toCreateTaskInput(dto, user.id);
     const task = await this.tasksRepository.create(input);
+
+    for (const assigneeUserId of assigneeIds) {
+      if (assigneeUserId === user.id) continue;
+      try {
+        await this.taskAssignmentNotifier.notifyTaskAssigned(assigneeUserId, {
+          taskId: task.id,
+          taskTitle: task.title,
+          projectId: task.projectId,
+          assignedById: user.id,
+        });
+      } catch (err) {
+        this.logger.warn(
+          {
+            ...TASKS_LOG_CTX,
+            event: 'task.created.assignee_notification_failed',
+            taskId: task.id,
+            userId: assigneeUserId,
+            createdById: user.id,
+            err,
+          },
+          'Failed to notify task assignee on create',
+        );
+      }
+    }
 
     this.logger.info(
       {

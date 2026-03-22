@@ -1,12 +1,12 @@
-import { DashboardContent } from "@web/components/dashboard/dashboard-content";
+import { DashboardContent } from '@web/components/dashboard/dashboard-content';
 import {
   fetchProjectsServer,
   fetchTasksServer,
-} from "@web/lib/api/server-client";
+} from '@web/lib/api/server-client';
 import {
   DASHBOARD_PROJECTS_QUERY,
   DASHBOARD_TASKS_LIMIT,
-} from "@web/lib/api/queries";
+} from '@web/lib/api/queries';
 
 export default async function DashboardPage() {
   let initialProjects = null;

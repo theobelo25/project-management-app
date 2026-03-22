@@ -1,4 +1,4 @@
-import { PageLayout } from "@web/components/layout/page-layout";
+import { PageLayout } from '@web/components/layout/page-layout';
 
 export default function Loading() {
   return (

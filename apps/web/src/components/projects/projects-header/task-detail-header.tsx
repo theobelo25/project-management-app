@@ -2,4 +2,4 @@ export {
   TaskDetailHeader,
   TaskDetailProvider,
   useTaskDetail,
-} from "./task-detail-header/index";
+} from './task-detail-header/index';

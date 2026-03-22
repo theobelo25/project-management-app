@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import { useQueries } from "@tanstack/react-query";
-import { PageLayout } from "@web/components/layout/page-layout";
+import { useQueries } from '@tanstack/react-query';
+import { PageLayout } from '@web/components/layout/page-layout';
 import {
   DashboardProjectsCard,
   DashboardStats,
   DashboardTasksCard,
   DashboardWelcome,
-} from "@web/components/dashboard";
-import { fetchTasks } from "@web/lib/api/client";
+} from '@web/components/dashboard';
+import { fetchTasks } from '@web/lib/api/client';
 import {
   DASHBOARD_PROJECTS_QUERY,
   DASHBOARD_TASKS_LIMIT,
   PROJECT_TASKS_QUERY_KEY,
   useProjectsQuery,
-} from "@web/lib/api/queries";
+} from '@web/lib/api/queries';
 import type {
   PaginatedProjectsListView,
   PaginationResult,
   TaskView,
-} from "@repo/types";
+} from '@repo/types';
 
 const DASHBOARD_TASK_PROJECTS = 3;
 
@@ -86,10 +86,7 @@ export function DashboardContent({
   });
 
   const totalProjects = projectsData?.total ?? 0;
-  const openTasksCount = projectItems.reduce(
-    (sum, p) => sum + p.openTasks,
-    0,
-  );
+  const openTasksCount = projectItems.reduce((sum, p) => sum + p.openTasks, 0);
   const completedCount = projectItems.reduce(
     (sum, p) => sum + p.completedTasks,
     0,
@@ -97,22 +94,22 @@ export function DashboardContent({
 
   const stats = [
     {
-      title: "Projects",
+      title: 'Projects',
       value: String(totalProjects),
-      description: "Active workspaces",
-      iconKey: "projects" as const,
+      description: 'Active workspaces',
+      iconKey: 'projects' as const,
     },
     {
-      title: "Open Tasks",
+      title: 'Open Tasks',
       value: String(openTasksCount),
-      description: "Still in progress",
-      iconKey: "open" as const,
+      description: 'Still in progress',
+      iconKey: 'open' as const,
     },
     {
-      title: "Completed",
+      title: 'Completed',
       value: String(completedCount),
-      description: "Finished this month",
-      iconKey: "completed" as const,
+      description: 'Finished this month',
+      iconKey: 'completed' as const,
     },
   ];
 
@@ -130,7 +127,7 @@ export function DashboardContent({
     return (
       <PageLayout className="space-y-6 pb-6">
         <div className="p-6 text-destructive">
-          {error instanceof Error ? error.message : "Failed to load dashboard"}
+          {error instanceof Error ? error.message : 'Failed to load dashboard'}
         </div>
       </PageLayout>
     );

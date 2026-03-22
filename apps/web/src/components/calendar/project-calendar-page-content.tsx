@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from 'react';
 import {
   InvalidProjectMessage,
   PageErrorMessage,
   PageLoadingMessage,
-} from "@web/components/projects";
-import { useProjectQuery, useProjectTasksQuery } from "@web/lib/api/queries";
-import { useUpdateTaskDueDate } from "@web/lib/api/mutations/use-update-task-due-date";
-import { MonthCalendar } from "./month-calendar";
-import { getCalendarDaysForMonth } from "./calendar-days";
-import { formatMonthLabel, getTodayDateString } from "./format";
-import { taskViewToCalendarTask } from "./task-view-to-calendar-task";
-import type { CalendarDay, CalendarTask } from "./types";
+} from '@web/components/projects';
+import { useProjectQuery, useProjectTasksQuery } from '@web/lib/api/queries';
+import { useUpdateTaskDueDate } from '@web/lib/api/mutations/use-update-task-due-date';
+import { MonthCalendar } from './month-calendar';
+import { getCalendarDaysForMonth } from './calendar-days';
+import { formatMonthLabel, getTodayDateString } from './format';
+import { taskViewToCalendarTask } from './task-view-to-calendar-task';
+import type { CalendarDay, CalendarTask } from './types';
 
 const CALENDAR_TASKS_LIMIT = 100;
 

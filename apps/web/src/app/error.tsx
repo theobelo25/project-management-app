@@ -1,7 +1,8 @@
-"use client";
-import { PageLayout } from "@web/components/layout/page-layout";
-import { Button } from "@web/components/ui/button";
-import { useEffect } from "react";
+'use client';
+import { PageLayout } from '@web/components/layout/page-layout';
+import { Button } from '@web/components/ui/button';
+import Link from 'next/link';
+import { useEffect } from 'react';
 
 export default function Error({
   error,
@@ -23,7 +24,7 @@ export default function Error({
         <div className="flex gap-3">
           <Button onClick={reset}>Try again</Button>
           <Button variant="outline" asChild>
-            <a href="/">Go home</a>
+            <Link href="/">Go home</Link>
           </Button>
         </div>
       </div>

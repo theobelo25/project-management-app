@@ -1,4 +1,4 @@
-import { ProjectCalendarPageContent } from "@web/components/calendar";
+import { ProjectCalendarPageContent } from '@web/components/calendar';
 type PageProps = {
   params: Promise<{ id: string }>;
 };

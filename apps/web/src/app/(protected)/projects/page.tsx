@@ -1,16 +1,15 @@
-import { fetchProjectsServer } from "@web/lib/api/server-client";
+import { fetchProjectsServer } from '@web/lib/api/server-client';
 import {
   DEFAULT_PROJECTS_LIST_QUERY,
   PROJECTS_LIST_PAGE_SIZE,
-} from "@web/lib/api/queries";
-import { ProjectsPageContent } from "@web/components/projects";
-import { parseProjectsSearchParams } from "./params";
-import { PageLayout } from "@web/components/layout/page-layout";
+} from '@web/lib/api/queries';
+import { ProjectsPageContent } from '@web/components/projects';
+import { parseProjectsSearchParams } from './params';
 
 export const metadata = {
-  title: "Projects",
+  title: 'Projects',
   description:
-    "Manage your projects, track progress, and collaborate with your team.",
+    'Manage your projects, track progress, and collaborate with your team.',
 };
 
 type PageProps = {
@@ -26,9 +25,9 @@ export default async function ProjectsPage({ searchParams }: PageProps) {
     ...DEFAULT_PROJECTS_LIST_QUERY,
     page,
     pageSize: PROJECTS_LIST_PAGE_SIZE,
-    includeArchived: filter === "archived",
+    includeArchived: filter === 'archived',
     search:
-      (typeof search === "string" ? search : (search?.[0] ?? "")).trim() ||
+      (typeof search === 'string' ? search : (search?.[0] ?? '')).trim() ||
       undefined,
     filter,
     sort,

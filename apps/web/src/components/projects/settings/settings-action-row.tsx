@@ -1,23 +1,23 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 type SettingsActionRowProps = {
   title: string;
   description: string;
   children: ReactNode;
   /** When true, uses destructive border styling. */
-  variant?: "default" | "destructive";
+  variant?: 'default' | 'destructive';
 };
 
 export function SettingsActionRow({
   title,
   description,
   children,
-  variant = "default",
+  variant = 'default',
 }: SettingsActionRowProps) {
   const borderClass =
-    variant === "destructive"
-      ? "rounded-xl border border-destructive/20 p-4"
-      : "rounded-xl border p-4";
+    variant === 'destructive'
+      ? 'rounded-xl border border-destructive/20 p-4'
+      : 'rounded-xl border p-4';
 
   return (
     <div className={borderClass}>

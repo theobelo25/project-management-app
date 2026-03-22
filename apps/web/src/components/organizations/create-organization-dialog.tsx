@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useState, type ReactNode } from "react";
-import { useForm } from "react-hook-form";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { Plus } from "lucide-react";
-import { toast } from "sonner";
+import { useState, type ReactNode } from 'react';
+import { useForm } from 'react-hook-form';
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
+import { Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
-import { Button } from "@web/components/ui/button";
+import { Button } from '@web/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -14,14 +14,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@web/components/ui/dialog";
-import { Input } from "@web/components/ui/input";
-import { Label } from "@web/components/ui/label";
+} from '@web/components/ui/dialog';
+import { Input } from '@web/components/ui/input';
+import { Label } from '@web/components/ui/label';
 import {
   CreateOrganizationSchema,
   type CreateOrganizationDto,
-} from "@repo/types";
-import { useCreateOrganizationMutation } from "@web/lib/api/queries";
+} from '@repo/types';
+import { useCreateOrganizationMutation } from '@web/lib/api/queries';
 
 type CreateOrganizationDialogProps = {
   trigger?: ReactNode;
@@ -30,7 +30,7 @@ type CreateOrganizationDialogProps = {
 
 export function CreateOrganizationDialog({
   trigger,
-  triggerLabel = "New organization",
+  triggerLabel = 'New organization',
 }: CreateOrganizationDialogProps) {
   const [open, setOpen] = useState(false);
   const createOrganizationMutation = useCreateOrganizationMutation();
@@ -43,30 +43,29 @@ export function CreateOrganizationDialog({
   } = useForm<CreateOrganizationDto>({
     resolver: standardSchemaResolver(CreateOrganizationSchema),
     defaultValues: {
-      name: "",
+      name: '',
     },
-    mode: "onBlur",
+    mode: 'onBlur',
   });
 
   const onSubmit = async (values: CreateOrganizationDto) => {
     try {
       await createOrganizationMutation.mutateAsync(values);
-      reset({ name: "" });
+      reset({ name: '' });
       createOrganizationMutation.reset();
       setOpen(false);
-      toast.success("Organization created");
+      toast.success('Organization created');
     } catch (error) {
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to create organization",
+          : 'Failed to create organization',
       );
     }
   };
 
   const submitting = isSubmitting || createOrganizationMutation.isPending;
-  const rootError =
-    (createOrganizationMutation.error as Error | null)?.message ?? null;
+  const rootError = createOrganizationMutation.error?.message ?? null;
 
   return (
     <Dialog
@@ -74,7 +73,7 @@ export function CreateOrganizationDialog({
       onOpenChange={(nextOpen) => {
         setOpen(nextOpen);
         if (!nextOpen) {
-          reset({ name: "" });
+          reset({ name: '' });
           createOrganizationMutation.reset();
         }
       }}
@@ -113,7 +112,7 @@ export function CreateOrganizationDialog({
               id="organization-name"
               placeholder="e.g. Acme Studio"
               autoComplete="off"
-              {...register("name")}
+              {...register('name')}
               aria-invalid={!!errors.name}
             />
             {errors.name?.message ? (
@@ -122,7 +121,7 @@ export function CreateOrganizationDialog({
           </div>
 
           <Button type="submit" className="w-full" disabled={submitting}>
-            {submitting ? "Creating…" : "Create organization"}
+            {submitting ? 'Creating…' : 'Create organization'}
           </Button>
         </form>
       </DialogContent>

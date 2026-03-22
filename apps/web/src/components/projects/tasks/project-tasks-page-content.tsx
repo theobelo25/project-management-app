@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { useMemo, useState } from "react";
+import { useMemo, useState } from 'react';
 import {
   PageErrorMessage,
   PageLoadingMessage,
   ProjectsPagination,
-} from "@web/components/projects";
+} from '@web/components/projects';
 import {
   taskViewToListItem,
   TasksTable,
   TasksToolbar,
   type TasksFilterStatus,
   type TasksSort,
-} from "@web/components/projects/tasks";
-import { useProjectQuery, useProjectTasksQuery } from "@web/lib/api/queries";
-import { useDeleteTask } from "@web/lib/api/mutations/use-delete-task";
+} from '@web/components/projects/tasks';
+import { useProjectQuery, useProjectTasksQuery } from '@web/lib/api/queries';
+import { useDeleteTask } from '@web/lib/api/mutations/use-delete-task';
 
 type ProjectTasksPageContentProps = {
   projectId: string;
@@ -25,27 +25,24 @@ export function ProjectTasksPageContent({
   projectId,
   pageSize: PAGE_SIZE,
 }: ProjectTasksPageContentProps) {
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<TasksFilterStatus>("all");
-  const [assigneeId, setAssigneeId] = useState("all");
-  const [sort, setSort] = useState<TasksSort>("updated-desc");
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState<TasksFilterStatus>('all');
+  const [assigneeId, setAssigneeId] = useState('all');
+  const [sort, setSort] = useState<TasksSort>('updated-desc');
   const [page, setPage] = useState(1);
 
   const { data: project, isLoading: projectLoading } =
     useProjectQuery(projectId);
 
-  const { data: tasksResult, isLoading: tasksLoading } = useProjectTasksQuery(
+  const { data: tasksResult } = useProjectTasksQuery(projectId, {
     projectId,
-    {
-      projectId,
-      page,
-      limit: PAGE_SIZE,
-      status: status === "all" ? undefined : status,
-      assigneeId: assigneeId === "all" ? undefined : assigneeId,
-      search: search.trim() || undefined,
-      sort,
-    },
-  );
+    page,
+    limit: PAGE_SIZE,
+    status: status === 'all' ? undefined : status,
+    assigneeId: assigneeId === 'all' ? undefined : assigneeId,
+    search: search.trim() || undefined,
+    sort,
+  });
 
   const deleteTaskMutation = useDeleteTask(projectId);
 
@@ -54,10 +51,10 @@ export function ProjectTasksPageContent({
   }
 
   function handleClear() {
-    setSearch("");
-    setStatus("all");
-    setAssigneeId("all");
-    setSort("updated-desc");
+    setSearch('');
+    setStatus('all');
+    setAssigneeId('all');
+    setSort('updated-desc');
     setPage(1);
   }
 
@@ -70,7 +67,7 @@ export function ProjectTasksPageContent({
   const totalPages = meta?.pageCount ?? 1;
 
   const members = useMemo(() => {
-    if (!project || !("members" in project) || !Array.isArray(project.members))
+    if (!project || !('members' in project) || !Array.isArray(project.members))
       return [];
     return (project.members as { id: string; name: string }[]).map((m) => ({
       id: m.id,
@@ -128,13 +125,13 @@ export function ProjectTasksPageContent({
         onDelete={handleDeleteTask}
         emptyTitle={
           totalCount === 0 && (tasksResult?.data?.length ?? 0) > 0
-            ? "No tasks match your filters"
-            : "No tasks yet"
+            ? 'No tasks match your filters'
+            : 'No tasks yet'
         }
         emptyDescription={
           totalCount === 0 && (tasksResult?.data?.length ?? 0) > 0
             ? "Try adjusting your search or filters to find what you're looking for."
-            : "Create your first task to start tracking work in this project."
+            : 'Create your first task to start tracking work in this project.'
         }
       />
 

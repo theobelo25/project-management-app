@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Select,
@@ -6,12 +6,12 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@web/components/ui/select";
+} from '@web/components/ui/select';
 
-import { FilterToolbar } from "./filter-toolbar";
+import { FilterToolbar } from './filter-toolbar';
 
-export type ProjectsFilter = "all" | "owned" | "member" | "archived";
-export type ProjectsSort = "updated-desc" | "created-desc" | "name-asc";
+export type ProjectsFilter = 'all' | 'owned' | 'member' | 'archived';
+export type ProjectsSort = 'updated-desc' | 'created-desc' | 'name-asc';
 
 type ProjectsToolbarProps = {
   search: string;
@@ -33,7 +33,7 @@ export function ProjectsToolbar({
   onClear,
 }: ProjectsToolbarProps) {
   const hasActiveFilters =
-    search.trim().length > 0 || filter !== "all" || sort !== "updated-desc";
+    search.trim().length > 0 || filter !== 'all' || sort !== 'updated-desc';
 
   return (
     <FilterToolbar

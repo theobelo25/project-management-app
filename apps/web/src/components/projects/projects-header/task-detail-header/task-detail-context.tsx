@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   createContext,
@@ -6,9 +6,9 @@ import {
   useContext,
   useState,
   type ReactNode,
-} from "react";
-import type { TaskView } from "@repo/types";
-import type { TaskForHeader } from "./types";
+} from 'react';
+import type { TaskView } from '@repo/types';
+import type { TaskForHeader } from './types';
 
 type TaskDetailContextValue = {
   taskForHeader: TaskForHeader;

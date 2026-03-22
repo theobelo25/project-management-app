@@ -1,4 +1,4 @@
-import { ProjectDetailContent } from "@web/components/projects/project-detail";
+import { ProjectDetailContent } from '@web/components/projects/project-detail';
 
 type PageProps = {
   params: Promise<{ id: string }>;

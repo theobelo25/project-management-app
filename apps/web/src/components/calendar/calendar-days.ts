@@ -1,4 +1,4 @@
-import type { CalendarDay } from "./types";
+import type { CalendarDay } from './types';
 
 /**
  * Builds the grid of calendar days for a month (6 rows × 7 columns).
@@ -11,7 +11,6 @@ export function getCalendarDaysForMonth(
   const first = new Date(year, month - 1, 1);
   const startDay = first.getDay();
   const startOffset = startDay;
-  const daysInMonth = new Date(year, month, 0).getDate();
 
   const result: CalendarDay[] = [];
   const totalCells = 42;
@@ -23,7 +22,7 @@ export function getCalendarDaysForMonth(
     const y = dayDate.getFullYear();
     const m = dayDate.getMonth() + 1;
     const d = dayDate.getDate();
-    const dateStr = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const dateStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
     result.push({
       date: dateStr,

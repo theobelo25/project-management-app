@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useCallback, useState } from "react";
+import { useCallback, useState } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -10,11 +10,12 @@ import {
   useSensors,
   type DragEndEvent,
   type DragStartEvent,
-} from "@dnd-kit/core";
-import { BoardColumn } from "./board-column";
-import { BoardCard } from "./board-card";
-import { BOARD_COLUMNS } from "./types";
-import type { BoardTask, TaskStatus } from "./types";
+} from '@dnd-kit/core';
+import { BoardColumn } from './board-column';
+import { BoardCard } from './board-card';
+import type { TaskStatus } from '@repo/types';
+
+import type { BoardTask } from './types';
 
 type BoardProps = {
   projectId: string;
@@ -45,7 +46,7 @@ export function Board({ projectId, columns, grouped, onMoveTask }: BoardProps) {
       const overId = event.over?.id;
       if (!overId || !onMoveTask) return;
       const isValidStatus = columns.some((c) => c.key === overId);
-      if (isValidStatus && typeof overId === "string") {
+      if (isValidStatus && typeof overId === 'string') {
         onMoveTask(taskId, overId as TaskStatus);
       }
     },

@@ -1,4 +1,4 @@
-import { ProjectBoardPageContent } from "@web/components/board";
+import { ProjectBoardPageContent } from '@web/components/board';
 type PageProps = {
   params: Promise<{ id: string }>;
 };

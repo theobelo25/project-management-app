@@ -1,13 +1,13 @@
-import Link from "next/link";
-import { Button } from "../ui/button";
+import Link from 'next/link';
+import { Button } from '../ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/card";
-import type { ProjectListItemView } from "@repo/types";
+} from '../ui/card';
+import type { ProjectListItemView } from '@repo/types';
 
 type Props = { projects: ProjectListItemView[] };
 

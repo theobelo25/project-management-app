@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Settings } from "lucide-react";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Settings } from 'lucide-react';
 
-import { PageHeader } from "@web/components/projects";
-import { CreateTaskDialog } from "@web/components/projects/tasks";
-import { formatProjectRole } from "@web/components/projects/utils";
-import { Badge } from "@web/components/ui/badge";
-import { Button } from "@web/components/ui/button";
-import { ROUTES } from "@web/lib/routes";
-import type { ProjectRole } from "@repo/types";
+import { PageHeader } from '@web/components/projects';
+import { CreateTaskDialog } from '@web/components/projects/tasks';
+import { formatProjectRole } from '@web/components/projects/utils';
+import { Badge } from '@web/components/ui/badge';
+import { Button } from '@web/components/ui/button';
+import { ROUTES } from '@web/lib/routes';
+import type { ProjectRole } from '@repo/types';
 
 type ProjectForHeader = {
   id: string;
@@ -38,11 +38,11 @@ type RouteConfig = {
 function createRouteConfig(projectHref: string): RouteConfig[] {
   return [
     {
-      path: "",
-      backLabel: "Back to Projects",
+      path: '',
+      backLabel: 'Back to Projects',
       backHref: () => ROUTES.projects,
       title: (p) => p.name,
-      description: (p) => p.description || "No description provided.",
+      description: (p) => p.description || 'No description provided.',
       badge: (p) =>
         p.currentUserRole ? (
           <Badge variant="secondary">
@@ -62,26 +62,26 @@ function createRouteConfig(projectHref: string): RouteConfig[] {
       ),
     },
     {
-      path: "/board",
-      backLabel: "Back to Project",
+      path: '/board',
+      backLabel: 'Back to Project',
       backHref: () => projectHref,
-      title: "Board",
-      description: "Kanban view of tasks by status.",
+      title: 'Board',
+      description: 'Kanban view of tasks by status.',
       actions: (p) => <CreateTaskDialog projectId={p.id} />,
     },
     {
-      path: "/calendar",
-      backLabel: "Back to Project",
+      path: '/calendar',
+      backLabel: 'Back to Project',
       backHref: () => projectHref,
-      title: "Calendar",
-      description: "View task deadlines by date.",
+      title: 'Calendar',
+      description: 'View task deadlines by date.',
       actions: (p) => <CreateTaskDialog projectId={p.id} />,
     },
     {
-      path: "/tasks",
-      backLabel: "Back to Project",
+      path: '/tasks',
+      backLabel: 'Back to Project',
       backHref: () => projectHref,
-      title: "Tasks",
+      title: 'Tasks',
       description: (p) => (
         <>
           Manage all tasks in <span className="font-medium">{p.name}</span>.
@@ -90,10 +90,10 @@ function createRouteConfig(projectHref: string): RouteConfig[] {
       actions: (p) => <CreateTaskDialog projectId={p.id} />,
     },
     {
-      path: "/members",
-      backLabel: "Back to Project",
+      path: '/members',
+      backLabel: 'Back to Project',
       backHref: () => projectHref,
-      title: "Members",
+      title: 'Members',
       description: (p) => (
         <>
           Manage access for <span className="font-medium">{p.name}</span>.
@@ -101,13 +101,13 @@ function createRouteConfig(projectHref: string): RouteConfig[] {
       ),
     },
     {
-      path: "/settings",
-      backLabel: "Back to Project",
+      path: '/settings',
+      backLabel: 'Back to Project',
       backHref: () => projectHref,
-      title: "Project Settings",
+      title: 'Project Settings',
       description: (p) => (
         <>
-          Manage project details, members, and administrative actions for{" "}
+          Manage project details, members, and administrative actions for{' '}
           <span className="font-medium">{p.name}</span>.
         </>
       ),
@@ -123,7 +123,7 @@ export function ProjectLayoutHeader({ project }: ProjectLayoutHeaderProps) {
   const projectHref = `${ROUTES.projects}/${project.id}`;
   const tasksHref = `${projectHref}/tasks`;
 
-  const isTaskDetail = pathname?.startsWith(tasksHref + "/") ?? false;
+  const isTaskDetail = pathname?.startsWith(tasksHref + '/') ?? false;
   if (isTaskDetail) return null;
 
   const configs = createRouteConfig(projectHref);
@@ -135,9 +135,9 @@ export function ProjectLayoutHeader({ project }: ProjectLayoutHeaderProps) {
   if (!config) return null;
 
   const title =
-    typeof config.title === "function" ? config.title(project) : config.title;
+    typeof config.title === 'function' ? config.title(project) : config.title;
   const description =
-    typeof config.description === "function"
+    typeof config.description === 'function'
       ? config.description(project)
       : config.description;
   const backHref = config.backHref(project);
