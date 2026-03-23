@@ -21,6 +21,11 @@ COPY tsconfig.base.json ./
 # Full install (includes dev deps for prisma/nest build)
 RUN pnpm install --frozen-lockfile
 
+# Prisma generate needs DATABASE_URL at build-time.
+# Default is a safe placeholder; Dokploy can override via build arg.
+ARG DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder?schema=public"
+ENV DATABASE_URL=$DATABASE_URL
+
 # Build API + required workspace deps
 RUN pnpm --filter api... build
 
@@ -32,10 +37,9 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
 WORKDIR /app
-
 COPY --from=build /app /app
 
 EXPOSE 3333
 
-# Optional: run migrations before booting API
+# Uses runtime DATABASE_URL from Dokploy env
 CMD ["sh", "-c", "pnpm --filter @repo/database exec prisma migrate deploy && pnpm --filter api start"]
