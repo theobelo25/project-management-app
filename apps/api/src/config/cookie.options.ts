@@ -11,11 +11,15 @@ export function getCookieConfig(config: ConfigService): CookieConfig {
   const nodeEnv = config.getOrThrow<string>('NODE_ENV');
   const isProd = nodeEnv === 'production';
 
+  const cookieDomain = config.get<string>('COOKIE_DOMAIN')?.trim();
+  const domainOption = isProd && cookieDomain ? { domain: cookieDomain } : {};
+
   const baseOptions: CookieOptions = {
     httpOnly: true,
     secure: isProd,
     sameSite: 'lax',
     path: '/',
+    ...domainOption,
   };
 
   return {

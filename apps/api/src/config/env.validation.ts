@@ -7,6 +7,10 @@ export const EnvSchema = z.object({
   FRONTEND_ORIGIN: z.string().min(1),
   CORS_ORIGINS: z.string().min(1),
 
+  // Optional: set in production to share auth cookies across subdomains.
+  // Example: .theocodes.dev
+  COOKIE_DOMAIN: z.string().trim().min(1).optional(),
+
   DATASOURCE_USERNAME: z.string().min(1),
   DATASOURCE_PASSWORD: z.string().min(1),
   DATASOURCE_HOST: z.string().min(1),
