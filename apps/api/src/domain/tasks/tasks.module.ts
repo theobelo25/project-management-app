@@ -19,7 +19,6 @@ import { TaskAccessGuard } from './guards/task-access.guard';
 import { TaskAccessContextLoader } from './policies/task-access-context.loader';
 import { ProjectTaskInfoProviderAdapter } from './adapters/project-task-info-provider.adapter';
 import { PROJECT_TASK_INFO_PROVIDER } from '../projects/types/project-task-info.types';
-import type { Prisma } from '@repo/database';
 
 @Module({
   imports: [

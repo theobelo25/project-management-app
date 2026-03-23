@@ -12,9 +12,6 @@ import { ORGANIZATION_WORKSPACE_BOOTSTRAP } from './organization-workspace-boots
       useExisting: OrganizationWorkspacesService,
     },
   ],
-  exports: [
-    OrganizationWorkspacesService,
-    ORGANIZATION_WORKSPACE_BOOTSTRAP,
-  ],
+  exports: [OrganizationWorkspacesService, ORGANIZATION_WORKSPACE_BOOTSTRAP],
 })
 export class OrganizationWorkspaceBootstrapModule {}

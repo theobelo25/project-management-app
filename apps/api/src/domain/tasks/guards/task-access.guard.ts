@@ -42,10 +42,7 @@ const ALL_ACTIONS: TaskAccessAction[] = [
 ];
 
 function isTaskAccessAction(value: unknown): value is TaskAccessAction {
-  return (
-    typeof value === 'string' &&
-    (ALL_ACTIONS as string[]).includes(value as string)
-  );
+  return typeof value === 'string' && (ALL_ACTIONS as string[]).includes(value);
 }
 
 @Injectable()

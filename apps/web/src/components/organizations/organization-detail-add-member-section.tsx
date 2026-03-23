@@ -35,9 +35,9 @@ export function OrganizationDetailAddMemberSection({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-4">
-        <h3 className="text-sm font-medium">Add existing user</h3>
+        <h3 className="text-sm font-medium">Invite by email</h3>
         {canAddMembers ? (
-          <Badge variant="outline">Members can be added</Badge>
+          <Badge variant="outline">Invites can be sent</Badge>
         ) : (
           <Badge variant="outline">Read only</Badge>
         )}
@@ -66,9 +66,14 @@ export function OrganizationDetailAddMemberSection({
 
               {selectedUser ? (
                 <p className="text-sm text-muted-foreground">
-                  Selected: {selectedUser.name} ({selectedUser.email})
+                  Invite will be sent to {selectedUser.email}
                 </p>
-              ) : null}
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Search for a registered user to invite them by their account
+                  email.
+                </p>
+              )}
             </div>
 
             <Button
@@ -77,17 +82,17 @@ export function OrganizationDetailAddMemberSection({
               disabled={isPending || !selectedUser}
             >
               <UserPlus className="mr-2 h-4 w-4" />
-              Add member
+              Send invite
             </Button>
           </form>
         ) : (
           <p className="text-xs text-muted-foreground">
-            Switch to this organization first to add members to it.
+            Switch to this organization first to send invites for it.
           </p>
         )
       ) : (
         <p className="text-xs text-muted-foreground">
-          Only owners and admins can add members.
+          Only owners and admins can send invites.
         </p>
       )}
     </div>

@@ -180,10 +180,7 @@ export class OrganizationsController {
       params.id,
     );
 
-    return this.organizationMembershipsService.listMembers(
-      params.id,
-      query,
-    );
+    return this.organizationMembershipsService.listMembers(params.id, query);
   }
 
   @RefreshOrganizationsAccessCookie()

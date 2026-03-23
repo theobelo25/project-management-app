@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -15,6 +16,7 @@ import { Db, UNIT_OF_WORK } from '@api/prisma';
 import type { UnitOfWork } from '@api/prisma/uow/unit-of-work.interface';
 
 import { OrganizationInvitesRepository } from '../repositories/organization-invites.repository';
+import { OrganizationMembershipsRepository } from '../repositories/organization-memberships.repository';
 import { OrganizationMembershipsService } from './organization-memberships.service';
 import { UsersRepository } from '../../users/repositories/users.repository';
 
@@ -48,6 +50,7 @@ export class OrganizationInvitesService {
 
     private readonly invitesRepository: OrganizationInvitesRepository,
     private readonly usersRepository: UsersRepository,
+    private readonly organizationMembershipsRepository: OrganizationMembershipsRepository,
     private readonly organizationMembershipsService: OrganizationMembershipsService,
     private readonly inviteUrlService: InviteUrlService,
     private readonly logger: PinoLogger,
@@ -121,6 +124,41 @@ export class OrganizationInvitesService {
       if (!canCreateInvites(actorRole)) {
         throw new ForbiddenException(
           OrganizationErrorMessages.ONLY_OWNERS_ADMINS_CAN_CREATE_INVITES,
+        );
+      }
+
+      const existingUser = await this.usersRepository.findByEmail(
+        normalizedEmail,
+        tx,
+      );
+      if (existingUser?.id === actor.id) {
+        throw new BadRequestException(
+          OrganizationErrorMessages.INVITE_CANNOT_INVITE_SELF,
+        );
+      }
+      if (existingUser) {
+        const memberRole =
+          await this.organizationMembershipsRepository.findMembershipRole(
+            existingUser.id,
+            actor.orgId,
+            tx,
+          );
+        if (memberRole) {
+          throw new ConflictException(
+            OrganizationErrorMessages.INVITE_USER_ALREADY_MEMBER,
+          );
+        }
+      }
+
+      const duplicatePending =
+        await this.invitesRepository.findPendingForOrganizationAndEmail(
+          actor.orgId,
+          normalizedEmail,
+          tx,
+        );
+      if (duplicatePending) {
+        throw new ConflictException(
+          OrganizationErrorMessages.INVITE_ALREADY_PENDING,
         );
       }
 

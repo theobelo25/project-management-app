@@ -4,9 +4,7 @@ import { OrganizationErrorMessages } from '../constants/error-messages';
 import { OrganizationWorkspaceBootstrap } from '../organization-workspace-bootstrap.interface';
 
 @Injectable()
-export class OrganizationWorkspacesService
-  implements OrganizationWorkspaceBootstrap
-{
+export class OrganizationWorkspacesService implements OrganizationWorkspaceBootstrap {
   async createOrganizationEntity(
     name: string,
     tx: Db,

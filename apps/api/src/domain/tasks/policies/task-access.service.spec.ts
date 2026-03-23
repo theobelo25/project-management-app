@@ -4,8 +4,6 @@ import { ProjectRole } from '@repo/database';
 
 import { AuthUser } from '@repo/types';
 import { TaskAccessService } from './task-access.service';
-import { TasksRepository } from '../repositories/tasks.repository';
-import { ProjectsRepository } from '@api/domain/projects/repositories/projects.repository';
 import { TaskAccessContext } from '../types/tasks.repository.types';
 import { TaskAccessRules } from './task-access.rules';
 import { TaskAccessContextLoader } from './task-access-context.loader';

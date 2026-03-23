@@ -146,6 +146,10 @@ export class AuthService {
     this.logger.info('User logged out successfully');
   }
 
+  async hashPassword(password: string): Promise<string> {
+    return this.hashingService.hash(password);
+  }
+
   private async createSession(user: UserView, tx?: Db): Promise<AuthSession> {
     const { accessToken } = this.accessTokensService.sign(user);
     const refreshToken = await this.refreshTokenService.issueInitial(

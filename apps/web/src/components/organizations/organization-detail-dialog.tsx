@@ -23,7 +23,7 @@ import {
 import type { UserSearchResult } from '@web/components/projects/members';
 import {
   useDeleteOrganizationMutation,
-  useAddOrganizationMemberMutation,
+  useCreateOrganizationInviteMutation,
   useLeaveOrganizationMutation,
   useOrganizationQuery,
 } from '@web/lib/api/queries';
@@ -46,7 +46,7 @@ export function OrganizationDetailDialog({
     organizationId,
     open && !!organizationId,
   );
-  const addMemberMutation = useAddOrganizationMemberMutation();
+  const inviteMutation = useCreateOrganizationInviteMutation();
   const leaveOrganizationMutation = useLeaveOrganizationMutation();
   const deleteOrganizationMutation = useDeleteOrganizationMutation();
 
@@ -103,22 +103,21 @@ export function OrganizationDetailDialog({
     }
   }
 
-  async function handleAddMember(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSendInvite(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (!organization || !selectedUser) return;
 
     try {
-      await addMemberMutation.mutateAsync({
-        organizationId: organization.id,
-        userId: selectedUser.id,
+      await inviteMutation.mutateAsync({
+        email: selectedUser.email,
       });
-      toast.success('Member added');
+      toast.success('Invite sent. They can accept it from their notifications.');
       setSelectedUser(null);
       onOpenChange(false);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : 'Failed to add member',
+        error instanceof Error ? error.message : 'Failed to send invite',
       );
     }
   }
@@ -140,7 +139,8 @@ export function OrganizationDetailDialog({
           <DialogHeader>
             <DialogTitle>Organization details</DialogTitle>
             <DialogDescription>
-              View members and add existing users to this organization.
+              View members and invite people by email. They must accept the
+              invite before joining.
             </DialogDescription>
           </DialogHeader>
 
@@ -184,8 +184,8 @@ export function OrganizationDetailDialog({
                 isActiveOrganization={isActiveOrganization}
                 selectedUser={selectedUser}
                 onSelectedUserChange={setSelectedUser}
-                onSubmit={handleAddMember}
-                isPending={addMemberMutation.isPending}
+                onSubmit={handleSendInvite}
+                isPending={inviteMutation.isPending}
               />
 
               <Separator />

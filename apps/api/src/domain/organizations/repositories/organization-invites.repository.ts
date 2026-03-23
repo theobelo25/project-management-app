@@ -28,6 +28,12 @@ export abstract class OrganizationInvitesRepository {
     db?: Db,
   ): Promise<PendingInviteView[]>;
 
+  abstract findPendingForOrganizationAndEmail(
+    organizationId: string,
+    email: string,
+    db?: Db,
+  ): Promise<OrganizationInviteRecord | null>;
+
   abstract listForOrganization(
     organizationId: string,
     db?: Db,

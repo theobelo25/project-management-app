@@ -24,4 +24,8 @@ export const OrganizationErrorMessages = {
   INVITE_ALREADY_USED_OR_REVOKED: 'Invite has already been used or revoked',
   INVITE_EXPIRED: 'Invite has expired',
   INVITE_EMAIL_MISMATCH: 'This invite was sent to a different email address',
+  INVITE_CANNOT_INVITE_SELF: 'You cannot invite yourself',
+  INVITE_USER_ALREADY_MEMBER:
+    'This user is already a member of this organization',
+  INVITE_ALREADY_PENDING: 'A pending invite already exists for this email',
 } as const;

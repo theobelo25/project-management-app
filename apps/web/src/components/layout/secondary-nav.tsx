@@ -19,9 +19,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@web/lib/routes';
 import { toast } from 'sonner';
-import { Bell, Check, X } from 'lucide-react';
+import { Bell, Check, LogOut, X } from 'lucide-react';
 import * as React from 'react';
 import { CreateOrganizationDialog } from '@web/components/organizations/create-organization-dialog';
+import { Separator } from '@web/components/ui/separator';
+import type { UserView } from '@repo/types';
 
 const authItems = [
   { href: ROUTES.signin, label: 'Sign in', primary: false },
@@ -29,6 +31,120 @@ const authItems = [
 ] as const;
 
 type SecondaryNavVariant = 'bar' | 'drawer';
+
+function userDisplayInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+  return (
+    parts[0].charAt(0) + parts[parts.length - 1].charAt(0)
+  ).toUpperCase();
+}
+
+function UserAccountMenu({
+  user,
+  variant,
+  onLogout,
+}: {
+  user: UserView;
+  variant: SecondaryNavVariant;
+  onLogout: () => void;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const initials = userDisplayInitials(user.name);
+
+  const infoBlock = (
+    <>
+      <p className="truncate text-sm font-medium leading-tight">{user.name}</p>
+      <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+      <p className="mt-1 truncate text-xs text-muted-foreground">
+        {user.organizationName}
+      </p>
+    </>
+  );
+
+  const logoutControl = (
+    <Button
+      type="button"
+      variant="ghost"
+      className="h-9 w-full justify-start gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
+      onClick={() => {
+        setOpen(false);
+        onLogout();
+      }}
+    >
+      <LogOut className="size-4 shrink-0" />
+      Log out
+    </Button>
+  );
+
+  if (variant === 'drawer') {
+    return (
+      <div className="space-y-3 border-t border-border pt-4">
+        <div className="flex items-center gap-3">
+          <div
+            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold"
+            aria-hidden
+          >
+            {initials}
+          </div>
+          <div className="min-w-0 flex-1">{infoBlock}</div>
+        </div>
+        <Button asChild variant="ghost" className="h-9 w-full justify-start">
+          <Link href={ROUTES.profile}>Profile</Link>
+        </Button>
+        {logoutControl}
+      </div>
+    );
+  }
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="size-8 shrink-0 rounded-full p-0"
+          aria-label="Account menu"
+        >
+          <span className="flex size-8 items-center justify-center rounded-full bg-muted text-xs font-semibold">
+            {initials}
+          </span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-72">
+        <div className="flex items-center gap-3">
+          <div
+            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold"
+            aria-hidden
+          >
+            {initials}
+          </div>
+          <div className="min-w-0 flex-1 space-y-1">{infoBlock}</div>
+        </div>
+        <Separator className="my-3" />
+        <Button
+          asChild
+          variant="ghost"
+          className="h-9 w-full justify-start"
+        >
+          <Link
+            href={ROUTES.profile}
+            onClick={() => {
+              setOpen(false);
+            }}
+          >
+            Profile
+          </Link>
+        </Button>
+        {logoutControl}
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 interface SecondaryNavProps {
   variant?: SecondaryNavVariant;
@@ -118,9 +234,9 @@ function OrganizationSwitcher({
 function NotificationsPopover({ enabled }: { enabled: boolean }) {
   const [open, setOpen] = React.useState(false);
 
-  // Only fetch when opened
-  const invitesQuery = usePendingInvitesQuery(enabled && open);
-  const notificationsQuery = useNotificationsQuery(enabled && open);
+  // Fetch while logged in so the bell badge and list are up to date before opening
+  const invitesQuery = usePendingInvitesQuery(enabled);
+  const notificationsQuery = useNotificationsQuery(enabled);
 
   const invites = invitesQuery.data ?? [];
   const notifications = notificationsQuery.data ?? [];
@@ -322,7 +438,7 @@ export function SecondaryNav({
   const handleLogoutClick = () => {
     logout();
     queryClient.setQueryData(ME_QUERY_KEY, null);
-    toast.success('Logout successfull!');
+    toast.success('Logged out successfully');
     router.push('/');
   };
 
@@ -335,9 +451,11 @@ export function SecondaryNav({
           <div className="flex flex-col gap-3">
             <OrganizationSwitcher enabled={isAuthenticated} user={user} />
             <CreateOrganizationDialog />
-            <Button type="button" onClick={() => handleLogoutClick()}>
-              Logout
-            </Button>
+            <UserAccountMenu
+              user={user}
+              variant="drawer"
+              onLogout={handleLogoutClick}
+            />
           </div>
         ) : (
           <div className="flex flex-col gap-2 border-t border-border pt-4">
@@ -371,9 +489,11 @@ export function SecondaryNav({
             <OrganizationSwitcher enabled={isAuthenticated} user={user} />
             <CreateOrganizationDialog />
           </div>
-          <Button type="button" onClick={() => handleLogoutClick()}>
-            Logout
-          </Button>
+          <UserAccountMenu
+            user={user}
+            variant="bar"
+            onLogout={handleLogoutClick}
+          />
         </>
       ) : (
         authItems.map(({ href, label, primary }) =>

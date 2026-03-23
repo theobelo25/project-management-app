@@ -11,7 +11,7 @@ export class Argon2Service implements HashingService {
   async hash(data: string): Promise<string> {
     return hash(data, ARGON2_OPTIONS);
   }
-  
+
   verify(plainText: string, hashed: string): Promise<boolean> {
     return verify(hashed, plainText);
   }

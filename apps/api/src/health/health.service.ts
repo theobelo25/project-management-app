@@ -1,5 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { HealthIndicatorResult, HealthIndicatorService } from '@nestjs/terminus';
+import {
+  HealthIndicatorResult,
+  HealthIndicatorService,
+} from '@nestjs/terminus';
 import { PRISMA } from '@api/prisma';
 import { PrismaClient } from '@repo/database';
 

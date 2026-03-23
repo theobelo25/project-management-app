@@ -154,6 +154,28 @@ export async function fetchMe(): Promise<UserView | null> {
   return res.json();
 }
 
+export async function updateMe(
+  dto: {
+    name?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+  },
+): Promise<UserView> {
+  const res = await fetchWithAuth(`${API_BASE}/api/auth/me`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(dto),
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message ?? 'Failed to update profile');
+  }
+
+  return res.json();
+}
+
 /** Invites (for org switching) */
 export async function fetchPendingInvites(): Promise<PendingInviteView[]> {
   const res = await fetchWithAuth(`${API_BASE}/api/organizations/invites`, {

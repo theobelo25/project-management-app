@@ -1,4 +1,3 @@
-import { Db } from '@api/prisma';
 import {
   CreateTaskInput,
   UpdateTaskInput,

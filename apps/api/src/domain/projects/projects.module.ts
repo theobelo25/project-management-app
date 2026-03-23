@@ -9,7 +9,6 @@ import { ProjectRoleGuard } from './guards/project-role.guard';
 import { UsersModule } from '../users/users.module';
 import { ProjectsCommandsService } from './services/projects-commands.service';
 import { ProjectsQueriesService } from './services/projects-queries.service';
-import { UsersService } from '../users/users.service';
 import { TasksModule } from '../tasks/tasks.module';
 import { ProjectsFacade } from './projects.facade';
 import { ProjectsPersistenceModule } from './projects-persistence.module';

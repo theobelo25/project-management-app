@@ -135,7 +135,9 @@ describe('TasksService', () => {
       );
       expect(toTaskView).toHaveBeenCalledWith(task);
       expect(result).toEqual(taskView);
-      expect(taskAssigneePolicy.assertAssigneeInSameOrgOrThrow).not.toHaveBeenCalled();
+      expect(
+        taskAssigneePolicy.assertAssigneeInSameOrgOrThrow,
+      ).not.toHaveBeenCalled();
       expect(taskAssignmentNotifier.notifyTaskAssigned).not.toHaveBeenCalled();
     });
 
@@ -168,18 +170,18 @@ describe('TasksService', () => {
 
       const result = await service.create(currentUser, dto);
 
-      expect(taskAssigneePolicy.assertAssigneeInSameOrgOrThrow).toHaveBeenCalledTimes(
-        2,
+      expect(
+        taskAssigneePolicy.assertAssigneeInSameOrgOrThrow,
+      ).toHaveBeenCalledTimes(2);
+      expect(
+        taskAssigneePolicy.assertAssigneeInSameOrgOrThrow,
+      ).toHaveBeenCalledWith('user-2', currentUser);
+      expect(
+        taskAssigneePolicy.assertAssigneeInSameOrgOrThrow,
+      ).toHaveBeenCalledWith('user-1', currentUser);
+      expect(taskAssignmentNotifier.notifyTaskAssigned).toHaveBeenCalledTimes(
+        1,
       );
-      expect(taskAssigneePolicy.assertAssigneeInSameOrgOrThrow).toHaveBeenCalledWith(
-        'user-2',
-        currentUser,
-      );
-      expect(taskAssigneePolicy.assertAssigneeInSameOrgOrThrow).toHaveBeenCalledWith(
-        'user-1',
-        currentUser,
-      );
-      expect(taskAssignmentNotifier.notifyTaskAssigned).toHaveBeenCalledTimes(1);
       expect(taskAssignmentNotifier.notifyTaskAssigned).toHaveBeenCalledWith(
         'user-2',
         {

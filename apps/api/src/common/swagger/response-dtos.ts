@@ -24,7 +24,9 @@ import { z } from 'zod';
 
 export class AuthSessionResponseDto extends createZodDto(AuthSessionSchema) {}
 export class UserViewResponseDto extends createZodDto(UserViewSchema) {}
-export class UserViewListResponseDto extends createZodDto(z.array(UserViewSchema)) {}
+export class UserViewListResponseDto extends createZodDto(
+  z.array(UserViewSchema),
+) {}
 
 export class ProjectViewResponseDto extends createZodDto(ProjectViewSchema) {}
 export class ProjectDetailViewResponseDto extends createZodDto(
@@ -33,11 +35,17 @@ export class ProjectDetailViewResponseDto extends createZodDto(
 export class PaginatedProjectsListResponseDto extends createZodDto(
   PaginatedProjectsListViewSchema,
 ) {}
-export class ProjectMembersResponseDto extends createZodDto(ProjectMembersViewSchema) {}
-export class ProjectMemberResponseDto extends createZodDto(ProjectMemberViewSchema) {}
+export class ProjectMembersResponseDto extends createZodDto(
+  ProjectMembersViewSchema,
+) {}
+export class ProjectMemberResponseDto extends createZodDto(
+  ProjectMemberViewSchema,
+) {}
 
 export class TaskViewResponseDto extends createZodDto(TaskViewSchema) {}
-export class PaginatedTasksResponseDto extends createZodDto(PaginatedTasksViewSchema) {}
+export class PaginatedTasksResponseDto extends createZodDto(
+  PaginatedTasksViewSchema,
+) {}
 export class TaskAssignmentResponseDto extends createZodDto(
   TaskAssignmentViewSchema,
 ) {}

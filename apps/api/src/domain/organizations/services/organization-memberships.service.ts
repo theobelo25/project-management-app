@@ -29,11 +29,7 @@ export class OrganizationMembershipsService {
     return this.queries.getOrganizationSummary(userId, organizationId, db);
   }
 
-  listMembers(
-    organizationId: string,
-    query: PaginationQuery,
-    db?: Db,
-  ) {
+  listMembers(organizationId: string, query: PaginationQuery, db?: Db) {
     return this.queries.listMembers(organizationId, query, db);
   }
 

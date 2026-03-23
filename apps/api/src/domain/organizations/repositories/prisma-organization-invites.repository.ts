@@ -88,6 +88,27 @@ export class PrismaOrganizationInvitesRepository extends OrganizationInvitesRepo
     }));
   }
 
+  async findPendingForOrganizationAndEmail(
+    organizationId: string,
+    email: string,
+    db?: Db,
+  ): Promise<OrganizationInviteRecord | null> {
+    const prisma = db ?? this.prisma;
+    const now = new Date();
+
+    const invite = await prisma.organizationInvite.findFirst({
+      where: {
+        organizationId,
+        email,
+        acceptedAt: null,
+        revokedAt: null,
+        expiresAt: { gt: now },
+      },
+    });
+
+    return invite ? this.toRecord(invite) : null;
+  }
+
   async listForOrganization(
     organizationId: string,
     db?: Db,

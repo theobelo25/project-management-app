@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   acceptInviteById,
-  addOrganizationMember,
   clearNotification,
   createOrganization,
+  createOrganizationInvite,
   declineInviteById,
   deleteOrganization,
   fetchAllUsers,
@@ -57,7 +57,7 @@ export function usePendingInvitesQuery(enabled: boolean) {
     queryFn: fetchPendingInvites,
     enabled,
     staleTime: 10 * 1000,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -143,7 +143,7 @@ export function useNotificationsQuery(enabled: boolean) {
     queryFn: fetchNotifications,
     enabled,
     staleTime: 10 * 1000,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -320,17 +320,13 @@ export function useAllUsersSearchQuery(search: string) {
     refetchOnWindowFocus: false,
   });
 }
-export function useAddOrganizationMemberMutation() {
+/** Sends an email invite for the active organization (must match the org being managed in UI). */
+export function useCreateOrganizationInviteMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (variables: { organizationId: string; userId: string }) =>
-      addOrganizationMember(variables.organizationId, {
-        userId: variables.userId,
-      }),
-    onSuccess: async (_data, variables) => {
-      await queryClient.invalidateQueries({
-        queryKey: ORGANIZATION_QUERY_KEY(variables.organizationId),
-      });
+    mutationFn: (variables: { email: string }) =>
+      createOrganizationInvite({ email: variables.email }),
+    onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: ORGANIZATIONS_QUERY_KEY,
       });

@@ -87,11 +87,7 @@ export class OrganizationMembershipsQueriesService {
     });
   }
 
-  listMembers(
-    organizationId: string,
-    query: PaginationQuery,
-    db?: Db,
-  ) {
+  listMembers(organizationId: string, query: PaginationQuery, db?: Db) {
     return runInTx(this.uow, db, (tx) =>
       this.repository.listMembersPaginated(organizationId, query, tx),
     );

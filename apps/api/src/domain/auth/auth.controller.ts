@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   Post,
+  Patch,
   Req,
   Res,
   UseGuards,
@@ -11,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { CurrentRefreshToken, CurrentUser, Public } from '@api/common';
 import {
+  UpdateUserInputDto,
   UserView,
   SignupInputDto,
   LoginRequestDto as LoginInput,
@@ -28,6 +30,8 @@ import { Throttle } from '@nestjs/throttler';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { UserViewResponseDto } from '@api/common/swagger/response-dtos';
+import { UpdateProfileDto } from '@api/domain/users/dto';
+import { UsersService } from '@api/domain/users/users.service';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -35,6 +39,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly cookieService: CookiesService,
+    private readonly usersService: UsersService,
   ) {}
 
   @Post('signup')
@@ -106,5 +111,29 @@ export class AuthController {
   @ZodSerializerDto(UserViewResponseDto)
   async me(@CurrentUser() user: UserView): Promise<UserView> {
     return user;
+  }
+
+  @Patch('me')
+  @ApiCookieAuth('Authentication')
+  @ZodSerializerDto(UserViewResponseDto)
+  async updateMe(
+    @CurrentUser() user: UserView,
+    @Body() dto: UpdateProfileDto,
+  ): Promise<UserView> {
+    const updateData: UpdateUserInputDto = {};
+
+    if (dto.name !== undefined) {
+      updateData.name = dto.name;
+    }
+
+    if (dto.email !== undefined) {
+      updateData.email = dto.email;
+    }
+
+    if (dto.password !== undefined) {
+      updateData.passwordHash = await this.authService.hashPassword(dto.password);
+    }
+
+    return this.usersService.update(user.id, updateData);
   }
 }

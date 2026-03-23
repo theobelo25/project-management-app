@@ -42,20 +42,28 @@ async function bootstrap() {
       // Your JWTs are stored in cookies:
       // - access token cookie: COOKIE.AUTHENTICATION
       // - refresh token cookie: COOKIE.REFRESH
-      .addCookieAuth(COOKIE.AUTHENTICATION, {
-        type: 'apiKey',
-        in: 'cookie',
-        name: COOKIE.AUTHENTICATION,
-        description:
-          'JWT access token stored in the `Authentication` cookie.',
-      }, 'Authentication')
-      .addCookieAuth(COOKIE.REFRESH, {
-        type: 'apiKey',
-        in: 'cookie',
-        name: COOKIE.REFRESH,
-        description:
-          'JWT refresh token stored in the `Refresh` cookie (used for /api/auth/refresh).',
-      }, 'Refresh')
+      .addCookieAuth(
+        COOKIE.AUTHENTICATION,
+        {
+          type: 'apiKey',
+          in: 'cookie',
+          name: COOKIE.AUTHENTICATION,
+          description:
+            'JWT access token stored in the `Authentication` cookie.',
+        },
+        'Authentication',
+      )
+      .addCookieAuth(
+        COOKIE.REFRESH,
+        {
+          type: 'apiKey',
+          in: 'cookie',
+          name: COOKIE.REFRESH,
+          description:
+            'JWT refresh token stored in the `Refresh` cookie (used for /api/auth/refresh).',
+        },
+        'Refresh',
+      )
       .build();
 
     const document = SwaggerModule.createDocument(app, swaggerConfig);

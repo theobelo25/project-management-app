@@ -221,8 +221,12 @@ export class PrismaOrganizationMembershipsRepository extends OrganizationMembers
   ): Promise<PaginatedOrganizationMembersView> {
     const prisma = db ?? this.prisma;
 
-    const { skip, take, page: currentPage, limit: pageSize } =
-      getPaginationParams(query);
+    const {
+      skip,
+      take,
+      page: currentPage,
+      limit: pageSize,
+    } = getPaginationParams(query);
 
     const [total, memberships] = await Promise.all([
       prisma.organizationMembership.count({ where: { organizationId } }),

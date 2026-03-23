@@ -99,6 +99,9 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
+      '@eslint/js':
+        specifier: ^9.39.3
+        version: 9.39.3
       '@nestjs/cli':
         specifier: ^11.0.16
         version: 11.0.16(@types/node@25.3.5)
@@ -129,6 +132,18 @@ importers:
       '@types/supertest':
         specifier: ^7.2.0
         version: 7.2.0
+      eslint:
+        specifier: ^9.39.3
+        version: 9.39.3(jiti@2.6.1)
+      eslint-config-prettier:
+        specifier: ^10.1.8
+        version: 10.1.8(eslint@9.39.3(jiti@2.6.1))
+      eslint-plugin-prettier:
+        specifier: ^5.5.5
+        version: 5.5.5(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.3(jiti@2.6.1)))(eslint@9.39.3(jiti@2.6.1))(prettier@3.8.1)
+      globals:
+        specifier: ^15.15.0
+        version: 15.15.0
       jest:
         specifier: ^30.2.0
         version: 30.2.0(@types/node@25.3.5)(ts-node@10.9.2(@types/node@25.3.5)(typescript@5.9.3))
@@ -150,6 +165,9 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+      typescript-eslint:
+        specifier: ^8.57.1
+        version: 8.57.1(eslint@9.39.3(jiti@2.6.1))(typescript@5.9.3)
 
   apps/web:
     dependencies:

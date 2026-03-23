@@ -7,7 +7,7 @@ export class InviteUrlService {
 
   buildInviteUrl(token: string): string {
     const frontendOrigin =
-      this.configService.getOrThrow<string>('app.frontendOrigin');
+      this.configService.getOrThrow<string>('FRONTEND_ORIGIN');
 
     return `${frontendOrigin}/invite?token=${encodeURIComponent(token)}`;
   }

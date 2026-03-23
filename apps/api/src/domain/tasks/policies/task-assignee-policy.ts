@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { AuthUser } from '@repo/types';
 import { UsersRepository } from '../../users/repositories/users.repository';
 import { taskForbidden, taskNotFound } from '../errors/task-errors';
