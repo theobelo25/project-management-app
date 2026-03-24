@@ -14,11 +14,13 @@ import type { ProjectDetailMember, ProjectDetailView } from '@repo/types';
 export interface ProjectMembersCardProps {
   project: Pick<ProjectDetailView, 'id'>;
   members: ProjectDetailMember[];
+  canManageMembers: boolean;
 }
 
 export function ProjectMembersCard({
   project,
   members,
+  canManageMembers,
 }: ProjectMembersCardProps) {
   return (
     <Card>
@@ -30,9 +32,15 @@ export function ProjectMembersCard({
           </CardDescription>
         </div>
 
-        <Button asChild variant="outline" size="sm">
-          <Link href={`/projects/${project.id}/members`}>Manage</Link>
-        </Button>
+        {canManageMembers ? (
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/projects/${project.id}/members`}>Manage</Link>
+          </Button>
+        ) : (
+          <Button variant="outline" size="sm" disabled>
+            Manage
+          </Button>
+        )}
       </CardHeader>
 
       <CardContent className="space-y-3">

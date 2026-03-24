@@ -12,7 +12,7 @@ import type { ProjectRole } from '@repo/types';
 
 type MemberRowActionsProps = {
   member: ProjectMember;
-  currentUserRole: ProjectRole;
+  currentUserRole?: ProjectRole;
   onChangeRole?: (
     memberId: string,
     role: Exclude<ProjectRole, 'OWNER'>,

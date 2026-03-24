@@ -8,12 +8,17 @@ import {
   CardTitle,
 } from '@web/components/ui/card';
 import type { ProjectDetailView } from '@repo/types';
+import { Button } from '@web/components/ui/button';
 
 export interface ProjectOverviewCardProps {
   project: Pick<ProjectDetailView, 'id' | 'currentUserRole'>;
+  canManage: boolean;
 }
 
-export function ProjectOverviewCard({ project }: ProjectOverviewCardProps) {
+export function ProjectOverviewCard({
+  project,
+  canManage,
+}: ProjectOverviewCardProps) {
   return (
     <Card>
       <CardHeader>
@@ -31,7 +36,13 @@ export function ProjectOverviewCard({ project }: ProjectOverviewCardProps) {
           </span>
         </div>
         <div className="pt-2">
-          <CreateTaskDialog projectId={project.id} />
+          {canManage ? (
+            <CreateTaskDialog projectId={project.id} />
+          ) : (
+            <Button type="button" disabled>
+              New Task
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -21,10 +21,17 @@ type BoardProps = {
   projectId: string;
   columns: { key: TaskStatus; title: string }[];
   grouped: Record<TaskStatus, BoardTask[]>;
+  canEditTasks?: boolean;
   onMoveTask?: (taskId: string, newStatus: TaskStatus) => void;
 };
 
-export function Board({ projectId, columns, grouped, onMoveTask }: BoardProps) {
+export function Board({
+  projectId,
+  columns,
+  grouped,
+  canEditTasks = true,
+  onMoveTask,
+}: BoardProps) {
   const [activeTask, setActiveTask] = useState<BoardTask | null>(null);
 
   const sensors = useSensors(
@@ -44,13 +51,13 @@ export function Board({ projectId, columns, grouped, onMoveTask }: BoardProps) {
       setActiveTask(null);
       const taskId = event.active.id as string;
       const overId = event.over?.id;
-      if (!overId || !onMoveTask) return;
+      if (!canEditTasks || !overId || !onMoveTask) return;
       const isValidStatus = columns.some((c) => c.key === overId);
       if (isValidStatus && typeof overId === 'string') {
         onMoveTask(taskId, overId as TaskStatus);
       }
     },
-    [onMoveTask, columns],
+    [canEditTasks, onMoveTask, columns],
   );
 
   return (
@@ -72,12 +79,15 @@ export function Board({ projectId, columns, grouped, onMoveTask }: BoardProps) {
             status={column.key}
             title={column.title}
             tasks={grouped[column.key] ?? []}
+            canEditTasks={canEditTasks}
           />
         ))}
       </div>
 
       <DragOverlay dropAnimation={null}>
-        {activeTask ? <BoardCard task={activeTask} isOverlay /> : null}
+        {canEditTasks && activeTask ? (
+          <BoardCard task={activeTask} isOverlay />
+        ) : null}
       </DragOverlay>
     </DndContext>
   );

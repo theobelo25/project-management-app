@@ -81,10 +81,6 @@ export class PrismaProjectsRepository
     const skip = (input.page - 1) * input.pageSize;
     const baseWhere: Prisma.ProjectWhereInput = {
       organizationId: input.orgId,
-      OR: [
-        { ownerId: input.userId },
-        { members: { some: { userId: input.userId } } },
-      ],
     };
     if (input.filter === 'archived') {
       baseWhere.archivedAt = { not: null };
@@ -156,14 +152,6 @@ export class PrismaProjectsRepository
       where: {
         id: projectId,
         organizationId: orgId,
-        OR: [
-          { ownerId: userId },
-          {
-            members: {
-              some: { userId },
-            },
-          },
-        ],
       },
       include: {
         members: {

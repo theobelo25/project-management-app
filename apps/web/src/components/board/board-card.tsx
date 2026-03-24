@@ -13,14 +13,19 @@ import type { BoardTask } from './types';
 type BoardCardProps = {
   task: BoardTask;
   isOverlay?: boolean;
+  canEdit?: boolean;
 };
 
-export function BoardCard({ task, isOverlay = false }: BoardCardProps) {
+export function BoardCard({
+  task,
+  isOverlay = false,
+  canEdit = true,
+}: BoardCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: task.id,
       data: { task },
-      disabled: isOverlay,
+      disabled: isOverlay || !canEdit,
     });
 
   const style = transform
@@ -47,11 +52,11 @@ export function BoardCard({ task, isOverlay = false }: BoardCardProps) {
     <Card
       ref={setNodeRef}
       style={style}
-      className={`cursor-grab active:cursor-grabbing transition hover:bg-muted/60 ${
+      className={`${canEdit ? 'cursor-grab active:cursor-grabbing hover:bg-muted/60' : 'cursor-default'} transition ${
         isDragging ? 'opacity-50' : ''
       }`}
-      {...listeners}
-      {...attributes}
+      {...(canEdit ? listeners : {})}
+      {...(canEdit ? attributes : {})}
     >
       <CardHeader className="p-4 pb-2">
         <CardTitle className="text-sm font-medium">{task.title}</CardTitle>

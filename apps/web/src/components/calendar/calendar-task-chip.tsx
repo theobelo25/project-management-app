@@ -9,18 +9,20 @@ type CalendarTaskChipProps = {
   task: CalendarTask;
   onClick?: () => void;
   isOverlay?: boolean;
+  canEdit?: boolean;
 };
 
 export function CalendarTaskChip({
   task,
   onClick,
   isOverlay = false,
+  canEdit = true,
 }: CalendarTaskChipProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: task.id,
       data: { task },
-      disabled: isOverlay,
+      disabled: isOverlay || !canEdit,
     });
 
   const style = transform
@@ -36,9 +38,11 @@ export function CalendarTaskChip({
           ? 'cursor-grab bg-card shadow-lg ring-2 ring-primary/20'
           : isDragging
             ? 'opacity-50'
-            : 'hover:bg-muted cursor-grab active:cursor-grabbing'
+            : canEdit
+              ? 'hover:bg-muted cursor-grab active:cursor-grabbing'
+              : 'cursor-default'
       }`}
-      {...(isOverlay ? {} : { ...listeners, ...attributes })}
+      {...(isOverlay || !canEdit ? {} : { ...listeners, ...attributes })}
     >
       <button
         type="button"

@@ -15,11 +15,13 @@ import type { ProjectDetailView, ProjectRecentTask } from '@repo/types';
 export interface RecentTasksCardProps {
   project: Pick<ProjectDetailView, 'id'>;
   recentTasks: ProjectRecentTask[];
+  allowTaskDetailNavigation?: boolean;
 }
 
 export function RecentTasksCard({
   project,
   recentTasks,
+  allowTaskDetailNavigation = true,
 }: RecentTasksCardProps) {
   return (
     <Card>
@@ -38,18 +40,30 @@ export function RecentTasksCard({
 
       <CardContent className="space-y-3">
         {recentTasks.length > 0 ? (
-          recentTasks.map((task) => (
-            <Link
-              key={task.id}
-              href={`/projects/${project.id}/tasks/${task.id}`}
-              className="flex items-center justify-between rounded-lg border p-4"
-            >
-              <div className="min-w-0">
-                <p className="truncate font-medium">{task.title}</p>
+          recentTasks.map((task) =>
+            allowTaskDetailNavigation ? (
+              <Link
+                key={task.id}
+                href={`/projects/${project.id}/tasks/${task.id}`}
+                className="flex items-center justify-between rounded-lg border p-4"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{task.title}</p>
+                </div>
+                <Badge variant="outline">{formatTaskStatus(task.status)}</Badge>
+              </Link>
+            ) : (
+              <div
+                key={task.id}
+                className="flex items-center justify-between rounded-lg border p-4"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{task.title}</p>
+                </div>
+                <Badge variant="outline">{formatTaskStatus(task.status)}</Badge>
               </div>
-              <Badge variant="outline">{formatTaskStatus(task.status)}</Badge>
-            </Link>
-          ))
+            ),
+          )
         ) : (
           <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
             No tasks yet.

@@ -13,6 +13,7 @@ type BoardColumnProps = {
   status: TaskStatus;
   title: string;
   tasks: BoardTask[];
+  canEditTasks?: boolean;
 };
 
 export function BoardColumn({
@@ -20,8 +21,9 @@ export function BoardColumn({
   status,
   title,
   tasks,
+  canEditTasks = true,
 }: BoardColumnProps) {
-  const { setNodeRef, isOver } = useDroppable({ id: status });
+  const { setNodeRef, isOver } = useDroppable({ id: status, disabled: !canEditTasks });
 
   return (
     <div
@@ -37,20 +39,22 @@ export function BoardColumn({
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto py-0.5 -mx-0.5 px-0.5">
         {' '}
         {tasks.map((task) => (
-          <BoardCard key={task.id} task={task} />
+          <BoardCard key={task.id} task={task} canEdit={canEditTasks} />
         ))}
       </div>
-      <div className="shrink-0">
-        <CreateTaskDialog
-          projectId={projectId}
-          defaultStatus={status}
-          trigger={
-            <Button variant="ghost" size="sm" className="justify-start">
-              + Add Task
-            </Button>
-          }
-        />
-      </div>
+      {canEditTasks ? (
+        <div className="shrink-0">
+          <CreateTaskDialog
+            projectId={projectId}
+            defaultStatus={status}
+            trigger={
+              <Button variant="ghost" size="sm" className="justify-start">
+                + Add Task
+              </Button>
+            }
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

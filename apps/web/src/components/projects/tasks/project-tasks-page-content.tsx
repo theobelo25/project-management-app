@@ -33,6 +33,7 @@ export function ProjectTasksPageContent({
 
   const { data: project, isLoading: projectLoading } =
     useProjectQuery(projectId);
+  const isReadOnly = !project?.currentUserRole;
 
   const { data: tasksResult } = useProjectTasksQuery(projectId, {
     projectId,
@@ -91,6 +92,18 @@ export function ProjectTasksPageContent({
       </div>
     );
   }
+  if (isReadOnly) {
+    return (
+      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-2 text-center">
+        <p className="text-lg font-semibold">
+          You do not have permission to view task details on this project
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Contact the project admin for assisstance
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -124,12 +137,16 @@ export function ProjectTasksPageContent({
         tasks={taskListItems}
         onDelete={handleDeleteTask}
         emptyTitle={
-          totalCount === 0 && (tasksResult?.data?.length ?? 0) > 0
+          isReadOnly
+            ? 'You do not have permission to view task details on this project'
+            : totalCount === 0 && (tasksResult?.data?.length ?? 0) > 0
             ? 'No tasks match your filters'
             : 'No tasks yet'
         }
         emptyDescription={
-          totalCount === 0 && (tasksResult?.data?.length ?? 0) > 0
+          isReadOnly
+            ? 'Contact the project admin for assisstance'
+            : totalCount === 0 && (tasksResult?.data?.length ?? 0) > 0
             ? "Try adjusting your search or filters to find what you're looking for."
             : 'Create your first task to start tracking work in this project.'
         }

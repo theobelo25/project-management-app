@@ -15,7 +15,7 @@ import { useUpdateProjectMemberRole } from '@web/lib/api/mutations/use-update-pr
 type ProjectMembersManagerProps = {
   projectId: string;
   members: ProjectMember[];
-  currentUserRole: ProjectRole;
+  currentUserRole?: ProjectRole;
   title?: string;
   description?: string;
 };

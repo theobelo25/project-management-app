@@ -48,16 +48,30 @@ function createRouteConfig(projectHref: string): RouteConfig[] {
           <Badge variant="secondary">
             {formatProjectRole(p.currentUserRole)}
           </Badge>
-        ) : undefined,
+        ) : (
+          <Badge variant="outline">Read-only</Badge>
+        ),
       actions: (p) => (
         <>
-          <Button asChild variant="outline">
-            <Link href={`${projectHref}/settings`}>
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
-            </Link>
-          </Button>
-          <CreateTaskDialog projectId={p.id} />
+          {p.currentUserRole ? (
+            <>
+              <Button asChild variant="outline">
+                <Link href={`${projectHref}/settings`}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </Link>
+              </Button>
+              <CreateTaskDialog projectId={p.id} />
+            </>
+          ) : (
+            <>
+              <Button variant="outline" disabled>
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </Button>
+              <Button disabled>New Task</Button>
+            </>
+          )}
         </>
       ),
     },
@@ -67,7 +81,12 @@ function createRouteConfig(projectHref: string): RouteConfig[] {
       backHref: () => projectHref,
       title: 'Board',
       description: 'Kanban view of tasks by status.',
-      actions: (p) => <CreateTaskDialog projectId={p.id} />,
+      actions: (p) =>
+        p.currentUserRole ? (
+          <CreateTaskDialog projectId={p.id} />
+        ) : (
+          <Button disabled>New Task</Button>
+        ),
     },
     {
       path: '/calendar',
@@ -75,7 +94,12 @@ function createRouteConfig(projectHref: string): RouteConfig[] {
       backHref: () => projectHref,
       title: 'Calendar',
       description: 'View task deadlines by date.',
-      actions: (p) => <CreateTaskDialog projectId={p.id} />,
+      actions: (p) =>
+        p.currentUserRole ? (
+          <CreateTaskDialog projectId={p.id} />
+        ) : (
+          <Button disabled>New Task</Button>
+        ),
     },
     {
       path: '/tasks',
@@ -87,7 +111,12 @@ function createRouteConfig(projectHref: string): RouteConfig[] {
           Manage all tasks in <span className="font-medium">{p.name}</span>.
         </>
       ),
-      actions: (p) => <CreateTaskDialog projectId={p.id} />,
+      actions: (p) =>
+        p.currentUserRole ? (
+          <CreateTaskDialog projectId={p.id} />
+        ) : (
+          <Button disabled>New Task</Button>
+        ),
     },
     {
       path: '/members',

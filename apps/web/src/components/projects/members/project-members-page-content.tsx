@@ -50,7 +50,7 @@ export function ProjectMembersPageContent({
     project?.members && membersData?.items
       ? mergeMembersWithRoles(project.members, membersData.items)
       : [];
-  const currentUserRole = project?.currentUserRole ?? 'MEMBER';
+  const currentUserRole = project?.currentUserRole;
 
   const isLoading = isProjectLoading || isMembersLoading;
   const isError = isProjectError || isMembersError;

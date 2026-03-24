@@ -16,7 +16,7 @@ const EMPTY_MEMBERS_MESSAGE = 'No members yet. Invite people to get started.';
 
 type ProjectMembersTableProps = {
   members: ProjectMember[];
-  currentUserRole: ProjectRole;
+  currentUserRole?: ProjectRole;
   onChangeRole?: (
     memberId: string,
     role: Exclude<ProjectRole, 'OWNER'>,

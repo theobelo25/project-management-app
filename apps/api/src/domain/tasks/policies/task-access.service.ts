@@ -103,21 +103,6 @@ export class TaskAccessService {
     const role =
       project.ownerId === user.id ? ProjectRole.OWNER : project.currentUserRole;
 
-    if (!this.rules.canReadProject(role)) {
-      this.logger.warn(
-        {
-          event: 'task.access.read_project.forbidden',
-          projectId,
-          userId: user.id,
-        },
-        'Task project read access denied',
-      );
-      throw taskForbidden('READ_PROJECT_FORBIDDEN', {
-        projectId,
-        userId: user.id,
-      });
-    }
-
     this.logger.debug(
       {
         event: 'task.access.read_project.allowed',

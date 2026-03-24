@@ -10,7 +10,7 @@ export const MEMBERS_TABLE_GRID_CLASS =
 
 export type MemberRowContentProps = {
   member: ProjectMember;
-  currentUserRole: ProjectRole;
+  currentUserRole?: ProjectRole;
   onChangeRole?: (
     memberId: string,
     role: Exclude<ProjectRole, 'OWNER'>,

@@ -8,10 +8,16 @@ type CalendarDayCellProps = {
   day: CalendarDay;
   tasks: CalendarTask[];
   isToday: boolean;
+  canEditTasks?: boolean;
 };
 
-export function CalendarDayCell({ day, tasks, isToday }: CalendarDayCellProps) {
-  const { setNodeRef, isOver } = useDroppable({ id: day.date });
+export function CalendarDayCell({
+  day,
+  tasks,
+  isToday,
+  canEditTasks = true,
+}: CalendarDayCellProps) {
+  const { setNodeRef, isOver } = useDroppable({ id: day.date, disabled: !canEditTasks });
 
   return (
     <div
@@ -40,7 +46,7 @@ export function CalendarDayCell({ day, tasks, isToday }: CalendarDayCellProps) {
 
       <div className="flex flex-col gap-2">
         {tasks.map((task) => (
-          <CalendarTaskChip key={task.id} task={task} />
+          <CalendarTaskChip key={task.id} task={task} canEdit={canEditTasks} />
         ))}
       </div>
     </div>

@@ -41,6 +41,7 @@ export function ProjectBoardPageContent({
   );
 
   const updateStatusMutation = useUpdateTaskStatus(projectId);
+  const canEditTasks = !!project?.currentUserRole;
 
   const tasks: BoardTask[] = useMemo(
     () => (tasksResult?.data ?? []).map(taskViewToBoardTask),
@@ -51,9 +52,10 @@ export function ProjectBoardPageContent({
 
   const onMoveTask = useCallback(
     (taskId: string, newStatus: TaskStatus) => {
+      if (!canEditTasks) return;
       updateStatusMutation.mutate({ taskId, status: newStatus });
     },
-    [updateStatusMutation],
+    [canEditTasks, updateStatusMutation],
   );
 
   const isLoading = isProjectLoading || tasksLoading;
@@ -73,6 +75,7 @@ export function ProjectBoardPageContent({
         projectId={project.id}
         columns={BOARD_COLUMNS}
         grouped={grouped}
+        canEditTasks={canEditTasks}
         onMoveTask={onMoveTask}
       />
     </div>

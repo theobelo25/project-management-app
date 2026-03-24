@@ -115,7 +115,6 @@ export class ProjectsController {
   }
 
   @Get(':id/members')
-  @RequireProjectRole(ProjectRole.MEMBER)
   @ZodSerializerDto(ProjectMembersResponseDto)
   async getMembers(
     @CurrentUser() user: AuthUser,

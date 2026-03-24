@@ -47,12 +47,14 @@ export function ProjectCalendarPageContent({
   );
 
   const updateDueDateMutation = useUpdateTaskDueDate(projectId);
+  const canEditTasks = !!project?.currentUserRole;
 
   const handleDueDateChange = useCallback(
     (taskId: string, dueDate: string) => {
+      if (!canEditTasks) return;
       updateDueDateMutation.mutate({ taskId, dueDate });
     },
-    [updateDueDateMutation],
+    [canEditTasks, updateDueDateMutation],
   );
 
   const calendarTasks = useMemo(() => {
@@ -111,6 +113,7 @@ export function ProjectCalendarPageContent({
         days={calendarDays}
         getTasksForDate={getTasksForDate}
         today={today}
+        canEditTasks={canEditTasks}
         onPrevMonth={goToPrevMonth}
         onNextMonth={goToNextMonth}
         onDueDateChange={handleDueDateChange}

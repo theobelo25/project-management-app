@@ -35,6 +35,18 @@ export default function ProjectSettingsPage() {
   if (isError || !project) {
     return <PageError message={error?.message ?? 'Project not found'} />;
   }
+  if (!project.currentUserRole) {
+    return (
+      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-2 text-center">
+        <p className="text-lg font-semibold">
+          You do not have permission to edit settings on this project
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Please contact project admin for assisstance
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>

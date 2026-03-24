@@ -5,6 +5,7 @@ import { ProjectMembersCard } from './project-members-card';
 import { ProjectOverviewCard } from './project-overview-card';
 import { ProjectStats } from './project-stats';
 import { RecentTasksCard } from './recent-tasks-card';
+import { Badge } from '@web/components/ui/badge';
 
 type ProjectDetailContentProps = {
   projectId: string;
@@ -35,9 +36,15 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
 
   const members = project.members ?? [];
   const recentTasks = project.recentTasks ?? [];
+  const isReadOnly = !project.currentUserRole;
 
   return (
     <div className="space-y-4">
+      {isReadOnly ? (
+        <div className="flex">
+          <Badge variant="outline">Read-only</Badge>
+        </div>
+      ) : null}
       <ProjectStats
         totalTasks={project.totalTasks}
         openTasks={project.openTasks}
@@ -45,10 +52,18 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
         members={members}
       />
       <section className="grid gap-4 mb-4 lg:grid-cols-2">
-        <RecentTasksCard project={project} recentTasks={recentTasks} />
-        <ProjectMembersCard project={project} members={members} />
+        <RecentTasksCard
+          project={project}
+          recentTasks={recentTasks}
+          allowTaskDetailNavigation={!isReadOnly}
+        />
+        <ProjectMembersCard
+          project={project}
+          members={members}
+          canManageMembers={!isReadOnly}
+        />
         <div className="lg:col-span-2">
-          <ProjectOverviewCard project={project} />
+          <ProjectOverviewCard project={project} canManage={!isReadOnly} />
         </div>
       </section>
     </div>

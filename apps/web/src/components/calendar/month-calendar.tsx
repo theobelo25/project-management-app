@@ -23,6 +23,7 @@ type MonthCalendarProps = {
   days: CalendarDay[];
   getTasksForDate: (date: string) => CalendarTask[];
   today: string;
+  canEditTasks?: boolean;
   onPrevMonth?: () => void;
   onNextMonth?: () => void;
   onDueDateChange?: (taskId: string, dueDate: string) => void;
@@ -33,6 +34,7 @@ export function MonthCalendar({
   days,
   getTasksForDate,
   today,
+  canEditTasks = true,
   onPrevMonth,
   onNextMonth,
   onDueDateChange,
@@ -56,13 +58,13 @@ export function MonthCalendar({
       setActiveTask(null);
       const taskId = event.active.id as string;
       const overId = event.over?.id;
-      if (!overId || typeof overId !== 'string' || !onDueDateChange) return;
+      if (!canEditTasks || !overId || typeof overId !== 'string' || !onDueDateChange) return;
       if (!validDates.has(overId)) return;
       const task = event.active.data.current?.task as CalendarTask | undefined;
       if (task?.dueDate === overId) return; // same date, no-op
       onDueDateChange(taskId, overId);
     },
-    [onDueDateChange, validDates],
+    [canEditTasks, onDueDateChange, validDates],
   );
 
   return (
@@ -86,6 +88,7 @@ export function MonthCalendar({
                 day={day}
                 tasks={getTasksForDate(day.date)}
                 isToday={day.date === today}
+                canEditTasks={canEditTasks}
               />
             ))}
           </div>
@@ -93,7 +96,9 @@ export function MonthCalendar({
       </Card>
 
       <DragOverlay dropAnimation={null}>
-        {activeTask ? <CalendarTaskChip task={activeTask} isOverlay /> : null}
+        {canEditTasks && activeTask ? (
+          <CalendarTaskChip task={activeTask} isOverlay />
+        ) : null}
       </DragOverlay>
     </DndContext>
   );
