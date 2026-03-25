@@ -64,7 +64,9 @@ export default function OrganizationsPage() {
 
   return (
     <>
-      <OrganizationsPageHeader search={search} onSearchChange={setSearch} />
+      <div className="pt-6">
+        <OrganizationsPageHeader search={search} onSearchChange={setSearch} />
+      </div>
 
       <div className="space-y-6">
         <OrganizationsList
