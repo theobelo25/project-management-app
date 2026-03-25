@@ -7,224 +7,220 @@
 ![pnpm](https://img.shields.io/badge/pnpm-workspace-f69220)
 ![Turbo](https://img.shields.io/badge/Turborepo-monorepo-000000)
 
-A full-stack project management platform built with **Next.js, NestJS, Prisma, and Turborepo**.
-The application is designed using a **modern TypeScript monorepo architecture** with shared packages, scalable backend design, and a modular frontend.
+A full-stack project management platform built with **Next.js, NestJS, Prisma, and Turborepo**. The repo is a **pnpm workspace** with shared packages (`@repo/database`, `@repo/types`), a modular NestJS API, and a Next.js App Router frontend.
 
-This project is intended as a **production-style portfolio application**, demonstrating real-world architecture patterns such as workspace packages, shared types, and service-based backend design.
-
----
-
-# Features
-
-- Project and task management
-- Kanban-style task boards
-- Scalable backend API with NestJS
-- Shared database client using Prisma
-- Monorepo architecture with pnpm workspaces
-- Turborepo task orchestration and caching
-- Shared TypeScript packages
-- Modern Next.js App Router frontend
-
-Planned features include:
-
-- Real-time task updates
-- Drag-and-drop Kanban board
-- User authentication and session management
-- Team collaboration features
-- Activity history and notifications
+This project is intended as a **production-style portfolio application**: typed APIs, validation, auth cookies, role-aware access, and automated tests on the backend.
 
 ---
 
-# Tech Stack
+## Features
 
-### Frontend
-
-- Next.js (App Router)
-- React
-- TypeScript
-- Tailwind CSS
-
-### Backend
-
-- NestJS
-- TypeScript
-- REST API architecture
-
-### Database
-
-- Prisma ORM
-- SQLite (development)
-- PostgreSQL (production-ready)
-
-### Monorepo Tooling
-
-- pnpm workspaces
-- Turborepo
-- Shared TypeScript packages
+- **Authentication** — JWT access and refresh tokens in **http-only cookies**, Argon2 password hashing, global JWT guard with `@Public()` escape hatch
+- **Organizations** — Multi-tenant workspaces with organization roles
+- **Projects** — Project membership with **project roles** (owner, admin, member) and settings
+- **Tasks** — CRUD, statuses and priorities, **Kanban board** with drag-and-drop (**@dnd-kit**), task detail and list views
+- **Notifications** — In-app notification domain
+- **API** — REST, **Zod**-validated DTOs (shared with `@repo/types`), global exception handling, **rate limiting**, structured logging (**Pino**)
+- **Docs** — **OpenAPI/Swagger** at `/api/docs` when `NODE_ENV` is not `production`
+- **Monorepo** — Turborepo for `build`, `lint`, `typecheck`, and `dev`
+- **Containers** — `Dockerfile.web` and `Dockerfile.api` at the repository root for deployment
 
 ---
 
-# Monorepo Architecture
+## Tech stack
 
-This project uses a **pnpm workspace monorepo** to share code between applications.
+| Area        | Technologies |
+| ----------- | ------------ |
+| Frontend    | Next.js (App Router), React, TypeScript, Tailwind CSS, shadcn/ui (Radix), TanStack Query, React Hook Form, Zod |
+| Backend     | NestJS, Passport JWT (from cookies), cookie-parser, Terminus (health), Swagger |
+| Data        | Prisma ORM, **PostgreSQL** |
+| Tooling     | pnpm workspaces, Turborepo, ESLint, Prettier |
+| Testing (API) | Jest — unit tests (`*.spec.ts`) and e2e under `apps/api/test/` |
+
+---
+
+## Monorepo layout
 
 ```
 project-management-app
-│
 ├── apps
-│   ├── api        # NestJS backend
-│   └── web        # Next.js frontend
-│
+│   ├── api          # NestJS backend (global prefix `/api`)
+│   └── web          # Next.js frontend
 ├── packages
-│   ├── database   # Prisma client + schema
-│   └── types      # Shared TypeScript types
-│
+│   ├── database     # Prisma schema + generated client (`@repo/database`)
+│   └── types        # Shared Zod schemas and types (`@repo/types`)
+├── Dockerfile.api
+├── Dockerfile.web
 ├── turbo.json
 ├── pnpm-workspace.yaml
 └── tsconfig.base.json
 ```
 
-### Apps
-
-| App   | Description        |
-| ----- | ------------------ |
-| `web` | Next.js frontend   |
-| `api` | NestJS backend API |
-
-### Packages
-
-| Package          | Description                              |
-| ---------------- | ---------------------------------------- |
-| `@repo/database` | Prisma schema and database client        |
-| `@repo/types`    | Shared TypeScript types used across apps |
+| Package          | Role |
+| ---------------- | ---- |
+| `@repo/database` | Prisma schema, migrations, client export |
+| `@repo/types`    | Shared validation and types for API and web |
 
 ---
-
-# Getting Started
 
 ## Prerequisites
 
-- Node.js 20+
-- pnpm
-- Git
-
-Install pnpm if needed:
-
-```
-npm install -g pnpm
-```
+- **Node.js** 20+
+- **pnpm** (see [packageManager](package.json) for the version used in this repo)
+- **PostgreSQL** (local or hosted) for Prisma
+- **Git**
 
 ---
 
-# Installation
+## Installation
 
-Clone the repository:
+Clone the repository (use your fork or remote URL):
 
-```
-git clone https://github.com/yourusername/project-management-app.git
+```bash
+git clone <your-repo-url>
 cd project-management-app
-```
-
-Install dependencies:
-
-```
 pnpm install
 ```
 
 ---
 
-# Environment Variables
+## Environment variables
 
-Create a `.env` file in the repository root.
+Configuration is split between the **API**, the **web** app, and **Prisma** (database package).
 
-Example:
+**Templates** (copy and rename):
 
-```
-DATABASE_URL="file:./prisma/dev.db"
-```
+| Template | Copy to |
+| -------- | ------- |
+| [apps/api/.env.example](apps/api/.env.example) | `apps/api/.env` |
+| [apps/web/.env.example](apps/web/.env.example) | `apps/web/.env.local` |
+| [packages/database/.env.example](packages/database/.env.example) | `packages/database/.env` |
+
+Use the same `DATABASE_URL` / database name and credentials in `apps/api/.env` and `packages/database/.env` for local development.
+
+### API (`apps/api/.env`)
+
+The API validates env at startup (`apps/api/src/config/env.validation.ts`). Create `apps/api/.env` with at least:
+
+| Variable | Description |
+| -------- | ----------- |
+| `NODE_ENV` | e.g. `development` or `production` |
+| `APP_PORT` | HTTP port (default `3333` if omitted in schema — still set explicitly in practice) |
+| `APP_HOST` | Bind host (default `0.0.0.0`) |
+| `FRONTEND_ORIGIN` | Primary frontend origin (used for app logic; align with your Next.js URL) |
+| `CORS_ORIGINS` | Allowed CORS origins, **comma-separated** (trimmed; see `getCorsOptions`) |
+| `COOKIE_DOMAIN` | Optional; set in production for cookies across subdomains |
+| `DATASOURCE_USERNAME` | PostgreSQL user |
+| `DATASOURCE_PASSWORD` | PostgreSQL password |
+| `DATASOURCE_HOST` | PostgreSQL host |
+| `DATASOURCE_PORT` | PostgreSQL port |
+| `DATASOURCE_DATABASE` | Database name |
+| `DATABASE_URL` | Prisma connection string (PostgreSQL) |
+| `JWT_SECRET` | Secret for signing JWTs |
+| `JWT_ACCESS_TOKEN_EXPIRATION_MS` | Access token lifetime (ms) |
+| `REFRESH_TOKEN_EXPIRATION_MS` | Refresh token lifetime (ms) |
+| `JWT_ISSUER` | JWT `iss` |
+| `JWT_AUDIENCE` | JWT `aud` |
+
+### Web (`apps/web/.env.local`)
+
+| Variable | Required | Description |
+| -------- | -------- | ----------- |
+| `NEXT_PUBLIC_API_URL` | Yes | Public origin of the API (no trailing slash), e.g. `http://localhost:3333` |
+| `NEXT_PUBLIC_APP_URL` | No | Site URL; defaults to `http://localhost:3000` in layout if unset |
 
 ---
 
-# Database Setup
+## Database
 
-Generate the Prisma client:
+From the repository root:
 
+```bash
+pnpm db:generate
+pnpm db:migrate
 ```
-pnpm --filter @repo/database db:generate
-```
 
-Create the development database:
+Or using the database package directly:
 
-```
-pnpm --filter @repo/database db:push
+```bash
+pnpm --filter @repo/database exec prisma generate
+pnpm --filter @repo/database exec prisma migrate dev
 ```
 
 Open Prisma Studio:
 
-```
-pnpm --filter @repo/database db:studio
+```bash
+pnpm db:studio
 ```
 
 ---
 
-# Development
+## Development
 
-Start all services:
+Start **all** apps (via Turborepo):
 
-```
+```bash
 pnpm dev
 ```
 
-Start individual apps:
+Start individually:
 
-Frontend:
-
+```bash
+pnpm --filter web dev    # Next.js — http://localhost:3000
+pnpm --filter api dev    # NestJS — default port from APP_PORT (e.g. 3333)
 ```
-pnpm --filter web dev
-```
 
-Backend:
+With the API running in non-production mode, OpenAPI UI is available at **`http://<api-host>:<port>/api/docs`**.
 
-```
-pnpm --filter api dev
+---
+
+## Scripts (root)
+
+| Command | Description |
+| ------- | ----------- |
+| `pnpm dev` | Run dev tasks for workspace packages |
+| `pnpm build` | Production build (Turbo) |
+| `pnpm lint` | ESLint across packages |
+| `pnpm typecheck` | TypeScript checks |
+| `pnpm db:generate` | `prisma generate` in `@repo/database` |
+| `pnpm db:migrate` | `prisma migrate dev` in `@repo/database` |
+| `pnpm db:studio` | Prisma Studio |
+
+### API tests
+
+Run from the repo root:
+
+```bash
+pnpm --filter api test       # unit tests
+pnpm --filter api test:e2e   # e2e (Jest + supertest)
 ```
 
 ---
 
-# Scripts
+## Docker
 
-| Command          | Description           |
-| ---------------- | --------------------- |
-| `pnpm dev`       | Start all apps        |
-| `pnpm build`     | Build all packages    |
-| `pnpm lint`      | Run linting           |
-| `pnpm typecheck` | Run TypeScript checks |
+Build and run using the root Dockerfiles (set build args / env such as `DATABASE_URL` as required for your environment). See comments in `Dockerfile.api` and `Dockerfile.web` for workspace-aware build steps.
 
 ---
 
-# Future Improvements
+## Future improvements
 
-- Real-time task updates with WebSockets
-- Drag-and-drop Kanban board
-- Role-based access control
-- Project analytics and dashboards
-- Automated testing
-- CI/CD pipeline
+- **Real-time** — WebSockets or SSE for live task and notification updates
+- **CI/CD** — Lint, typecheck, and tests on every push
+- **Frontend tests** — Playwright or RTL for critical flows
+- **Analytics** — Project dashboards and reporting
 
 ---
 
-# Architecture Goals
+## Architecture goals
 
-This project focuses on demonstrating:
-
-- Clean monorepo architecture
-- Shared code across frontend and backend
-- Scalable NestJS backend design
-- Strong TypeScript typing across the stack
-- Maintainable and modular project structure
+- Clear **monorepo** boundaries and shared contracts via `@repo/types`
+- **NestJS** modules per domain (auth, users, organizations, projects, tasks, notifications)
+- **Consistent validation** with Zod end-to-end where schemas are shared
+- **Secure defaults** — http-only cookies, throttling, payload size limits, structured errors
 
 ---
 
-# License
+## License
 
-MIT License
+ISC (see [package.json](package.json)).
