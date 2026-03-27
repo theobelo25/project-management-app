@@ -13,6 +13,8 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      DATABASE_URL: postgresql://127.0.0.1:5432/ci_placeholder
 
     steps:
       - name: Checkout
