@@ -120,7 +120,10 @@ describe('AccessTokensService', () => {
         authConfig.access.jwtSign,
       );
 
-      const payload = jwtService.sign.mock.calls[0][0];
+      const tuple = jwtService.sign.mock.calls[0] as [
+        { sub: string; orgId: string },
+      ];
+      const payload = tuple[0];
       expect(payload).toEqual({ sub: user.id, orgId: user.orgId });
       expect(payload).not.toHaveProperty('email');
       expect(payload).not.toHaveProperty('name');

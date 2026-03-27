@@ -91,7 +91,7 @@ describe('ProjectMembersService', () => {
     fatal: jest.fn(),
     trace: jest.fn(),
     level: 'info',
-    child: jest.fn() as any,
+    child: jest.fn(),
   } as unknown as jest.Mocked<PinoLogger>;
 
   beforeEach(() => {

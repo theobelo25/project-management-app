@@ -1,5 +1,7 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { AuthConfigService } from '@api/config';
+import type { HashingService } from '../hashing/hashing.service.interface';
+import type { RefreshTokenRepositoryFacade } from '../repositories/refresh-token.repository';
 import { RefreshTokensService } from './refresh-tokens.service';
 import { PinoLogger } from 'nestjs-pino';
 
@@ -70,8 +72,8 @@ describe('RefreshTokensService', () => {
 
     service = new RefreshTokensService(
       authConfig as unknown as AuthConfigService,
-      authRepository as any,
-      hashingService as any,
+      authRepository as unknown as RefreshTokenRepositoryFacade,
+      hashingService as unknown as HashingService,
       logger as unknown as PinoLogger,
     );
   });
@@ -251,7 +253,8 @@ describe('RefreshTokensService', () => {
 
       const result = await service.rotate(rawToken);
 
-      const nextRawToken = hashingService.hash.mock.calls[0][0];
+      const hashCall = hashingService.hash.mock.calls[0] as [string];
+      const nextRawToken = hashCall[0];
 
       expect(hashingService.hash).toHaveBeenCalledWith(nextRawToken);
 

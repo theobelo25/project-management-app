@@ -19,7 +19,7 @@ import {
   parseRequiredTaskIdFromParams,
 } from './task-access.params';
 
-type RequestWithUser = Request & {
+type RequestWithUser = Omit<Request, 'body' | 'query' | 'params'> & {
   user?: AuthUser;
   params: Record<string, string | string[] | undefined>;
   query: Record<string, unknown>;

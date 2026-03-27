@@ -1,12 +1,12 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { PinoLogger } from 'nestjs-pino';
+import type { PinoLogger } from 'nestjs-pino';
 import { ProjectRole } from '@repo/database';
 import { AuthUser } from '@repo/types';
 
 import { TaskAccessService } from './task-access.service';
 import { TaskAccessContext } from '../types/tasks.repository.types';
 import { TaskAccessRules } from './task-access.rules';
-import { TaskAccessContextLoader } from './task-access-context.loader';
+import type { TaskAccessContextLoader } from './task-access-context.loader';
 
 describe('TaskAccessService', () => {
   let service: TaskAccessService;
@@ -42,8 +42,8 @@ describe('TaskAccessService', () => {
     };
 
     service = new TaskAccessService(
-      loader as any,
-      logger as any,
+      loader as unknown as TaskAccessContextLoader,
+      logger as unknown as PinoLogger,
       new TaskAccessRules(),
     );
   });
@@ -66,9 +66,9 @@ describe('TaskAccessService', () => {
       ownerId: 'someone-else',
       currentUserRole: null,
     });
-    await expect(service.assertCanCreateInProject(user, 'project-1')).rejects.toThrow(
-      ForbiddenException,
-    );
+    await expect(
+      service.assertCanCreateInProject(user, 'project-1'),
+    ).rejects.toThrow(ForbiddenException);
   });
 
   it('read task: happy path, missing task, wrong org', async () => {
@@ -76,12 +76,14 @@ describe('TaskAccessService', () => {
       project: { orgId: user.orgId, ownerId: user.id, currentUserRole: null },
     });
     loader.findTaskAccessContext.mockResolvedValueOnce(ok);
-    await expect(service.getAccessibleTaskOrThrow('task-1', user)).resolves.toBe(ok);
+    await expect(
+      service.getAccessibleTaskOrThrow('task-1', user),
+    ).resolves.toBe(ok);
 
     loader.findTaskAccessContext.mockResolvedValueOnce(null);
-    await expect(service.getAccessibleTaskOrThrow('task-1', user)).rejects.toThrow(
-      NotFoundException,
-    );
+    await expect(
+      service.getAccessibleTaskOrThrow('task-1', user),
+    ).rejects.toThrow(NotFoundException);
 
     loader.findTaskAccessContext.mockResolvedValueOnce(
       taskFixture({
@@ -92,9 +94,9 @@ describe('TaskAccessService', () => {
         },
       }),
     );
-    await expect(service.getAccessibleTaskOrThrow('task-1', user)).rejects.toThrow(
-      ForbiddenException,
-    );
+    await expect(
+      service.getAccessibleTaskOrThrow('task-1', user),
+    ).rejects.toThrow(ForbiddenException);
   });
 
   it('update: random member with no stake gets blocked', async () => {

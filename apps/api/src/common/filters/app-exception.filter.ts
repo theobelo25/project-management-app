@@ -5,6 +5,7 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { Response } from 'express';
 import { getRequestCorrelationId } from '../utils/http.utils';
 import { normalizeException } from '../errors/normalize-exception';
@@ -21,7 +22,7 @@ export class AppExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest();
+    const request = ctx.getRequest<Request>();
 
     const normalized = normalizeException(exception);
     const payload = buildApiErrorResponse({

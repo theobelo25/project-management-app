@@ -3,6 +3,7 @@ import { ProjectRole } from '@repo/database';
 import type { AuthUser } from '@repo/types';
 import { PinoLogger } from 'nestjs-pino';
 
+import type { UnitOfWork } from '@api/prisma/uow/unit-of-work.interface';
 import { ProjectOwnershipService } from './project-ownership.service';
 import { ProjectAccessService } from '../policies/project-access.service';
 import type {
@@ -81,7 +82,7 @@ describe('ProjectOwnershipService', () => {
     fatal: jest.fn(),
     trace: jest.fn(),
     level: 'info',
-    child: jest.fn() as any,
+    child: jest.fn(),
   } as unknown as jest.Mocked<PinoLogger>;
 
   beforeEach(() => {
@@ -91,12 +92,12 @@ describe('ProjectOwnershipService', () => {
       membersRepository as unknown as ProjectMemberRepository,
       authProjectsRepository as unknown as ProjectAuthorizationRepository,
       projectAccessService as unknown as ProjectAccessService,
-      unitOfWork as any,
+      unitOfWork as unknown as UnitOfWork,
       logger,
     );
 
-    unitOfWork.transaction.mockImplementation(
-      async (fn: (db: unknown) => unknown) => fn(undefined),
+    unitOfWork.transaction.mockImplementation((fn: (db: unknown) => unknown) =>
+      Promise.resolve(fn(undefined)),
     );
   });
 

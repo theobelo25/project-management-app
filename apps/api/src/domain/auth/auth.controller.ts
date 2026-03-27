@@ -97,7 +97,8 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
-    const rawRefreshToken = req.cookies?.[COOKIE.REFRESH];
+    const cookies = req.cookies as Record<string, string> | undefined;
+    const rawRefreshToken = cookies?.[COOKIE.REFRESH];
 
     if (typeof rawRefreshToken === 'string')
       await this.authService.logout(rawRefreshToken);
@@ -109,7 +110,7 @@ export class AuthController {
   @Get('me')
   @ApiCookieAuth('Authentication')
   @ZodSerializerDto(UserViewResponseDto)
-  async me(@CurrentUser() user: UserView): Promise<UserView> {
+  me(@CurrentUser() user: UserView): UserView {
     return user;
   }
 
@@ -131,7 +132,9 @@ export class AuthController {
     }
 
     if (dto.password !== undefined) {
-      updateData.passwordHash = await this.authService.hashPassword(dto.password);
+      updateData.passwordHash = await this.authService.hashPassword(
+        dto.password,
+      );
     }
 
     return this.usersService.update(user.id, updateData);

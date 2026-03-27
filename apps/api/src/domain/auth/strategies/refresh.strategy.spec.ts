@@ -1,4 +1,6 @@
 import { UnauthorizedException } from '@nestjs/common';
+import type { AuthConfigService } from '@api/config';
+import type { Request } from 'express';
 import { RefreshTokenStrategy } from './refresh.strategy';
 
 describe('RefreshTokenStrategy', () => {
@@ -13,39 +15,35 @@ describe('RefreshTokenStrategy', () => {
   };
 
   beforeEach(() => {
-    strategy = new RefreshTokenStrategy(authConfig as any);
+    strategy = new RefreshTokenStrategy(
+      authConfig as unknown as AuthConfigService,
+    );
   });
 
-  it('returns the raw refresh token when the cookie exists', async () => {
+  it('returns the raw refresh token when the cookie exists', () => {
     const request = {
       cookies: {
         refresh_token: 'raw-refresh-token',
       },
-    } as any;
+    } as unknown as Request;
 
-    await expect(strategy.validate(request)).resolves.toEqual({
+    expect(strategy.validate(request)).toEqual({
       rawRefreshToken: 'raw-refresh-token',
     });
   });
 
-  it('throws UnauthorizedException when the refresh cookie is missing', async () => {
+  it('throws UnauthorizedException when the refresh cookie is missing', () => {
     const request = {
       cookies: {},
-    } as any;
+    } as unknown as Request;
 
-    await expect(strategy.validate(request)).rejects.toThrow(
-      UnauthorizedException,
-    );
-    await expect(strategy.validate(request)).rejects.toThrow(
-      'Refresh token missing',
-    );
+    expect(() => strategy.validate(request)).toThrow(UnauthorizedException);
+    expect(() => strategy.validate(request)).toThrow('Refresh token missing');
   });
 
-  it('throws UnauthorizedException when cookies are undefined', async () => {
-    const request = {} as any;
+  it('throws UnauthorizedException when cookies are undefined', () => {
+    const request = {} as unknown as Request;
 
-    await expect(strategy.validate(request)).rejects.toThrow(
-      UnauthorizedException,
-    );
+    expect(() => strategy.validate(request)).toThrow(UnauthorizedException);
   });
 });

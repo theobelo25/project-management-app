@@ -95,7 +95,7 @@ describe('TasksService', () => {
       const dto: CreateTaskDto = {
         title: 'Build tests',
         description: 'Write unit tests for tasks service',
-        projectId: 'project-1' as any,
+        projectId: '550e8400-e29b-41d4-a716-446655440001',
       };
 
       const createInput = {
@@ -144,7 +144,7 @@ describe('TasksService', () => {
     it('validates assignees, notifies others on create when assigneeIds are set', async () => {
       const dto: CreateTaskDto = {
         title: 'T',
-        projectId: 'project-1' as any,
+        projectId: '550e8400-e29b-41d4-a716-446655440001',
         assigneeIds: ['user-2', 'user-1'],
       };
 
@@ -261,7 +261,7 @@ describe('TasksService', () => {
   describe('findMany', () => {
     it('returns paginated mapped task views', async () => {
       const query: FindTasksQueryDto = {
-        projectId: 'project-1' as any,
+        projectId: '550e8400-e29b-41d4-a716-446655440001',
         page: 1,
         limit: 10,
       } as unknown as FindTasksQueryDto;

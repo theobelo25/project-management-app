@@ -95,7 +95,9 @@ describe('TaskAccessGuard', () => {
     } catch (e) {
       expect(e).toBeInstanceOf(UnauthorizedException);
 
-      const resp = (e as UnauthorizedException).getResponse() as any;
+      const resp = (e as UnauthorizedException).getResponse() as unknown as {
+        details?: { code?: string };
+      };
       expect(resp.details?.code).toBe('TASK_ACCESS_CONTEXT_MISSING');
     }
   });
@@ -242,7 +244,9 @@ describe('TaskAccessGuard', () => {
       fail('Expected canActivate to throw');
     } catch (e) {
       expect(e).toBeInstanceOf(BadRequestException);
-      const resp = (e as BadRequestException).getResponse() as any;
+      const resp = (e as BadRequestException).getResponse() as unknown as {
+        details?: { code?: string };
+      };
       expect(resp.details?.code).toBe('TASK_INVALID_PROJECT_ID');
     }
   });
@@ -262,7 +266,9 @@ describe('TaskAccessGuard', () => {
       fail('Expected canActivate to throw');
     } catch (e) {
       expect(e).toBeInstanceOf(BadRequestException);
-      const resp = (e as BadRequestException).getResponse() as any;
+      const resp = (e as BadRequestException).getResponse() as unknown as {
+        details?: { code?: string };
+      };
       expect(resp.details?.code).toBe('TASK_INVALID_TASK_ID');
     }
   });
@@ -282,7 +288,9 @@ describe('TaskAccessGuard', () => {
       fail('Expected canActivate to throw');
     } catch (e) {
       expect(e).toBeInstanceOf(BadRequestException);
-      const resp = (e as BadRequestException).getResponse() as any;
+      const resp = (e as BadRequestException).getResponse() as unknown as {
+        details?: { code?: string };
+      };
       expect(resp.details?.code).toBe('TASK_INVALID_ASSIGNEE_USER_ID');
     }
   });

@@ -78,4 +78,3 @@ const UpdateProfileSchema = z
   });
 
 export class UpdateProfileDto extends createZodDto(UpdateProfileSchema) {}
-

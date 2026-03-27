@@ -107,9 +107,11 @@ describe('AuthService', () => {
     };
 
     uow = {
-      transaction: jest.fn(async (callback: (tx: any) => Promise<any>) => {
-        return callback(tx);
-      }),
+      transaction: jest.fn(
+        async (callback: (tx: unknown) => Promise<unknown>) => {
+          return callback(tx);
+        },
+      ),
     };
 
     logger = {

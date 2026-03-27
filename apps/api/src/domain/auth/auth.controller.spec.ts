@@ -4,8 +4,11 @@ import { COOKIE } from '@repo/types';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { LoginRequestDto } from './dto/login-request.dto';
+import { SignupRequestDto } from './dto/signup-request.dto';
 import { CookiesService } from './cookies/cookies.service';
 import { UsersService } from '@api/domain/users/users.service';
+import { UpdateProfileDto } from '@api/domain/users/dto/update-profile.dto';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -66,7 +69,7 @@ describe('AuthController', () => {
       confirmPassword: 'x',
     };
 
-    expect(await controller.signup(body as any)).toEqual(session);
+    expect(await controller.signup(body as SignupRequestDto)).toEqual(session);
     expect(auth.signup).toHaveBeenCalledWith({
       email: body.email,
       name: body.name,
@@ -79,7 +82,10 @@ describe('AuthController', () => {
     auth.issueSession.mockResolvedValue(session);
 
     expect(
-      await controller.login({ email: 'a@b.com', password: 'x' } as any),
+      await controller.login({
+        email: 'a@b.com',
+        password: 'x',
+      } as LoginRequestDto),
     ).toEqual(session);
     expect(auth.issueSession).toHaveBeenCalledWith(userView);
   });
@@ -108,11 +114,13 @@ describe('AuthController', () => {
   it('PATCH me: builds update payload; hashes password if sent', async () => {
     users.update.mockResolvedValue(userView);
 
-    await controller.updateMe(userView, { name: 'New' } as any);
+    await controller.updateMe(userView, { name: 'New' } as UpdateProfileDto);
     expect(users.update).toHaveBeenCalledWith(userView.id, { name: 'New' });
 
     auth.hashPassword.mockResolvedValue('hashed');
-    await controller.updateMe(userView, { password: 'Secret1!' } as any);
+    await controller.updateMe(userView, {
+      password: 'Secret1!',
+    } as UpdateProfileDto);
     expect(users.update).toHaveBeenCalledWith(userView.id, {
       passwordHash: 'hashed',
     });

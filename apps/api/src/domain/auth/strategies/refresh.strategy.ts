@@ -13,9 +13,10 @@ export class RefreshTokenStrategy extends PassportStrategy(
     super();
   }
 
-  async validate(request: Request): Promise<{ rawRefreshToken: string }> {
+  validate(request: Request): { rawRefreshToken: string } {
     const cookieName = this.authConfig.cookies.refresh.name;
-    const rawRefreshToken = request.cookies?.[cookieName];
+    const jar = request.cookies as Record<string, string> | undefined;
+    const rawRefreshToken = jar?.[cookieName];
 
     if (!rawRefreshToken)
       throw new UnauthorizedException('Refresh token missing');

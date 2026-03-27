@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { ProjectRole } from '@repo/database';
 import type {
+  AuthUser,
   CreateProjectDto,
   GetProjectsQueryDto,
   ProjectDetailView,
@@ -9,6 +10,9 @@ import type {
 } from '@repo/types';
 
 import { ProjectsController } from './projects.controller';
+import type { ProjectIdParamDto } from './dto/project-id-param.dto';
+import type { ProjectMemberParamDto } from './dto/project-member-param.dto';
+import type { ProjectWithRole } from './types/projects.repository.types';
 import { ProjectsFacade } from './projects.facade';
 import { ProjectRoleGuard } from './guards/project-role.guard';
 
@@ -30,7 +34,7 @@ describe('ProjectsController', () => {
     delete: jest.fn(),
   };
 
-  const user = { id: 'user-1', orgId: 'org-1' };
+  const user: AuthUser = { id: 'user-1', orgId: 'org-1' };
 
   const projectView: ProjectView = {
     id: 'project-1',
@@ -66,9 +70,12 @@ describe('ProjectsController', () => {
   });
 
   it('create + list + detail — thin wrappers', async () => {
-    const dto: CreateProjectDto = { name: 'Project Alpha', description: 'Test' };
+    const dto: CreateProjectDto = {
+      name: 'Project Alpha',
+      description: 'Test',
+    };
     facade.create.mockResolvedValue(projectView);
-    expect(await controller.create(user as any, dto)).toBe(projectView);
+    expect(await controller.create(user, dto)).toBe(projectView);
     expect(facade.create).toHaveBeenCalledWith(user, dto);
 
     const query = {
@@ -87,31 +94,34 @@ describe('ProjectsController', () => {
       totalPages: 1,
     };
     facade.findManyForUser.mockResolvedValue(page);
-    expect(await controller.findMany(user as any, query)).toBe(page);
+    expect(await controller.findMany(user, query)).toBe(page);
 
     facade.findByIdDetail.mockResolvedValue(detail);
-    expect(await controller.findById(user as any, { id: 'project-1' })).toBe(
-      detail,
-    );
+    expect(await controller.findById(user, { id: 'project-1' })).toBe(detail);
     expect(facade.findByIdDetail).toHaveBeenCalledWith('project-1', user);
   });
 
   it('patch flows forward ids + user (+ optional current project)', async () => {
     const dto: UpdateProjectDto = { name: 'Updated' };
     facade.update.mockResolvedValue(projectView);
-    await controller.update(user as any, { id: 'project-1' }, dto);
-    expect(facade.update).toHaveBeenCalledWith('project-1', user, dto, undefined);
+    await controller.update(user, { id: 'project-1' }, dto);
+    expect(facade.update).toHaveBeenCalledWith(
+      'project-1',
+      user,
+      dto,
+      undefined,
+    );
 
     facade.archive.mockResolvedValue(projectView);
-    await controller.archive(user as any, { id: 'project-1' });
+    await controller.archive(user, { id: 'project-1' });
     expect(facade.archive).toHaveBeenCalledWith('project-1', user, undefined);
 
     facade.unarchive.mockResolvedValue(projectView);
-    await controller.unarchive(user as any, { id: 'project-1' });
+    await controller.unarchive(user, { id: 'project-1' });
     expect(facade.unarchive).toHaveBeenCalledWith('project-1', user, undefined);
 
     facade.delete.mockResolvedValue(undefined);
-    await controller.delete(user as any, { id: 'project-1' });
+    await controller.delete(user, { id: 'project-1' });
     expect(facade.delete).toHaveBeenCalledWith('project-1', user, undefined);
   });
 
@@ -128,9 +138,9 @@ describe('ProjectsController', () => {
     facade.getMembers.mockResolvedValue(membersPayload);
     expect(
       await controller.getMembers(
-        user as any,
-        { id: 'project-1' } as any,
-        projectView as any,
+        user,
+        { id: 'project-1' } as ProjectIdParamDto,
+        projectView as unknown as ProjectWithRole,
       ),
     ).toBe(membersPayload);
 
@@ -141,7 +151,7 @@ describe('ProjectsController', () => {
     };
     facade.addMember.mockResolvedValue(memberRow);
     await controller.addMember(
-      user as any,
+      user,
       { id: 'project-1' },
       { userId: 'user-2', role: ProjectRole.MEMBER },
     );
@@ -152,16 +162,22 @@ describe('ProjectsController', () => {
       undefined,
     );
 
-    facade.updateMemberRole.mockResolvedValue({ ...memberRow, role: ProjectRole.ADMIN });
+    facade.updateMemberRole.mockResolvedValue({
+      ...memberRow,
+      role: ProjectRole.ADMIN,
+    });
     await controller.updateMemberRole(
-      user as any,
-      { id: 'project-1', userId: 'user-2' },
+      user,
+      {
+        id: 'project-1',
+        userId: 'user-2',
+      } as ProjectMemberParamDto,
       { role: ProjectRole.ADMIN },
     );
 
     facade.removeMember.mockResolvedValue(undefined);
     expect(
-      await controller.removeMember(user as any, {
+      await controller.removeMember(user, {
         id: 'project-1',
         userId: 'user-2',
       }),
@@ -169,7 +185,7 @@ describe('ProjectsController', () => {
 
     facade.transferOwnership.mockResolvedValue(projectView);
     await controller.transferOwnership(
-      user as any,
+      user,
       { id: 'project-1' },
       { userId: 'user-2' },
     );

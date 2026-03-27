@@ -1,4 +1,5 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import type { Db } from '@api/prisma';
 import { ProjectRole } from '@repo/database';
 import { AuthUser } from '@repo/types';
 import { ProjectAccessService } from './project-access.service';
@@ -27,7 +28,9 @@ describe('ProjectAccessService', () => {
     updateOwner: jest.fn(),
   };
 
-  const project = (overrides: Partial<ProjectWithRole> = {}): ProjectWithRole => ({
+  const project = (
+    overrides: Partial<ProjectWithRole> = {},
+  ): ProjectWithRole => ({
     id: 'project-1',
     name: 'Project Alpha',
     description: 'Test project',
@@ -66,9 +69,9 @@ describe('ProjectAccessService', () => {
       repo.findAuthorizedById.mockResolvedValue(null);
       repo.findById.mockResolvedValue(null);
 
-      await expect(service.getAuthorizedProject('project-1', u)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.getAuthorizedProject('project-1', u),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('403 if project exists but you are not on it', async () => {
@@ -76,13 +79,13 @@ describe('ProjectAccessService', () => {
       repo.findAuthorizedById.mockResolvedValue(null);
       repo.findById.mockResolvedValue(project());
 
-      await expect(service.getAuthorizedProject('project-1', u)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        service.getAuthorizedProject('project-1', u),
+      ).rejects.toThrow(ForbiddenException);
     });
 
     it('optional tx gets passed through', async () => {
-      const tx = {} as any;
+      const tx = {} as unknown as Db;
       const u = user('user-2');
       repo.findAuthorizedById.mockResolvedValue(null);
       repo.findById.mockResolvedValue(null);
@@ -101,31 +104,41 @@ describe('ProjectAccessService', () => {
   });
 
   it('getUserRole: null when role missing on the row', async () => {
-    repo.findAuthorizedById.mockResolvedValue(project({ currentUserRole: undefined }));
+    repo.findAuthorizedById.mockResolvedValue(
+      project({ currentUserRole: undefined }),
+    );
     expect(await service.getUserRole('project-1', user('2'))).toBeNull();
   });
 
   it('requireRole: owner can satisfy admin requirement', async () => {
-    repo.findAuthorizedById.mockResolvedValue(project({ currentUserRole: ProjectRole.OWNER }));
+    repo.findAuthorizedById.mockResolvedValue(
+      project({ currentUserRole: ProjectRole.OWNER }),
+    );
     await expect(
       service.requireRole('project-1', user('1'), ProjectRole.ADMIN),
     ).resolves.toBeDefined();
   });
 
   it('requireRole: member cannot pass as admin', async () => {
-    repo.findAuthorizedById.mockResolvedValue(project({ currentUserRole: ProjectRole.MEMBER }));
+    repo.findAuthorizedById.mockResolvedValue(
+      project({ currentUserRole: ProjectRole.MEMBER }),
+    );
     await expect(
       service.requireRole('project-1', user('2'), ProjectRole.ADMIN),
     ).rejects.toThrow('Insufficient project permissions');
   });
 
   it('requireOwner: only owner role', async () => {
-    repo.findAuthorizedById.mockResolvedValue(project({ currentUserRole: ProjectRole.OWNER }));
+    repo.findAuthorizedById.mockResolvedValue(
+      project({ currentUserRole: ProjectRole.OWNER }),
+    );
     await expect(
       service.requireOwner('project-1', user('1')),
     ).resolves.toBeDefined();
 
-    repo.findAuthorizedById.mockResolvedValue(project({ currentUserRole: ProjectRole.ADMIN }));
+    repo.findAuthorizedById.mockResolvedValue(
+      project({ currentUserRole: ProjectRole.ADMIN }),
+    );
     await expect(service.requireOwner('project-1', user('2'))).rejects.toThrow(
       'Only the project owner can perform this action',
     );

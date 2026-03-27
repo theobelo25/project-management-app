@@ -71,6 +71,7 @@ describe('ZodValidationPipe', () => {
 
         const response = (error as BadRequestException).getResponse();
 
+        /* eslint-disable @typescript-eslint/no-unsafe-assignment -- jest expect.any / objectContaining */
         expect(response).toEqual({
           message: 'Validation failed',
           errors: expect.arrayContaining([
@@ -91,6 +92,7 @@ describe('ZodValidationPipe', () => {
             }),
           ]),
         });
+        /* eslint-enable @typescript-eslint/no-unsafe-assignment */
       }
     });
 

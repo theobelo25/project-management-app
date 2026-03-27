@@ -1,6 +1,7 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
+import type { Db } from '@api/prisma';
 import { UsersService } from './users.service';
 import { PinoLogger } from 'nestjs-pino';
 import { UsersRepository } from './repositories/users.repository';
@@ -26,7 +27,7 @@ describe('UsersService', () => {
     error: jest.Mock;
   };
 
-  const db = { prisma: 'tx' };
+  const db = { prisma: 'tx' } as unknown as Db;
 
   const userView = {
     id: '1415c2fc-4067-4c4f-a7e1-748afc4e9b71',
@@ -97,7 +98,7 @@ describe('UsersService', () => {
       usersRepository.findByEmail.mockResolvedValue(null);
       usersRepository.create.mockResolvedValue(userView);
 
-      const result = await service.create(createUserDto, db as any);
+      const result = await service.create(createUserDto, db);
 
       expect(usersRepository.findByEmail).toHaveBeenCalledWith(
         createUserDto.email,
@@ -114,10 +115,10 @@ describe('UsersService', () => {
     it('throws ConflictException when email already exists', async () => {
       usersRepository.findByEmail.mockResolvedValue(userView);
 
-      await expect(service.create(createUserDto, db as any)).rejects.toThrow(
+      await expect(service.create(createUserDto, db)).rejects.toThrow(
         ConflictException,
       );
-      await expect(service.create(createUserDto, db as any)).rejects.toThrow(
+      await expect(service.create(createUserDto, db)).rejects.toThrow(
         'User already exists',
       );
 
@@ -153,11 +154,7 @@ describe('UsersService', () => {
         ...updateUserDto,
       });
 
-      const result = await service.update(
-        userView.id,
-        updateUserDto,
-        db as any,
-      );
+      const result = await service.update(userView.id, updateUserDto, db);
 
       expect(usersRepository.update).toHaveBeenCalledWith(
         userView.id,
@@ -175,7 +172,7 @@ describe('UsersService', () => {
     it('delegates to usersRepository.findById', async () => {
       usersRepository.findById.mockResolvedValue(userView);
 
-      const result = await service.findById(userView.id, db as any);
+      const result = await service.findById(userView.id, db);
 
       expect(usersRepository.findById).toHaveBeenCalledWith(userView.id, db);
       expect(result).toEqual(userView);
@@ -184,7 +181,7 @@ describe('UsersService', () => {
     it('returns null when repository returns null', async () => {
       usersRepository.findById.mockResolvedValue(null);
 
-      const result = await service.findById(userView.id, db as any);
+      const result = await service.findById(userView.id, db);
 
       expect(result).toBeNull();
     });
@@ -194,7 +191,7 @@ describe('UsersService', () => {
     it('returns a user when repository returns a user', async () => {
       usersRepository.findById.mockResolvedValue(userView);
 
-      const result = await service.requireById(userView.id, db as any);
+      const result = await service.requireById(userView.id, db);
 
       expect(usersRepository.findById).toHaveBeenCalledWith(userView.id, db);
       expect(result).toEqual(userView);
@@ -203,10 +200,10 @@ describe('UsersService', () => {
     it('throws NotFoundException when repository returns null', async () => {
       usersRepository.findById.mockResolvedValue(null);
 
-      await expect(service.requireById(userView.id, db as any)).rejects.toThrow(
+      await expect(service.requireById(userView.id, db)).rejects.toThrow(
         NotFoundException,
       );
-      await expect(service.requireById(userView.id, db as any)).rejects.toThrow(
+      await expect(service.requireById(userView.id, db)).rejects.toThrow(
         'User not found',
       );
 
@@ -218,7 +215,7 @@ describe('UsersService', () => {
     it('delegates to usersRepository.findPrivateUserById', async () => {
       usersRepository.findPrivateUserById.mockResolvedValue(privateUser);
 
-      const result = await service.findPrivateUserById(userView.id, db as any);
+      const result = await service.findPrivateUserById(userView.id, db);
 
       expect(usersRepository.findPrivateUserById).toHaveBeenCalledWith(
         userView.id,
@@ -230,7 +227,7 @@ describe('UsersService', () => {
     it('returns null when repository returns null', async () => {
       usersRepository.findPrivateUserById.mockResolvedValue(null);
 
-      const result = await service.findPrivateUserById(userView.id, db as any);
+      const result = await service.findPrivateUserById(userView.id, db);
 
       expect(result).toBeNull();
     });
@@ -242,7 +239,7 @@ describe('UsersService', () => {
 
       const result = await service.findPrivateUserByEmail(
         privateUser.email,
-        db as any,
+        db,
       );
 
       expect(usersRepository.findPrivateUserByEmail).toHaveBeenCalledWith(
@@ -257,7 +254,7 @@ describe('UsersService', () => {
 
       const result = await service.findPrivateUserByEmail(
         privateUser.email,
-        db as any,
+        db,
       );
 
       expect(result).toBeNull();

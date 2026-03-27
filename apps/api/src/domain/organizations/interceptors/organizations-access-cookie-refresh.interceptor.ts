@@ -10,7 +10,11 @@ import { AccessTokensService } from '@api/domain/auth/accessTokens/access-tokens
 import { CookiesService } from '@api/domain/auth/cookies/cookies.service';
 import { Observable, from } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import type { Request } from 'express';
 import { Response } from 'express';
+import type { UserView } from '@repo/types';
+
+type RequestWithUser = Request & { user?: Pick<UserView, 'id'> };
 
 @Injectable()
 export class OrganizationsAccessCookieRefreshInterceptor implements NestInterceptor {
@@ -23,9 +27,9 @@ export class OrganizationsAccessCookieRefreshInterceptor implements NestIntercep
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const http = context.switchToHttp();
     const response = http.getResponse<Response>();
-    const request = http.getRequest();
+    const request = http.getRequest<RequestWithUser>();
 
-    const userId: unknown = request?.user?.id;
+    const userId: unknown = request.user?.id;
 
     if (typeof userId !== 'string') {
       throw new UnauthorizedException('Missing authenticated user id');
@@ -34,7 +38,7 @@ export class OrganizationsAccessCookieRefreshInterceptor implements NestIntercep
     return next
       .handle()
       .pipe(
-        switchMap((value) =>
+        switchMap((value: unknown) =>
           from(this.refreshCookie(userId, response)).pipe(
             switchMap(() => [value]),
           ),

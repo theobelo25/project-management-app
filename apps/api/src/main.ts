@@ -75,4 +75,4 @@ async function bootstrap() {
 
   await app.listen(appOpts.port, appOpts.host);
 }
-bootstrap();
+void bootstrap();

@@ -46,4 +46,11 @@ export default tseslint.config(
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
     },
   },
+  {
+    files: ['**/*.spec.ts'],
+    rules: {
+      // Jest matchers (`expect(mock).toHaveBeenCalledWith`) trigger false positives.
+      '@typescript-eslint/unbound-method': 'off',
+    },
+  },
 );
