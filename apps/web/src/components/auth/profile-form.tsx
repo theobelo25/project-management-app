@@ -183,10 +183,16 @@ export default function ProfileForm({ user }: ProfileFormProps) {
     <Card>
       <CardHeader>
         <CardTitle>Update profile</CardTitle>
-        <CardDescription>Manage your name, email, and password.</CardDescription>
+        <CardDescription>
+          Manage your name, email, and password.
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+          className="space-y-6"
+        >
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
             <Input id="name" disabled={submitting} {...register('name')} />
@@ -218,7 +224,9 @@ export default function ProfileForm({ user }: ProfileFormProps) {
               {...register('password')}
             />
             {errors.password ? (
-              <p className="text-sm text-destructive">{errors.password.message}</p>
+              <p className="text-sm text-destructive">
+                {errors.password.message}
+              </p>
             ) : null}
           </div>
 
@@ -239,7 +247,9 @@ export default function ProfileForm({ user }: ProfileFormProps) {
 
           <div className="space-y-1">
             <Label>Active organization</Label>
-            <p className="text-sm text-muted-foreground">{user.organizationName}</p>
+            <p className="text-sm text-muted-foreground">
+              {user.organizationName}
+            </p>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
@@ -260,4 +270,3 @@ export default function ProfileForm({ user }: ProfileFormProps) {
     </Card>
   );
 }
-

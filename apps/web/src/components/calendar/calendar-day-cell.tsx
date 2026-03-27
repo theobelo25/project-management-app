@@ -17,7 +17,10 @@ export function CalendarDayCell({
   isToday,
   canEditTasks = true,
 }: CalendarDayCellProps) {
-  const { setNodeRef, isOver } = useDroppable({ id: day.date, disabled: !canEditTasks });
+  const { setNodeRef, isOver } = useDroppable({
+    id: day.date,
+    disabled: !canEditTasks,
+  });
 
   return (
     <div

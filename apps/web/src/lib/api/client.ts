@@ -154,14 +154,12 @@ export async function fetchMe(): Promise<UserView | null> {
   return res.json();
 }
 
-export async function updateMe(
-  dto: {
-    name?: string;
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-  },
-): Promise<UserView> {
+export async function updateMe(dto: {
+  name?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+}): Promise<UserView> {
   const res = await fetchWithAuth(`${API_BASE}/api/auth/me`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },

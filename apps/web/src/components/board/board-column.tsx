@@ -23,7 +23,10 @@ export function BoardColumn({
   tasks,
   canEditTasks = true,
 }: BoardColumnProps) {
-  const { setNodeRef, isOver } = useDroppable({ id: status, disabled: !canEditTasks });
+  const { setNodeRef, isOver } = useDroppable({
+    id: status,
+    disabled: !canEditTasks,
+  });
 
   return (
     <div

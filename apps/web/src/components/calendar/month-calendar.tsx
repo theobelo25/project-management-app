@@ -58,7 +58,13 @@ export function MonthCalendar({
       setActiveTask(null);
       const taskId = event.active.id as string;
       const overId = event.over?.id;
-      if (!canEditTasks || !overId || typeof overId !== 'string' || !onDueDateChange) return;
+      if (
+        !canEditTasks ||
+        !overId ||
+        typeof overId !== 'string' ||
+        !onDueDateChange
+      )
+        return;
       if (!validDates.has(overId)) return;
       const task = event.active.data.current?.task as CalendarTask | undefined;
       if (task?.dueDate === overId) return; // same date, no-op

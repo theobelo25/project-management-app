@@ -140,15 +140,15 @@ export function ProjectTasksPageContent({
           isReadOnly
             ? 'You do not have permission to view task details on this project'
             : totalCount === 0 && (tasksResult?.data?.length ?? 0) > 0
-            ? 'No tasks match your filters'
-            : 'No tasks yet'
+              ? 'No tasks match your filters'
+              : 'No tasks yet'
         }
         emptyDescription={
           isReadOnly
             ? 'Contact the project admin for assisstance'
             : totalCount === 0 && (tasksResult?.data?.length ?? 0) > 0
-            ? "Try adjusting your search or filters to find what you're looking for."
-            : 'Create your first task to start tracking work in this project.'
+              ? "Try adjusting your search or filters to find what you're looking for."
+              : 'Create your first task to start tracking work in this project.'
         }
       />
 

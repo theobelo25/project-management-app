@@ -38,9 +38,7 @@ function userDisplayInitials(name: string): string {
   if (parts.length === 1) {
     return parts[0].slice(0, 2).toUpperCase();
   }
-  return (
-    parts[0].charAt(0) + parts[parts.length - 1].charAt(0)
-  ).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 }
 
 function UserAccountMenu({
@@ -126,11 +124,7 @@ function UserAccountMenu({
           <div className="min-w-0 flex-1 space-y-1">{infoBlock}</div>
         </div>
         <Separator className="my-3" />
-        <Button
-          asChild
-          variant="ghost"
-          className="h-9 w-full justify-start"
-        >
+        <Button asChild variant="ghost" className="h-9 w-full justify-start">
           <Link
             href={ROUTES.profile}
             onClick={() => {

@@ -112,7 +112,9 @@ export function OrganizationDetailDialog({
       await inviteMutation.mutateAsync({
         email: selectedUser.email,
       });
-      toast.success('Invite sent. They can accept it from their notifications.');
+      toast.success(
+        'Invite sent. They can accept it from their notifications.',
+      );
       setSelectedUser(null);
       onOpenChange(false);
     } catch (error) {
