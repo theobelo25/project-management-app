@@ -12,6 +12,7 @@ export default tseslint.config(
       // E2E lives outside `src/` and is not in the TS project used by `projectService`
       'test/**',
       'jest.config.ts',
+      'jest.setup-env.js',
     ],
   },
   eslint.configs.recommended,
