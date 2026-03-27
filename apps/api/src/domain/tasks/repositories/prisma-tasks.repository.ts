@@ -6,7 +6,6 @@ import {
   UpdateTaskInput,
   FindTasksInput,
   PaginatedTasksResult,
-  TaskAssigneeWithUserAndTaskInfo,
   TaskAssignmentResult,
   taskWithAssigneesInclude,
   TaskAccessContext,
@@ -15,23 +14,41 @@ import { TasksRepository, TasksRepositoryTx } from './tasks.repository';
 import { Inject, Injectable } from '@nestjs/common';
 import { buildPaginationResult, getPaginationParams } from '@api/common';
 
-type FindByIdWithAccessContextPayload = Prisma.TaskGetPayload<{
-  select: {
-    id: true;
-    createdById: true;
-    projectId: true;
-    assignees: { select: { userId: true } };
-    project: {
-      select: {
-        organizationId: true;
-        ownerId: true;
-        members: { select: { role: true }; take: 1 };
-      };
-    };
-  };
-}>;
+const taskAssigneeForAssignmentInclude = {
+  user: true,
+  task: {
+    select: {
+      title: true,
+      projectId: true,
+    },
+  },
+} satisfies Prisma.TaskAssigneeInclude;
 
 type PrismaLike = PrismaClient | Prisma.TransactionClient;
+
+function buildTaskAccessContextSelect(userId: string) {
+  return {
+    id: true,
+    createdById: true,
+    projectId: true,
+    assignees: { select: { userId: true } },
+    project: {
+      select: {
+        organizationId: true,
+        ownerId: true,
+        members: {
+          where: { userId },
+          select: { role: true },
+          take: 1,
+        },
+      },
+    },
+  } satisfies Prisma.TaskSelect;
+}
+
+type FindByIdWithAccessContextPayload = Prisma.TaskGetPayload<{
+  select: ReturnType<typeof buildTaskAccessContextSelect>;
+}>;
 
 function buildTaskWhere(input: FindTasksInput): Prisma.TaskWhereInput {
   return {
@@ -66,26 +83,6 @@ function buildTaskOrderBy(
     return [{ status: 'asc' }, { position: 'asc' }, { id: 'asc' }];
 
   return [{ updatedAt: 'desc' }, { id: 'asc' }];
-}
-
-function buildTaskAccessContextSelect(userId: string): Prisma.TaskSelect {
-  return {
-    id: true,
-    createdById: true,
-    projectId: true,
-    assignees: { select: { userId: true } },
-    project: {
-      select: {
-        organizationId: true,
-        ownerId: true,
-        members: {
-          where: { userId },
-          select: { role: true },
-          take: 1,
-        },
-      },
-    },
-  };
 }
 
 function buildUpdateTaskPatch(data: UpdateTaskInput): Prisma.TaskUpdateInput {
@@ -173,10 +170,10 @@ async function findTaskByIdWithAccessContext(
   taskId: string,
   userId: string,
 ): Promise<TaskAccessContext | null> {
-  const task = (await prisma.task.findUnique({
+  const task = await prisma.task.findUnique({
     where: { id: taskId },
     select: buildTaskAccessContextSelect(userId),
-  })) as FindByIdWithAccessContextPayload | null;
+  });
 
   if (!task) return null;
   return mapAccessPayloadToContext(task);
@@ -194,19 +191,11 @@ async function assignUserImpl(
   try {
     const created = await prisma.taskAssignee.create({
       data: { taskId, userId },
-      include: {
-        user: true,
-        task: {
-          select: {
-            title: true,
-            projectId: true,
-          },
-        },
-      },
+      include: taskAssigneeForAssignmentInclude,
     });
 
     return {
-      assignment: created as TaskAssigneeWithUserAndTaskInfo,
+      assignment: created,
       created: true,
     };
   } catch (err) {
@@ -216,21 +205,13 @@ async function assignUserImpl(
     ) {
       const existing = await prisma.taskAssignee.findUnique({
         where: { taskId_userId: { taskId, userId } },
-        include: {
-          user: true,
-          task: {
-            select: {
-              title: true,
-              projectId: true,
-            },
-          },
-        },
+        include: taskAssigneeForAssignmentInclude,
       });
 
       if (!existing) throw err;
 
       return {
-        assignment: existing as TaskAssigneeWithUserAndTaskInfo,
+        assignment: existing,
         created: false,
       };
     }
