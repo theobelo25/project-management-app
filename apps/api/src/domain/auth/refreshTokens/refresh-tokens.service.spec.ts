@@ -52,6 +52,7 @@ describe('RefreshTokensService', () => {
       consumeAndReplaceRefreshToken: jest.fn(),
       revokeUserRefreshTokens: jest.fn(),
       revokeRefreshToken: jest.fn(),
+      deleteExpiredRevokedRefreshTokens: jest.fn().mockResolvedValue(0),
     };
 
     hashingService = {

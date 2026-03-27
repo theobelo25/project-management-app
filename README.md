@@ -6,6 +6,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6)
 ![pnpm](https://img.shields.io/badge/pnpm-workspace-f69220)
 ![Turbo](https://img.shields.io/badge/Turborepo-monorepo-000000)
+![CI](https://github.com/theobelo25/project-management-app/actions/workflows/ci.yml/badge.svg)
 
 A full-stack project management platform built with **Next.js, NestJS, Prisma, and Turborepo**. The repo is a **pnpm workspace** with shared packages (`@repo/database`, `@repo/types`), a modular NestJS API, and a Next.js App Router frontend.
 
@@ -29,13 +30,13 @@ This project is intended as a **production-style portfolio application**: typed 
 
 ## Tech stack
 
-| Area        | Technologies |
-| ----------- | ------------ |
-| Frontend    | Next.js (App Router), React, TypeScript, Tailwind CSS, shadcn/ui (Radix), TanStack Query, React Hook Form, Zod |
-| Backend     | NestJS, Passport JWT (from cookies), cookie-parser, Terminus (health), Swagger |
-| Data        | Prisma ORM, **PostgreSQL** |
-| Tooling     | pnpm workspaces, Turborepo, ESLint, Prettier |
-| Testing (API) | Jest — unit tests (`*.spec.ts`) and e2e under `apps/api/test/` |
+| Area          | Technologies                                                                                                   |
+| ------------- | -------------------------------------------------------------------------------------------------------------- |
+| Frontend      | Next.js (App Router), React, TypeScript, Tailwind CSS, shadcn/ui (Radix), TanStack Query, React Hook Form, Zod |
+| Backend       | NestJS, Passport JWT (from cookies), cookie-parser, Terminus (health), Swagger                                 |
+| Data          | Prisma ORM, **PostgreSQL**                                                                                     |
+| Tooling       | pnpm workspaces, Turborepo, ESLint, Prettier                                                                   |
+| Testing (API) | Jest — unit tests (`*.spec.ts`) and e2e under `apps/api/test/`                                                 |
 
 ---
 
@@ -56,9 +57,9 @@ project-management-app
 └── tsconfig.base.json
 ```
 
-| Package          | Role |
-| ---------------- | ---- |
-| `@repo/database` | Prisma schema, migrations, client export |
+| Package          | Role                                        |
+| ---------------- | ------------------------------------------- |
+| `@repo/database` | Prisma schema, migrations, client export    |
 | `@repo/types`    | Shared validation and types for API and web |
 
 ---
@@ -90,10 +91,10 @@ Configuration is split between the **API**, the **web** app, and **Prisma** (dat
 
 **Templates** (copy and rename):
 
-| Template | Copy to |
-| -------- | ------- |
-| [apps/api/.env.example](apps/api/.env.example) | `apps/api/.env` |
-| [apps/web/.env.example](apps/web/.env.example) | `apps/web/.env.local` |
+| Template                                                         | Copy to                  |
+| ---------------------------------------------------------------- | ------------------------ |
+| [apps/api/.env.example](apps/api/.env.example)                   | `apps/api/.env`          |
+| [apps/web/.env.example](apps/web/.env.example)                   | `apps/web/.env.local`    |
 | [packages/database/.env.example](packages/database/.env.example) | `packages/database/.env` |
 
 Use the same `DATABASE_URL` / database name and credentials in `apps/api/.env` and `packages/database/.env` for local development.
@@ -102,32 +103,32 @@ Use the same `DATABASE_URL` / database name and credentials in `apps/api/.env` a
 
 The API validates env at startup (`apps/api/src/config/env.validation.ts`). Create `apps/api/.env` with at least:
 
-| Variable | Description |
-| -------- | ----------- |
-| `NODE_ENV` | e.g. `development` or `production` |
-| `APP_PORT` | HTTP port (default `3333` if omitted in schema — still set explicitly in practice) |
-| `APP_HOST` | Bind host (default `0.0.0.0`) |
-| `FRONTEND_ORIGIN` | Primary frontend origin (used for app logic; align with your Next.js URL) |
-| `CORS_ORIGINS` | Allowed CORS origins, **comma-separated** (trimmed; see `getCorsOptions`) |
-| `COOKIE_DOMAIN` | Optional; set in production for cookies across subdomains |
-| `DATASOURCE_USERNAME` | PostgreSQL user |
-| `DATASOURCE_PASSWORD` | PostgreSQL password |
-| `DATASOURCE_HOST` | PostgreSQL host |
-| `DATASOURCE_PORT` | PostgreSQL port |
-| `DATASOURCE_DATABASE` | Database name |
-| `DATABASE_URL` | Prisma connection string (PostgreSQL) |
-| `JWT_SECRET` | Secret for signing JWTs |
-| `JWT_ACCESS_TOKEN_EXPIRATION_MS` | Access token lifetime (ms) |
-| `REFRESH_TOKEN_EXPIRATION_MS` | Refresh token lifetime (ms) |
-| `JWT_ISSUER` | JWT `iss` |
-| `JWT_AUDIENCE` | JWT `aud` |
+| Variable                         | Description                                                                        |
+| -------------------------------- | ---------------------------------------------------------------------------------- |
+| `NODE_ENV`                       | e.g. `development` or `production`                                                 |
+| `APP_PORT`                       | HTTP port (default `3333` if omitted in schema — still set explicitly in practice) |
+| `APP_HOST`                       | Bind host (default `0.0.0.0`)                                                      |
+| `FRONTEND_ORIGIN`                | Primary frontend origin (used for app logic; align with your Next.js URL)          |
+| `CORS_ORIGINS`                   | Allowed CORS origins, **comma-separated** (trimmed; see `getCorsOptions`)          |
+| `COOKIE_DOMAIN`                  | Optional; set in production for cookies across subdomains                          |
+| `DATASOURCE_USERNAME`            | PostgreSQL user                                                                    |
+| `DATASOURCE_PASSWORD`            | PostgreSQL password                                                                |
+| `DATASOURCE_HOST`                | PostgreSQL host                                                                    |
+| `DATASOURCE_PORT`                | PostgreSQL port                                                                    |
+| `DATASOURCE_DATABASE`            | Database name                                                                      |
+| `DATABASE_URL`                   | Prisma connection string (PostgreSQL)                                              |
+| `JWT_SECRET`                     | Secret for signing JWTs                                                            |
+| `JWT_ACCESS_TOKEN_EXPIRATION_MS` | Access token lifetime (ms)                                                         |
+| `REFRESH_TOKEN_EXPIRATION_MS`    | Refresh token lifetime (ms)                                                        |
+| `JWT_ISSUER`                     | JWT `iss`                                                                          |
+| `JWT_AUDIENCE`                   | JWT `aud`                                                                          |
 
 ### Web (`apps/web/.env.local`)
 
-| Variable | Required | Description |
-| -------- | -------- | ----------- |
-| `NEXT_PUBLIC_API_URL` | Yes | Public origin of the API (no trailing slash), e.g. `http://localhost:3333` |
-| `NEXT_PUBLIC_APP_URL` | No | Site URL; defaults to `http://localhost:3000` in layout if unset |
+| Variable              | Required | Description                                                                |
+| --------------------- | -------- | -------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_API_URL` | Yes      | Public origin of the API (no trailing slash), e.g. `http://localhost:3333` |
+| `NEXT_PUBLIC_APP_URL` | No       | Site URL; defaults to `http://localhost:3000` in layout if unset           |
 
 ---
 
@@ -176,15 +177,15 @@ With the API running in non-production mode, OpenAPI UI is available at **`http:
 
 ## Scripts (root)
 
-| Command | Description |
-| ------- | ----------- |
-| `pnpm dev` | Run dev tasks for workspace packages |
-| `pnpm build` | Production build (Turbo) |
-| `pnpm lint` | ESLint across packages |
-| `pnpm typecheck` | TypeScript checks |
-| `pnpm db:generate` | `prisma generate` in `@repo/database` |
-| `pnpm db:migrate` | `prisma migrate dev` in `@repo/database` |
-| `pnpm db:studio` | Prisma Studio |
+| Command            | Description                              |
+| ------------------ | ---------------------------------------- |
+| `pnpm dev`         | Run dev tasks for workspace packages     |
+| `pnpm build`       | Production build (Turbo)                 |
+| `pnpm lint`        | ESLint across packages                   |
+| `pnpm typecheck`   | TypeScript checks                        |
+| `pnpm db:generate` | `prisma generate` in `@repo/database`    |
+| `pnpm db:migrate`  | `prisma migrate dev` in `@repo/database` |
+| `pnpm db:studio`   | Prisma Studio                            |
 
 ### API tests
 
@@ -206,7 +207,6 @@ Build and run using the root Dockerfiles (set build args / env such as `DATABASE
 ## Future improvements
 
 - **Real-time** — WebSockets or SSE for live task and notification updates
-- **CI/CD** — Lint, typecheck, and tests on every push
 - **Frontend tests** — Playwright or RTL for critical flows
 - **Analytics** — Project dashboards and reporting
 

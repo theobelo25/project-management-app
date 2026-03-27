@@ -1,6 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { ProjectsController } from './projects.controller';
-import { ProjectsFacade } from './projects.facade';
+import { Test } from '@nestjs/testing';
 import { ProjectRole } from '@repo/database';
 import type {
   CreateProjectDto,
@@ -9,12 +7,15 @@ import type {
   ProjectView,
   UpdateProjectDto,
 } from '@repo/types';
+
+import { ProjectsController } from './projects.controller';
+import { ProjectsFacade } from './projects.facade';
 import { ProjectRoleGuard } from './guards/project-role.guard';
 
 describe('ProjectsController', () => {
   let controller: ProjectsController;
 
-  const projectsFacade = {
+  const facade = {
     create: jest.fn(),
     findManyForUser: jest.fn(),
     findByIdDetail: jest.fn(),
@@ -29,10 +30,7 @@ describe('ProjectsController', () => {
     delete: jest.fn(),
   };
 
-  const user = {
-    id: 'user-1',
-    orgId: 'org-1',
-  };
+  const user = { id: 'user-1', orgId: 'org-1' };
 
   const projectView: ProjectView = {
     id: 'project-1',
@@ -45,7 +43,7 @@ describe('ProjectsController', () => {
     currentUserRole: ProjectRole.OWNER,
   };
 
-  const projectDetailView: ProjectDetailView = {
+  const detail: ProjectDetailView = {
     ...projectView,
     totalTasks: 2,
     completedTasks: 1,
@@ -55,262 +53,131 @@ describe('ProjectsController', () => {
   };
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const mod = await Test.createTestingModule({
       controllers: [ProjectsController],
-      providers: [
-        {
-          provide: ProjectsFacade,
-          useValue: projectsFacade,
-        },
-      ],
+      providers: [{ provide: ProjectsFacade, useValue: facade }],
     })
       .overrideGuard(ProjectRoleGuard)
-      .useValue({ canActivate: jest.fn().mockReturnValue(true) })
+      .useValue({ canActivate: () => true })
       .compile();
-    controller = module.get<ProjectsController>(ProjectsController);
+
+    controller = mod.get(ProjectsController);
     jest.clearAllMocks();
   });
 
-  describe('create', () => {
-    it('calls projectsFacade.create', async () => {
-      const dto: CreateProjectDto = {
-        name: 'Project Alpha',
-        description: 'Test project',
-      };
+  it('create + list + detail — thin wrappers', async () => {
+    const dto: CreateProjectDto = { name: 'Project Alpha', description: 'Test' };
+    facade.create.mockResolvedValue(projectView);
+    expect(await controller.create(user as any, dto)).toBe(projectView);
+    expect(facade.create).toHaveBeenCalledWith(user, dto);
 
-      projectsFacade.create.mockResolvedValue(projectView);
+    const query = {
+      page: 1,
+      pageSize: 20,
+      includeArchived: false,
+      filter: 'all',
+      sort: 'updated-desc',
+    } as GetProjectsQueryDto;
 
-      const result = await controller.create(user as any, dto);
+    const page = {
+      items: [projectView],
+      page: 1,
+      pageSize: 20,
+      total: 1,
+      totalPages: 1,
+    };
+    facade.findManyForUser.mockResolvedValue(page);
+    expect(await controller.findMany(user as any, query)).toBe(page);
 
-      expect(projectsFacade.create).toHaveBeenCalledWith(user, dto);
-      expect(result).toEqual(projectView);
-    });
+    facade.findByIdDetail.mockResolvedValue(detail);
+    expect(await controller.findById(user as any, { id: 'project-1' })).toBe(
+      detail,
+    );
+    expect(facade.findByIdDetail).toHaveBeenCalledWith('project-1', user);
   });
 
-  describe('findMany', () => {
-    it('calls projectsFacade.findManyForUser', async () => {
-      const query: GetProjectsQueryDto = {
-        page: 1,
-        pageSize: 20,
-        includeArchived: false,
-        search: undefined,
-        filter: 'all',
-        sort: 'updated-desc',
-      };
+  it('patch flows forward ids + user (+ optional current project)', async () => {
+    const dto: UpdateProjectDto = { name: 'Updated' };
+    facade.update.mockResolvedValue(projectView);
+    await controller.update(user as any, { id: 'project-1' }, dto);
+    expect(facade.update).toHaveBeenCalledWith('project-1', user, dto, undefined);
 
-      const response = {
-        items: [projectView],
-        page: 1,
-        pageSize: 20,
-        total: 1,
-        totalPages: 1,
-      };
+    facade.archive.mockResolvedValue(projectView);
+    await controller.archive(user as any, { id: 'project-1' });
+    expect(facade.archive).toHaveBeenCalledWith('project-1', user, undefined);
 
-      projectsFacade.findManyForUser.mockResolvedValue(response);
+    facade.unarchive.mockResolvedValue(projectView);
+    await controller.unarchive(user as any, { id: 'project-1' });
+    expect(facade.unarchive).toHaveBeenCalledWith('project-1', user, undefined);
 
-      const result = await controller.findMany(user as any, query);
-
-      expect(projectsFacade.findManyForUser).toHaveBeenCalledWith(user, query);
-      expect(result).toEqual(response);
-    });
+    facade.delete.mockResolvedValue(undefined);
+    await controller.delete(user as any, { id: 'project-1' });
+    expect(facade.delete).toHaveBeenCalledWith('project-1', user, undefined);
   });
 
-  describe('findById', () => {
-    it('calls projectsFacade.findByIdDetail', async () => {
-      projectsFacade.findByIdDetail.mockResolvedValue(projectDetailView);
-
-      const result = await controller.findById(user as any, {
-        id: 'project-1',
-      });
-
-      expect(projectsFacade.findByIdDetail).toHaveBeenCalledWith(
-        'project-1',
-        user,
-      );
-      expect(result).toEqual(projectDetailView);
-    });
-  });
-
-  describe('update', () => {
-    it('calls projectsFacade.update', async () => {
-      const dto: UpdateProjectDto = {
-        name: 'Updated Project',
-      };
-
-      projectsFacade.update.mockResolvedValue(projectView);
-
-      const result = await controller.update(
-        user as any,
-        { id: 'project-1' },
-        dto,
-      );
-
-      expect(projectsFacade.update).toHaveBeenCalledWith(
-        'project-1',
-        user,
-        dto,
-        undefined,
-      );
-      expect(result).toEqual(projectView);
-    });
-  });
-
-  describe('archive', () => {
-    it('calls projectsFacade.archive', async () => {
-      projectsFacade.archive.mockResolvedValue(projectView);
-
-      const result = await controller.archive(user as any, { id: 'project-1' });
-
-      expect(projectsFacade.archive).toHaveBeenCalledWith(
-        'project-1',
-        user,
-        undefined,
-      );
-      expect(result).toEqual(projectView);
-    });
-  });
-
-  describe('unarchive', () => {
-    it('calls projectsFacade.unarchive', async () => {
-      projectsFacade.unarchive.mockResolvedValue(projectView);
-
-      const result = await controller.unarchive(user as any, {
-        id: 'project-1',
-      });
-
-      expect(projectsFacade.unarchive).toHaveBeenCalledWith(
-        'project-1',
-        user,
-        undefined,
-      );
-      expect(result).toEqual(projectView);
-    });
-  });
-
-  describe('getMembers', () => {
-    it('calls projectsFacade.getMembers', async () => {
-      const response = {
-        items: [
-          {
-            userId: 'user-1',
-            role: ProjectRole.OWNER,
-            joinedAt: '2026-03-09T12:00:00.000Z',
-          },
-        ],
-      };
-
-      projectsFacade.getMembers.mockResolvedValue(response);
-
-      const result = await controller.getMembers(
+  it('members + ownership — same idea', async () => {
+    const membersPayload = {
+      items: [
+        {
+          userId: 'user-1',
+          role: ProjectRole.OWNER,
+          joinedAt: '2026-03-09T12:00:00.000Z',
+        },
+      ],
+    };
+    facade.getMembers.mockResolvedValue(membersPayload);
+    expect(
+      await controller.getMembers(
         user as any,
         { id: 'project-1' } as any,
         projectView as any,
-      );
+      ),
+    ).toBe(membersPayload);
 
-      expect(projectsFacade.getMembers).toHaveBeenCalledWith(
-        'project-1',
-        user,
-        projectView,
-      );
-      expect(result).toEqual(response);
-    });
-  });
+    const memberRow = {
+      userId: 'user-2',
+      role: ProjectRole.MEMBER,
+      joinedAt: '2026-03-09T13:00:00.000Z',
+    };
+    facade.addMember.mockResolvedValue(memberRow);
+    await controller.addMember(
+      user as any,
+      { id: 'project-1' },
+      { userId: 'user-2', role: ProjectRole.MEMBER },
+    );
+    expect(facade.addMember).toHaveBeenCalledWith(
+      'project-1',
+      user,
+      { userId: 'user-2', role: ProjectRole.MEMBER },
+      undefined,
+    );
 
-  describe('addMember', () => {
-    it('calls projectsFacade.addMember', async () => {
-      const response = {
-        userId: 'user-2',
-        role: ProjectRole.MEMBER,
-        joinedAt: '2026-03-09T13:00:00.000Z',
-      };
+    facade.updateMemberRole.mockResolvedValue({ ...memberRow, role: ProjectRole.ADMIN });
+    await controller.updateMemberRole(
+      user as any,
+      { id: 'project-1', userId: 'user-2' },
+      { role: ProjectRole.ADMIN },
+    );
 
-      projectsFacade.addMember.mockResolvedValue(response);
-
-      const result = await controller.addMember(
-        user as any,
-        { id: 'project-1' },
-        {
-          userId: 'user-2',
-          role: ProjectRole.MEMBER,
-        },
-      );
-
-      expect(projectsFacade.addMember).toHaveBeenCalledWith(
-        'project-1',
-        user,
-        {
-          userId: 'user-2',
-          role: ProjectRole.MEMBER,
-        },
-        undefined,
-      );
-      expect(result).toEqual(response);
-    });
-  });
-
-  describe('updateMemberRole', () => {
-    it('calls projectsFacade.updateMemberRole', async () => {
-      const response = {
-        userId: 'user-2',
-        role: ProjectRole.ADMIN,
-        joinedAt: '2026-03-09T13:00:00.000Z',
-      };
-
-      projectsFacade.updateMemberRole.mockResolvedValue(response);
-
-      const result = await controller.updateMemberRole(
-        user as any,
-        { id: 'project-1', userId: 'user-2' },
-        { role: ProjectRole.ADMIN },
-      );
-
-      expect(projectsFacade.updateMemberRole).toHaveBeenCalledWith(
-        'project-1',
-        user,
-        'user-2',
-        { role: ProjectRole.ADMIN },
-        undefined,
-      );
-      expect(result).toEqual(response);
-    });
-  });
-
-  describe('removeMember', () => {
-    it('calls projectsFacade.removeMember', async () => {
-      projectsFacade.removeMember.mockResolvedValue(undefined);
-
-      const result = await controller.removeMember(user as any, {
+    facade.removeMember.mockResolvedValue(undefined);
+    expect(
+      await controller.removeMember(user as any, {
         id: 'project-1',
         userId: 'user-2',
-      });
+      }),
+    ).toBeUndefined();
 
-      expect(projectsFacade.removeMember).toHaveBeenCalledWith(
-        'project-1',
-        user,
-        'user-2',
-        undefined,
-      );
-      expect(result).toBeUndefined();
-    });
-  });
-
-  describe('transferOwnership', () => {
-    it('calls projectsFacade.transferOwnership', async () => {
-      projectsFacade.transferOwnership.mockResolvedValue(projectView);
-
-      const result = await controller.transferOwnership(
-        user as any,
-        { id: 'project-1' },
-        { userId: 'user-2' },
-      );
-
-      expect(projectsFacade.transferOwnership).toHaveBeenCalledWith(
-        'project-1',
-        user,
-        { userId: 'user-2' },
-        undefined,
-      );
-      expect(result).toEqual(projectView);
-    });
+    facade.transferOwnership.mockResolvedValue(projectView);
+    await controller.transferOwnership(
+      user as any,
+      { id: 'project-1' },
+      { userId: 'user-2' },
+    );
+    expect(facade.transferOwnership).toHaveBeenCalledWith(
+      'project-1',
+      user,
+      { userId: 'user-2' },
+      undefined,
+    );
   });
 });

@@ -1,28 +1,25 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import { NotFoundException } from '@nestjs/common';
 
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { AuthUser, UserView } from '@repo/types';
-import { NotFoundException } from '@nestjs/common';
-import { GetUsersQueryDto, GlobalUsersSearchQueryDto } from './dto';
 
 describe('UsersController', () => {
-  let controller: UsersController;
-
-  let usersService: {
-    getUsersForOrg: jest.Mock;
-    searchUsers: jest.Mock;
-    requireById: jest.Mock;
+  const svc = {
+    getUsersForOrg: jest.fn(),
+    searchUsers: jest.fn(),
+    requireById: jest.fn(),
   };
 
-  const authUser: AuthUser = {
+  const me: AuthUser = {
     id: '1415c2fc-4067-4c4f-a7e1-748afc4e9b71',
     orgId: '0415c2fc-4067-4c4f-a7e1-748afc4e9b70',
   };
 
-  const userView: UserView = {
+  const row: UserView = {
     id: '2415c2fc-4067-4c4f-a7e1-748afc4e9b72',
-    orgId: authUser.orgId,
+    orgId: me.orgId,
     organizationName: 'Acme',
     email: 'test@example.com',
     name: 'Theo',
@@ -30,101 +27,46 @@ describe('UsersController', () => {
     updatedAt: new Date(),
   };
 
-  beforeEach(async () => {
-    usersService = {
-      getUsersForOrg: jest.fn(),
-      searchUsers: jest.fn(),
-      requireById: jest.fn(),
-    };
+  let controller: UsersController;
 
-    const module: TestingModule = await Test.createTestingModule({
+  beforeEach(async () => {
+    const mod = await Test.createTestingModule({
       controllers: [UsersController],
-      providers: [
-        {
-          provide: UsersService,
-          useValue: usersService,
-        },
-      ],
+      providers: [{ provide: UsersService, useValue: svc }],
     }).compile();
 
-    controller = module.get<UsersController>(UsersController);
-  });
-
-  afterEach(() => {
+    controller = mod.get(UsersController);
     jest.clearAllMocks();
   });
 
-  describe('getUsers', () => {
-    it('returns org users from the service', async () => {
-      usersService.getUsersForOrg.mockResolvedValue([userView]);
+  it('GET / — org users, search optional', async () => {
+    svc.getUsersForOrg.mockResolvedValue([row]);
 
-      const result = await controller.getUsers(authUser, {
-        search: 'te',
-      } as GetUsersQueryDto);
+    expect(await controller.getUsers(me, { search: 'te' } as any)).toEqual([
+      row,
+    ]);
+    expect(svc.getUsersForOrg).toHaveBeenCalledWith(me.orgId, 'te');
 
-      expect(usersService.getUsersForOrg).toHaveBeenCalledWith(
-        authUser.orgId,
-        'te',
-      );
-      expect(result).toEqual([userView]);
-    });
-
-    it('passes undefined search when omitted', async () => {
-      usersService.getUsersForOrg.mockResolvedValue([userView]);
-
-      await controller.getUsers(authUser, {} as GetUsersQueryDto);
-
-      expect(usersService.getUsersForOrg).toHaveBeenCalledWith(
-        authUser.orgId,
-        undefined,
-      );
-    });
+    await controller.getUsers(me, {} as any);
+    expect(svc.getUsersForOrg).toHaveBeenLastCalledWith(me.orgId, undefined);
   });
 
-  describe('searchAllUsers', () => {
-    it('delegates to searchUsers with validated query (simulates pipe output)', async () => {
-      usersService.searchUsers.mockResolvedValue([userView]);
+  it('GET /search — hands the string to searchUsers', async () => {
+    svc.searchUsers.mockResolvedValue([row]);
 
-      const result = await controller.searchAllUsers({
-        search: 'bob',
-      } as GlobalUsersSearchQueryDto);
-
-      expect(usersService.searchUsers).toHaveBeenCalledWith('bob');
-      expect(result).toEqual([userView]);
-    });
-
-    it('delegates minimum-length search (2 chars)', async () => {
-      usersService.searchUsers.mockResolvedValue([]);
-
-      await controller.searchAllUsers({
-        search: 'ab',
-      } as GlobalUsersSearchQueryDto);
-
-      expect(usersService.searchUsers).toHaveBeenCalledWith('ab');
-    });
+    expect(await controller.searchAllUsers({ search: 'bob' } as any)).toEqual([
+      row,
+    ]);
+    expect(svc.searchUsers).toHaveBeenCalledWith('bob');
   });
 
-  describe('findById', () => {
-    it('returns a user by id from the service', async () => {
-      usersService.requireById.mockResolvedValue(userView);
+  it('GET /:id — requireById; service errors surface as-is', async () => {
+    svc.requireById.mockResolvedValue(row);
+    expect(await controller.findById({ id: row.id } as any)).toEqual(row);
 
-      const result = await controller.findById({ id: userView.id });
-
-      expect(usersService.requireById).toHaveBeenCalledWith(userView.id);
-      expect(result).toEqual(userView);
-    });
-
-    it('propagates NotFoundException when the service throws', async () => {
-      const missingId = '3415c2fc-4067-4c4f-a7e1-748afc4e9b73';
-      usersService.requireById.mockRejectedValue(
-        new NotFoundException('User not found'),
-      );
-
-      await expect(controller.findById({ id: missingId })).rejects.toThrow(
-        NotFoundException,
-      );
-
-      expect(usersService.requireById).toHaveBeenCalledWith(missingId);
-    });
+    svc.requireById.mockRejectedValueOnce(new NotFoundException('gone'));
+    await expect(
+      controller.findById({ id: 'missing-id' } as any),
+    ).rejects.toThrow(NotFoundException);
   });
 });

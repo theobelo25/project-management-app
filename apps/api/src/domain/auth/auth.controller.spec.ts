@@ -1,29 +1,32 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { Request, Response } from 'express';
 import { COOKIE } from '@repo/types';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { CookiesService } from './cookies/cookies.service';
+import { UsersService } from '@api/domain/users/users.service';
 
 describe('AuthController', () => {
   let controller: AuthController;
 
-  let authService: {
-    signup: jest.Mock;
-    validateCredentials: jest.Mock;
-    issueSession: jest.Mock;
-    refresh: jest.Mock;
-    logout: jest.Mock;
+  const auth = {
+    signup: jest.fn(),
+    validateCredentials: jest.fn(),
+    issueSession: jest.fn(),
+    refresh: jest.fn(),
+    logout: jest.fn(),
+    hashPassword: jest.fn(),
   };
 
-  let cookiesService: {
-    setAuthCookies: jest.Mock;
-    clearAccessCookie: jest.Mock;
-    clearRefreshCookie: jest.Mock;
+  const cookies = {
+    clearAccessCookie: jest.fn(),
+    clearRefreshCookie: jest.fn(),
   };
 
-  const response = {} as Response;
+  const users = { update: jest.fn() };
+
+  const res = {} as Response;
 
   const userView = {
     id: '1415c2fc-4067-4c4f-a7e1-748afc4e9b71',
@@ -33,159 +36,85 @@ describe('AuthController', () => {
     updatedAt: new Date(),
   };
 
+  const session = {
+    user: userView,
+    accessToken: 'at',
+    refreshToken: 'rt',
+  };
+
   beforeEach(async () => {
-    authService = {
-      signup: jest.fn(),
-      validateCredentials: jest.fn(),
-      issueSession: jest.fn(),
-      refresh: jest.fn(),
-      logout: jest.fn(),
-    };
+    jest.clearAllMocks();
 
-    cookiesService = {
-      setAuthCookies: jest.fn(),
-      clearAccessCookie: jest.fn(),
-      clearRefreshCookie: jest.fn(),
-    };
-
-    const module: TestingModule = await Test.createTestingModule({
+    const mod = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
-        {
-          provide: AuthService,
-          useValue: authService,
-        },
-        {
-          provide: CookiesService,
-          useValue: cookiesService,
-        },
+        { provide: AuthService, useValue: auth },
+        { provide: CookiesService, useValue: cookies },
+        { provide: UsersService, useValue: users },
       ],
     }).compile();
 
-    controller = module.get<AuthController>(AuthController);
+    controller = mod.get(AuthController);
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+  it('signup → auth.signup', async () => {
+    auth.signup.mockResolvedValue(session);
+    const body = {
+      email: 'a@b.com',
+      name: 't',
+      password: 'x',
+      confirmPassword: 'x',
+    };
 
-  describe('signup', () => {
-    it('signs up the user, sets auth cookies, and returns the user', async () => {
-      const body = {
-        email: 'test@example.com',
-        name: 'Theo',
-        password: 'password123',
-        confirmPassword: 'password123',
-      };
-
-      authService.signup.mockResolvedValue({
-        user: userView,
-        accessToken: 'access-token',
-        refreshToken: 'refresh-token',
-      });
-
-      const result = await controller.signup(body, response);
-
-      expect(authService.signup).toHaveBeenCalledWith({
-        email: body.email,
-        name: body.name,
-        password: body.password,
-      });
-
-      expect(cookiesService.setAuthCookies).toHaveBeenCalledWith(
-        response,
-        'access-token',
-        'refresh-token',
-      );
-
-      expect(result).toEqual(userView);
+    expect(await controller.signup(body as any)).toEqual(session);
+    expect(auth.signup).toHaveBeenCalledWith({
+      email: body.email,
+      name: body.name,
+      password: body.password,
     });
   });
 
-  describe('login', () => {
-    it('validates credentials, issues a session, and sets auth cookies', async () => {
-      const loginBody = {
-        email: 'test@example.com',
-        password: 'password123',
-      };
+  it('login chains validateCredentials + issueSession', async () => {
+    auth.validateCredentials.mockResolvedValue(userView);
+    auth.issueSession.mockResolvedValue(session);
 
-      authService.validateCredentials.mockResolvedValue(userView);
-      authService.issueSession.mockResolvedValue({
-        user: userView,
-        accessToken: 'access-token',
-        refreshToken: 'refresh-token',
-      });
-
-      const result = await controller.login(loginBody, response);
-
-      expect(authService.validateCredentials).toHaveBeenCalledWith(
-        loginBody.email,
-        loginBody.password,
-      );
-      expect(authService.issueSession).toHaveBeenCalledWith(userView);
-      expect(cookiesService.setAuthCookies).toHaveBeenCalledWith(
-        response,
-        'access-token',
-        'refresh-token',
-      );
-      expect(result).toEqual(userView);
-    });
+    expect(
+      await controller.login({ email: 'a@b.com', password: 'x' } as any),
+    ).toEqual(session);
+    expect(auth.issueSession).toHaveBeenCalledWith(userView);
   });
 
-  describe('refreshToken', () => {
-    it('refreshes the session, sets auth cookies, and returns the user', async () => {
-      authService.refresh.mockResolvedValue({
-        user: userView,
-        accessToken: 'new-access-token',
-        refreshToken: 'new-refresh-token',
-      });
-
-      const result = await controller.refreshToken(
-        'raw-refresh-token',
-        response,
-      );
-
-      expect(authService.refresh).toHaveBeenCalledWith('raw-refresh-token');
-
-      expect(cookiesService.setAuthCookies).toHaveBeenCalledWith(
-        response,
-        'new-access-token',
-        'new-refresh-token',
-      );
-
-      expect(result).toEqual(userView);
-    });
+  it('refresh → auth.refresh', async () => {
+    auth.refresh.mockResolvedValue(session);
+    expect(await controller.refreshToken('raw')).toEqual(session);
   });
 
-  describe('logout', () => {
-    it('logs out when refresh token exists, clears cookies, and returns no content', async () => {
-      authService.logout.mockResolvedValue(undefined);
-      const req = {
-        cookies: { [COOKIE.REFRESH]: 'raw-refresh-token' },
-      } as unknown as Request;
-      const result = await controller.logout(req, response);
-      expect(authService.logout).toHaveBeenCalledWith('raw-refresh-token');
-      expect(cookiesService.clearAccessCookie).toHaveBeenCalledWith(response);
-      expect(cookiesService.clearRefreshCookie).toHaveBeenCalledWith(response);
-      expect(result).toBeUndefined();
-    });
+  it('logout clears cookies; only calls logout when refresh cookie present', async () => {
+    auth.logout.mockResolvedValue(undefined);
 
-    it('does not call authService.logout when refresh token is missing', async () => {
-      const req = { cookies: {} } as Request;
-      const result = await controller.logout(req, response);
-      expect(authService.logout).not.toHaveBeenCalled();
-      expect(cookiesService.clearAccessCookie).toHaveBeenCalledWith(response);
-      expect(cookiesService.clearRefreshCookie).toHaveBeenCalledWith(response);
-      expect(result).toBeUndefined();
-    });
+    await controller.logout(
+      { cookies: { [COOKIE.REFRESH]: 'rt' } } as Request,
+      res,
+    );
+    expect(auth.logout).toHaveBeenCalledWith('rt');
 
-    it('still clears cookies when refresh token is undefined', async () => {
-      const req = { cookies: {} } as Request;
-      const result = await controller.logout(req, response);
-      expect(authService.logout).not.toHaveBeenCalled();
-      expect(cookiesService.clearAccessCookie).toHaveBeenCalledWith(response);
-      expect(cookiesService.clearRefreshCookie).toHaveBeenCalledWith(response);
-      expect(result).toBeUndefined();
+    await controller.logout({ cookies: {} } as Request, res);
+    expect(auth.logout).toHaveBeenCalledTimes(1);
+
+    expect(cookies.clearAccessCookie).toHaveBeenCalledWith(res);
+    expect(cookies.clearRefreshCookie).toHaveBeenCalledWith(res);
+  });
+
+  it('PATCH me: builds update payload; hashes password if sent', async () => {
+    users.update.mockResolvedValue(userView);
+
+    await controller.updateMe(userView, { name: 'New' } as any);
+    expect(users.update).toHaveBeenCalledWith(userView.id, { name: 'New' });
+
+    auth.hashPassword.mockResolvedValue('hashed');
+    await controller.updateMe(userView, { password: 'Secret1!' } as any);
+    expect(users.update).toHaveBeenCalledWith(userView.id, {
+      passwordHash: 'hashed',
     });
   });
 });

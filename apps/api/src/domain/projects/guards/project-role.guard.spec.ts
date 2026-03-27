@@ -1,77 +1,64 @@
 import { Reflector } from '@nestjs/core';
 import { ProjectRole } from '@repo/database';
+import { AuthUser } from '@repo/types';
 import { ProjectRoleGuard } from './project-role.guard';
 import { ProjectAccessService } from '../policies/project-access.service';
+
 describe('ProjectRoleGuard', () => {
   let guard: ProjectRoleGuard;
-  const reflector = {
-    getAllAndOverride: jest.fn(),
-  } as unknown as Reflector;
-  const projectAccessService = {
-    requireRole: jest.fn(),
-  } as unknown as jest.Mocked<ProjectAccessService>;
-  const makeContext = (userId?: string, projectId?: string) =>
+
+  const reflector = { getAllAndOverride: jest.fn() } as any;
+  const access = { requireRole: jest.fn() } as any;
+
+  const ctx = (user: AuthUser | undefined, projectId?: string) =>
     ({
       switchToHttp: () => ({
-        getRequest: () =>
-          ({
-            user: userId ? { userId, email: 'test@example.com' } : undefined,
-            params: { id: projectId },
-          }) as any,
+        getRequest: () => ({ user, params: { id: projectId } }),
       }),
       getHandler: () => ({}),
       getClass: () => ({}),
     }) as any;
+
+  const u = (id: string, org = 'org-1'): AuthUser => ({ id, orgId: org });
+
   beforeEach(() => {
     jest.clearAllMocks();
-    guard = new ProjectRoleGuard(reflector, projectAccessService);
+    guard = new ProjectRoleGuard(reflector, access as ProjectAccessService);
   });
-  it('allows request when no required role metadata is set', async () => {
-    (reflector.getAllAndOverride as jest.Mock).mockReturnValue(undefined);
-    const result = await guard.canActivate(makeContext('user-1', 'project-1'));
-    expect(result).toBe(true);
-    expect(projectAccessService.requireRole).not.toHaveBeenCalled();
+
+  it('no @RequireProjectRole → no-op', async () => {
+    reflector.getAllAndOverride.mockReturnValue(undefined);
+    expect(await guard.canActivate(ctx(u('1'), 'p1'))).toBe(true);
+    expect(access.requireRole).not.toHaveBeenCalled();
   });
-  it('returns false when projectId is missing', async () => {
-    (reflector.getAllAndOverride as jest.Mock).mockReturnValue(
-      ProjectRole.ADMIN,
-    );
-    const result = await guard.canActivate(makeContext('user-1', undefined));
-    expect(result).toBe(false);
-    expect(projectAccessService.requireRole).not.toHaveBeenCalled();
+
+  it('needs :id, user.id, and user.orgId or it just returns false', async () => {
+    reflector.getAllAndOverride.mockReturnValue(ProjectRole.ADMIN);
+
+    expect(await guard.canActivate(ctx(u('1'), undefined))).toBe(false);
+    expect(await guard.canActivate(ctx(undefined, 'p1'))).toBe(false);
+    expect(await guard.canActivate(ctx({ id: '1' } as AuthUser, 'p1'))).toBe(false);
+
+    expect(access.requireRole).not.toHaveBeenCalled();
   });
-  it('returns false when userId is missing', async () => {
-    (reflector.getAllAndOverride as jest.Mock).mockReturnValue(
-      ProjectRole.ADMIN,
-    );
-    const result = await guard.canActivate(makeContext(undefined, 'project-1'));
-    expect(result).toBe(false);
-    expect(projectAccessService.requireRole).not.toHaveBeenCalled();
-  });
-  it('calls ProjectAccessService.requireRole and allows when authorized', async () => {
-    (reflector.getAllAndOverride as jest.Mock).mockReturnValue(
-      ProjectRole.ADMIN,
-    );
-    (projectAccessService.requireRole as jest.Mock).mockResolvedValue(
-      {} as any,
-    );
-    const result = await guard.canActivate(makeContext('user-1', 'project-1'));
-    expect(projectAccessService.requireRole).toHaveBeenCalledWith(
+
+  it('otherwise defers to ProjectAccessService.requireRole', async () => {
+    reflector.getAllAndOverride.mockReturnValue(ProjectRole.ADMIN);
+    access.requireRole.mockResolvedValue({});
+
+    const user = u('user-1');
+    expect(await guard.canActivate(ctx(user, 'project-1'))).toBe(true);
+    expect(access.requireRole).toHaveBeenCalledWith(
       'project-1',
-      'user-1',
+      user,
       ProjectRole.ADMIN,
     );
-    expect(result).toBe(true);
   });
-  it('propagates errors from ProjectAccessService.requireRole', async () => {
-    (reflector.getAllAndOverride as jest.Mock).mockReturnValue(
-      ProjectRole.ADMIN,
-    );
-    (projectAccessService.requireRole as jest.Mock).mockRejectedValue(
-      new Error('Insufficient project permissions'),
-    );
-    await expect(
-      guard.canActivate(makeContext('user-1', 'project-1')),
-    ).rejects.toThrow('Insufficient project permissions');
+
+  it('bubbles up whatever requireRole throws', async () => {
+    reflector.getAllAndOverride.mockReturnValue(ProjectRole.ADMIN);
+    access.requireRole.mockRejectedValue(new Error('nope'));
+
+    await expect(guard.canActivate(ctx(u('1'), 'p1'))).rejects.toThrow('nope');
   });
 });

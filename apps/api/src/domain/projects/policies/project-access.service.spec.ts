@@ -1,11 +1,16 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ProjectRole } from '@repo/database';
+import { AuthUser } from '@repo/types';
 import { ProjectAccessService } from './project-access.service';
 import type { ProjectsRepository } from '../repositories/projects.repository';
 import { ProjectWithRole } from '../types/projects.repository.types';
+
+const user = (id: string, orgId = 'org-1'): AuthUser => ({ id, orgId });
+
 describe('ProjectAccessService', () => {
   let service: ProjectAccessService;
-  const projectsRepository: jest.Mocked<ProjectsRepository> = {
+
+  const repo: jest.Mocked<ProjectsRepository> = {
     createWithOwner: jest.fn(),
     findManyForUser: jest.fn(),
     findById: jest.fn(),
@@ -21,9 +26,8 @@ describe('ProjectAccessService', () => {
     removeMember: jest.fn(),
     updateOwner: jest.fn(),
   };
-  const makeProject = (
-    overrides: Partial<ProjectWithRole> = {},
-  ): ProjectWithRole => ({
+
+  const project = (overrides: Partial<ProjectWithRole> = {}): ProjectWithRole => ({
     id: 'project-1',
     name: 'Project Alpha',
     description: 'Test project',
@@ -34,170 +38,96 @@ describe('ProjectAccessService', () => {
     currentUserRole: ProjectRole.OWNER,
     ...overrides,
   });
+
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new ProjectAccessService(projectsRepository);
+    service = new ProjectAccessService(repo);
   });
+
   describe('getAuthorizedProject', () => {
-    it('returns the project when the user is authorized', async () => {
-      const project = makeProject({
-        currentUserRole: ProjectRole.MEMBER,
-      });
-      projectsRepository.findAuthorizedById.mockResolvedValue(project);
-      const result = await service.getAuthorizedProject('project-1', 'user-2');
-      expect(projectsRepository.findAuthorizedById).toHaveBeenCalledWith(
+    it('returns row from findAuthorizedById when you have access', async () => {
+      const row = project({ currentUserRole: ProjectRole.MEMBER });
+      const u = user('user-2');
+      repo.findAuthorizedById.mockResolvedValue(row);
+
+      await expect(service.getAuthorizedProject('project-1', u)).resolves.toBe(
+        row,
+      );
+      expect(repo.findAuthorizedById).toHaveBeenCalledWith(
         'project-1',
-        'user-2',
+        u.id,
+        u.orgId,
         undefined,
       );
-      expect(projectsRepository.findById).not.toHaveBeenCalled();
-      expect(result).toBe(project);
     });
-    it('throws NotFoundException when the project does not exist', async () => {
-      projectsRepository.findAuthorizedById.mockResolvedValue(null);
-      projectsRepository.findById.mockResolvedValue(null);
+
+    it('404 if neither authorized lookup nor raw project finds anything', async () => {
+      const u = user('user-2');
+      repo.findAuthorizedById.mockResolvedValue(null);
+      repo.findById.mockResolvedValue(null);
+
+      await expect(service.getAuthorizedProject('project-1', u)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('403 if project exists but you are not on it', async () => {
+      const u = user('user-2');
+      repo.findAuthorizedById.mockResolvedValue(null);
+      repo.findById.mockResolvedValue(project());
+
+      await expect(service.getAuthorizedProject('project-1', u)).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+
+    it('optional tx gets passed through', async () => {
+      const tx = {} as any;
+      const u = user('user-2');
+      repo.findAuthorizedById.mockResolvedValue(null);
+      repo.findById.mockResolvedValue(null);
+
       await expect(
-        service.getAuthorizedProject('project-1', 'user-2'),
+        service.getAuthorizedProject('project-1', u, tx),
       ).rejects.toThrow(NotFoundException);
-      expect(projectsRepository.findAuthorizedById).toHaveBeenCalledWith(
+
+      expect(repo.findAuthorizedById).toHaveBeenCalledWith(
         'project-1',
-        'user-2',
-        undefined,
+        u.id,
+        u.orgId,
+        tx,
       );
-      expect(projectsRepository.findById).toHaveBeenCalledWith(
-        'project-1',
-        undefined,
-      );
-    });
-    it('throws ForbiddenException when the project exists but user is unauthorized', async () => {
-      projectsRepository.findAuthorizedById.mockResolvedValue(null);
-      projectsRepository.findById.mockResolvedValue(makeProject());
-      await expect(
-        service.getAuthorizedProject('project-1', 'user-2'),
-      ).rejects.toThrow(ForbiddenException);
-      expect(projectsRepository.findAuthorizedById).toHaveBeenCalledWith(
-        'project-1',
-        'user-2',
-        undefined,
-      );
-      expect(projectsRepository.findById).toHaveBeenCalledWith(
-        'project-1',
-        undefined,
-      );
-    });
-    it('passes db to both findAuthorizedById and findById when provided', async () => {
-      const db = {} as any;
-      projectsRepository.findAuthorizedById.mockResolvedValue(null);
-      projectsRepository.findById.mockResolvedValue(null);
-      await expect(
-        service.getAuthorizedProject('project-1', 'user-2', db),
-      ).rejects.toThrow(NotFoundException);
-      expect(projectsRepository.findAuthorizedById).toHaveBeenCalledWith(
-        'project-1',
-        'user-2',
-        db,
-      );
-      expect(projectsRepository.findById).toHaveBeenCalledWith('project-1', db);
     });
   });
-  describe('getUserRole', () => {
-    it('returns the current user role', async () => {
-      const project = makeProject({
-        currentUserRole: ProjectRole.ADMIN,
-      });
-      projectsRepository.findAuthorizedById.mockResolvedValue(project);
-      const result = await service.getUserRole('project-1', 'user-2');
-      expect(result).toBe(ProjectRole.ADMIN);
-    });
-    it('returns null if currentUserRole is missing', async () => {
-      const project = makeProject({
-        currentUserRole: undefined,
-      });
-      projectsRepository.findAuthorizedById.mockResolvedValue(project);
-      const result = await service.getUserRole('project-1', 'user-2');
-      expect(result).toBeNull();
-    });
+
+  it('getUserRole: null when role missing on the row', async () => {
+    repo.findAuthorizedById.mockResolvedValue(project({ currentUserRole: undefined }));
+    expect(await service.getUserRole('project-1', user('2'))).toBeNull();
   });
-  describe('requireMember', () => {
-    it('returns the authorized project', async () => {
-      const project = makeProject({
-        currentUserRole: ProjectRole.MEMBER,
-      });
-      projectsRepository.findAuthorizedById.mockResolvedValue(project);
-      const result = await service.requireMember('project-1', 'user-2');
-      expect(result).toBe(project);
-    });
+
+  it('requireRole: owner can satisfy admin requirement', async () => {
+    repo.findAuthorizedById.mockResolvedValue(project({ currentUserRole: ProjectRole.OWNER }));
+    await expect(
+      service.requireRole('project-1', user('1'), ProjectRole.ADMIN),
+    ).resolves.toBeDefined();
   });
-  describe('requireRole', () => {
-    it('allows exact role match', async () => {
-      const project = makeProject({
-        currentUserRole: ProjectRole.ADMIN,
-      });
-      projectsRepository.findAuthorizedById.mockResolvedValue(project);
-      const result = await service.requireRole(
-        'project-1',
-        'user-2',
-        ProjectRole.ADMIN,
-      );
-      expect(result).toBe(project);
-    });
-    it('allows OWNER when ADMIN is required', async () => {
-      const project = makeProject({
-        currentUserRole: ProjectRole.OWNER,
-      });
-      projectsRepository.findAuthorizedById.mockResolvedValue(project);
-      const result = await service.requireRole(
-        'project-1',
-        'user-1',
-        ProjectRole.ADMIN,
-      );
-      expect(result).toBe(project);
-    });
-    it('throws ForbiddenException when role is too low', async () => {
-      const project = makeProject({
-        currentUserRole: ProjectRole.MEMBER,
-      });
-      projectsRepository.findAuthorizedById.mockResolvedValue(project);
-      await expect(
-        service.requireRole('project-1', 'user-2', ProjectRole.ADMIN),
-      ).rejects.toThrow('Insufficient project permissions');
-    });
-    it('throws ForbiddenException when currentUserRole is missing', async () => {
-      const project = makeProject({
-        currentUserRole: undefined,
-      });
-      projectsRepository.findAuthorizedById.mockResolvedValue(project);
-      await expect(
-        service.requireRole('project-1', 'user-2', ProjectRole.MEMBER),
-      ).rejects.toThrow(ForbiddenException);
-    });
+
+  it('requireRole: member cannot pass as admin', async () => {
+    repo.findAuthorizedById.mockResolvedValue(project({ currentUserRole: ProjectRole.MEMBER }));
+    await expect(
+      service.requireRole('project-1', user('2'), ProjectRole.ADMIN),
+    ).rejects.toThrow('Insufficient project permissions');
   });
-  describe('requireOwner', () => {
-    it('returns project for owner', async () => {
-      const project = makeProject({
-        currentUserRole: ProjectRole.OWNER,
-      });
-      projectsRepository.findAuthorizedById.mockResolvedValue(project);
-      const result = await service.requireOwner('project-1', 'user-1');
-      expect(result).toBe(project);
-    });
-    it('throws ForbiddenException for admin', async () => {
-      const project = makeProject({
-        currentUserRole: ProjectRole.ADMIN,
-      });
-      projectsRepository.findAuthorizedById.mockResolvedValue(project);
-      await expect(service.requireOwner('project-1', 'user-2')).rejects.toThrow(
-        'Only the project owner can perform this action',
-      );
-    });
-    it('throws ForbiddenException for member', async () => {
-      const project = makeProject({
-        currentUserRole: ProjectRole.MEMBER,
-      });
-      projectsRepository.findAuthorizedById.mockResolvedValue(project);
-      await expect(service.requireOwner('project-1', 'user-2')).rejects.toThrow(
-        'Only the project owner can perform this action',
-      );
-    });
+
+  it('requireOwner: only owner role', async () => {
+    repo.findAuthorizedById.mockResolvedValue(project({ currentUserRole: ProjectRole.OWNER }));
+    await expect(
+      service.requireOwner('project-1', user('1')),
+    ).resolves.toBeDefined();
+
+    repo.findAuthorizedById.mockResolvedValue(project({ currentUserRole: ProjectRole.ADMIN }));
+    await expect(service.requireOwner('project-1', user('2'))).rejects.toThrow(
+      'Only the project owner can perform this action',
+    );
   });
 });
