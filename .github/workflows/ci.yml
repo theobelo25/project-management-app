@@ -45,5 +45,11 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Install Playwright (Storybook Vitest)
+        run: pnpm --filter web exec playwright install chromium
+
+      - name: Web Storybook Vitest
+        run: pnpm --filter web test:storybook
+
       - name: Build
         run: pnpm build
