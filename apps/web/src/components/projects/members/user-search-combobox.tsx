@@ -38,6 +38,9 @@ type UserSearchComboboxProps = {
   excludeUserIds?: string[];
   selectedUserDisplay?: UserSearchResult | null;
   scope?: UserSearchScope;
+  /** Links the trigger to a field-level error message element. */
+  ariaDescribedBy?: string;
+  ariaInvalid?: boolean;
 };
 
 export function UserSearchCombobox({
@@ -48,6 +51,8 @@ export function UserSearchCombobox({
   excludeUserIds,
   selectedUserDisplay = null,
   scope = 'org',
+  ariaDescribedBy,
+  ariaInvalid,
 }: UserSearchComboboxProps) {
   const generatedId = useId();
   const id = idProp ?? generatedId;
@@ -110,6 +115,8 @@ export function UserSearchCombobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          aria-describedby={ariaDescribedBy}
+          aria-invalid={ariaInvalid}
           className="w-full justify-between"
           disabled={disabled}
         >
@@ -122,7 +129,10 @@ export function UserSearchCombobox({
           ) : (
             <span className="text-muted-foreground">Search for a user...</span>
           )}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronsUpDown
+            className="ml-2 h-4 w-4 shrink-0 opacity-50"
+            aria-hidden
+          />
         </Button>
       </PopoverTrigger>
 
@@ -139,7 +149,7 @@ export function UserSearchCombobox({
               <CommandEmpty>Type at least 2 characters to search.</CommandEmpty>
             ) : usersLoading ? (
               <div className="flex items-center gap-2 px-3 py-6 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
                 Searching...
               </div>
             ) : usersError ? (
@@ -176,6 +186,7 @@ export function UserSearchCombobox({
                         'h-4 w-4',
                         value === user.id ? 'opacity-100' : 'opacity-0',
                       )}
+                      aria-hidden
                     />
                   </CommandItem>
                 ))}

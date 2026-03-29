@@ -18,6 +18,9 @@ import {
   CardTitle,
 } from '@web/components/ui/card';
 
+const TASKS_ROW_GRID_CLASS =
+  'grid grid-cols-[minmax(0,2fr)_160px_180px_140px_56px] items-center gap-4';
+
 type TasksTableProps = {
   projectId: string;
   tasks: TaskListItem[];
@@ -46,22 +49,28 @@ export function TasksTable({
       </CardHeader>
 
       <CardContent className="p-0">
-        <div className="hidden md:block">
-          <div className="grid grid-cols-[minmax(0,2fr)_160px_180px_140px_56px] items-center gap-4 border-b px-6 py-3 text-sm font-medium text-muted-foreground">
-            <div>Title</div>
-            <div>Status</div>
-            <div>Assignee</div>
-            <div>Updated</div>
-            <div />
+        <div className="hidden md:block" role="table" aria-label="Project tasks">
+          <div
+            role="row"
+            className={`${TASKS_ROW_GRID_CLASS} border-b px-6 py-3 text-sm font-medium text-muted-foreground`}
+          >
+            <div role="columnheader">Title</div>
+            <div role="columnheader">Status</div>
+            <div role="columnheader">Assignee</div>
+            <div role="columnheader">Updated</div>
+            <div role="columnheader" className="sr-only">
+              Actions
+            </div>
           </div>
 
           <div className="divide-y">
             {tasks.map((task) => (
               <div
                 key={task.id}
-                className="grid grid-cols-[minmax(0,2fr)_160px_180px_140px_56px] items-center gap-4 px-6 py-4"
+                role="row"
+                className={`${TASKS_ROW_GRID_CLASS} px-6 py-4`}
               >
-                <div className="min-w-0">
+                <div role="cell" className="min-w-0">
                   <Link
                     href={`/projects/${projectId}/tasks/${task.id}`}
                     className="block"
@@ -75,21 +84,24 @@ export function TasksTable({
                   </Link>
                 </div>
 
-                <div>
+                <div role="cell">
                   <Badge variant={getStatusBadgeVariant(task.status)}>
                     {formatTaskStatus(task.status)}
                   </Badge>
                 </div>
 
-                <div className="truncate text-sm text-muted-foreground">
+                <div
+                  role="cell"
+                  className="truncate text-sm text-muted-foreground"
+                >
                   {task.assignee?.name || 'Unassigned'}
                 </div>
 
-                <div className="text-sm text-muted-foreground">
+                <div role="cell" className="text-sm text-muted-foreground">
                   {formatUpdatedAt(task.updatedAt)}
                 </div>
 
-                <div className="flex justify-end">
+                <div role="cell" className="flex justify-end">
                   <TaskRowActions
                     projectId={projectId}
                     taskId={task.id}
@@ -107,9 +119,13 @@ export function TasksTable({
           </div>
         </div>
 
-        <div className="divide-y md:hidden">
+        <div
+          className="divide-y md:hidden"
+          role="list"
+          aria-label="Project tasks"
+        >
           {tasks.map((task) => (
-            <div key={task.id} className="space-y-3 px-4 py-4">
+            <div key={task.id} className="space-y-3 px-4 py-4" role="listitem">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <Link

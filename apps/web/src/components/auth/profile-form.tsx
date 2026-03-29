@@ -195,9 +195,17 @@ export default function ProfileForm({ user }: ProfileFormProps) {
         >
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" disabled={submitting} {...register('name')} />
+            <Input
+              id="name"
+              disabled={submitting}
+              aria-invalid={!!errors.name}
+              aria-describedby={errors.name ? 'profile-name-error' : undefined}
+              {...register('name')}
+            />
             {errors.name ? (
-              <p className="text-sm text-destructive">{errors.name.message}</p>
+              <p id="profile-name-error" role="alert" className="text-sm text-destructive">
+                {errors.name.message}
+              </p>
             ) : null}
           </div>
 
@@ -207,10 +215,14 @@ export default function ProfileForm({ user }: ProfileFormProps) {
               id="email"
               type="email"
               disabled={submitting}
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? 'profile-email-error' : undefined}
               {...register('email')}
             />
             {errors.email ? (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
+              <p id="profile-email-error" role="alert" className="text-sm text-destructive">
+                {errors.email.message}
+              </p>
             ) : null}
           </div>
 
@@ -221,10 +233,18 @@ export default function ProfileForm({ user }: ProfileFormProps) {
               type="password"
               disabled={submitting}
               placeholder="Leave blank to keep current password"
+              aria-invalid={!!errors.password}
+              aria-describedby={
+                errors.password ? 'profile-password-error' : undefined
+              }
               {...register('password')}
             />
             {errors.password ? (
-              <p className="text-sm text-destructive">
+              <p
+                id="profile-password-error"
+                role="alert"
+                className="text-sm text-destructive"
+              >
                 {errors.password.message}
               </p>
             ) : null}
@@ -236,10 +256,18 @@ export default function ProfileForm({ user }: ProfileFormProps) {
               id="confirmPassword"
               type="password"
               disabled={submitting}
+              aria-invalid={!!errors.confirmPassword}
+              aria-describedby={
+                errors.confirmPassword ? 'profile-confirm-password-error' : undefined
+              }
               {...register('confirmPassword')}
             />
             {errors.confirmPassword ? (
-              <p className="text-sm text-destructive">
+              <p
+                id="profile-confirm-password-error"
+                role="alert"
+                className="text-sm text-destructive"
+              >
                 {errors.confirmPassword.message}
               </p>
             ) : null}

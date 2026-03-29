@@ -70,10 +70,13 @@ export default function SignInForm({ isLoading = false }: SignInFormProps) {
           autoComplete="email"
           placeholder="theo@example.com"
           aria-invalid={!!errors.email}
+          aria-describedby={errors.email ? 'signin-email-error' : undefined}
           {...register('email')}
         />
         {errors.email && (
-          <p className="text-sm text-destructive">{errors.email.message}</p>
+          <p id="signin-email-error" role="alert" className="text-sm text-destructive">
+            {errors.email.message}
+          </p>
         )}
       </div>
 
@@ -87,6 +90,9 @@ export default function SignInForm({ isLoading = false }: SignInFormProps) {
             placeholder="Enter your password"
             className="pr-10"
             aria-invalid={!!errors.password}
+            aria-describedby={
+              errors.password ? 'signin-password-error' : undefined
+            }
             {...register('password')}
           />
           <button
@@ -96,14 +102,20 @@ export default function SignInForm({ isLoading = false }: SignInFormProps) {
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             {showPassword ? (
-              <EyeOff className="h-4 w-4" />
+              <EyeOff className="h-4 w-4" aria-hidden />
             ) : (
-              <Eye className="h-4 w-4" />
+              <Eye className="h-4 w-4" aria-hidden />
             )}
           </button>
         </div>
         {errors.password && (
-          <p className="text-sm text-destructive">{errors.password.message}</p>
+          <p
+            id="signin-password-error"
+            role="alert"
+            className="text-sm text-destructive"
+          >
+            {errors.password.message}
+          </p>
         )}
       </div>
 

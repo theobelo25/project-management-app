@@ -44,7 +44,7 @@ export function MainNav() {
             className="md:hidden"
             aria-label="Open menu"
           >
-            <Menu className="size-5" />
+            <Menu className="size-5" aria-hidden />
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-70">

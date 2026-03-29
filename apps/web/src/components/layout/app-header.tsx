@@ -9,7 +9,7 @@ export function AppHeader() {
       <header className="flex justify-between py-4">
         <div className="flex gap-16 items-center">
           <Link href={'/'}>
-            <h1 className="text-2xl font-bold">Nudge</h1>
+            <span className="text-2xl font-bold">Nudge</span>
           </Link>
           <MainNav />
         </div>

@@ -67,15 +67,18 @@ function MembersPreview({ members }: { members: ProjectListMember[] }) {
           <div
             key={member.id}
             className="flex h-8 w-8 items-center justify-center rounded-full border bg-muted text-[11px] font-medium text-muted-foreground"
-            title={member.name}
+            aria-label={member.name}
           >
-            {getInitials(member.name)}
+            <span aria-hidden>{getInitials(member.name)}</span>
           </div>
         ))}
 
         {remainingCount > 0 ? (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full border bg-background text-[11px] font-medium text-muted-foreground">
-            +{remainingCount}
+          <div
+            className="flex h-8 w-8 items-center justify-center rounded-full border bg-background text-[11px] font-medium text-muted-foreground"
+            aria-label={`${remainingCount} more members`}
+          >
+            <span aria-hidden>+{remainingCount}</span>
           </div>
         ) : null}
       </div>
@@ -101,7 +104,7 @@ function ProjectActionsDropdown() {
           className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           onClick={(e) => e.stopPropagation()}
         >
-          <MoreHorizontal className="h-4 w-4" />
+          <MoreHorizontal className="h-4 w-4" aria-hidden />
         </button>
       </DropdownMenuTrigger>
 
@@ -123,7 +126,10 @@ export function ProjectCard({ project }: ProjectCardProps) {
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 space-y-1.5">
               <div className="flex items-center gap-2">
-                <FolderKanban className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <FolderKanban
+                  className="h-4 w-4 shrink-0 text-muted-foreground"
+                  aria-hidden
+                />
                 <CardTitle className="truncate text-base">
                   {project.name}
                 </CardTitle>
@@ -143,17 +149,17 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-3 gap-3">
             <StatBlock
-              icon={<FolderKanban className="h-3.5 w-3.5" />}
+              icon={<FolderKanban className="h-3.5 w-3.5" aria-hidden />}
               label="Tasks"
               value={project.totalTasks}
             />
             <StatBlock
-              icon={<CheckCircle2 className="h-3.5 w-3.5" />}
+              icon={<CheckCircle2 className="h-3.5 w-3.5" aria-hidden />}
               label="Completed"
               value={project.completedTasks}
             />
             <StatBlock
-              icon={<Circle className="h-3.5 w-3.5" />}
+              icon={<Circle className="h-3.5 w-3.5" aria-hidden />}
               label="Open"
               value={project.openTasks}
             />

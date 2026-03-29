@@ -73,10 +73,13 @@ export default function SignUpForm({ isLoading = false }: SignUpFormProps) {
           autoComplete="name"
           placeholder="Theo Belo"
           aria-invalid={!!errors.name}
+          aria-describedby={errors.name ? 'signup-name-error' : undefined}
           {...register('name')}
         />
         {errors.name && (
-          <p className="text-sm text-destructive">{errors.name.message}</p>
+          <p id="signup-name-error" role="alert" className="text-sm text-destructive">
+            {errors.name.message}
+          </p>
         )}
       </div>
 
@@ -88,10 +91,13 @@ export default function SignUpForm({ isLoading = false }: SignUpFormProps) {
           autoComplete="email"
           placeholder="theo@example.com"
           aria-invalid={!!errors.email}
+          aria-describedby={errors.email ? 'signup-email-error' : undefined}
           {...register('email')}
         />
         {errors.email && (
-          <p className="text-sm text-destructive">{errors.email.message}</p>
+          <p id="signup-email-error" role="alert" className="text-sm text-destructive">
+            {errors.email.message}
+          </p>
         )}
       </div>
 
@@ -105,6 +111,9 @@ export default function SignUpForm({ isLoading = false }: SignUpFormProps) {
             placeholder="Enter your password"
             className="pr-10"
             aria-invalid={!!errors.password}
+            aria-describedby={
+              errors.password ? 'signup-password-error' : undefined
+            }
             {...register('password')}
           />
           <button
@@ -114,14 +123,20 @@ export default function SignUpForm({ isLoading = false }: SignUpFormProps) {
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             {showPassword ? (
-              <EyeOff className="h-4 w-4" />
+              <EyeOff className="h-4 w-4" aria-hidden />
             ) : (
-              <Eye className="h-4 w-4" />
+              <Eye className="h-4 w-4" aria-hidden />
             )}
           </button>
         </div>
         {errors.password && (
-          <p className="text-sm text-destructive">{errors.password.message}</p>
+          <p
+            id="signup-password-error"
+            role="alert"
+            className="text-sm text-destructive"
+          >
+            {errors.password.message}
+          </p>
         )}
       </div>
 
@@ -135,6 +150,9 @@ export default function SignUpForm({ isLoading = false }: SignUpFormProps) {
             placeholder="Confirm your password"
             className="pr-10"
             aria-invalid={!!errors.confirmPassword}
+            aria-describedby={
+              errors.confirmPassword ? 'signup-confirm-password-error' : undefined
+            }
             {...register('confirmPassword')}
           />
           <button
@@ -148,14 +166,18 @@ export default function SignUpForm({ isLoading = false }: SignUpFormProps) {
             }
           >
             {showConfirmPassword ? (
-              <EyeOff className="h-4 w-4" />
+              <EyeOff className="h-4 w-4" aria-hidden />
             ) : (
-              <Eye className="h-4 w-4" />
+              <Eye className="h-4 w-4" aria-hidden />
             )}
           </button>
         </div>
         {errors.confirmPassword && (
-          <p className="text-sm text-destructive">
+          <p
+            id="signup-confirm-password-error"
+            role="alert"
+            className="text-sm text-destructive"
+          >
             {errors.confirmPassword.message}
           </p>
         )}

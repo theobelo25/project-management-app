@@ -52,7 +52,12 @@ export function TaskForm<TValues extends FieldValues>({
   const submitting = isSubmitting || isLoading;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
+      className="space-y-6"
+      aria-describedby={errorMessage ? 'task-form-server-error' : undefined}
+    >
       <div className="space-y-2">
         <Label htmlFor="title">Task title</Label>
         <Input
@@ -60,10 +65,13 @@ export function TaskForm<TValues extends FieldValues>({
           type="text"
           placeholder="Finish project toolbar"
           aria-invalid={!!(errors as any).title}
+          aria-describedby={
+            (errors as any).title ? 'task-title-error' : undefined
+          }
           {...register('title' as never)}
         />
         {(errors as any).title && (
-          <p className="text-sm text-destructive">
+          <p id="task-title-error" role="alert" className="text-sm text-destructive">
             {(errors as any).title.message}
           </p>
         )}
@@ -76,10 +84,17 @@ export function TaskForm<TValues extends FieldValues>({
           placeholder="Add search, filter, and sort controls to the projects page"
           rows={4}
           aria-invalid={!!(errors as any).description}
+          aria-describedby={
+            (errors as any).description ? 'task-description-error' : undefined
+          }
           {...register('description' as never)}
         />
         {(errors as any).description && (
-          <p className="text-sm text-destructive">
+          <p
+            id="task-description-error"
+            role="alert"
+            className="text-sm text-destructive"
+          >
             {(errors as any).description.message}
           </p>
         )}
@@ -91,17 +106,30 @@ export function TaskForm<TValues extends FieldValues>({
           id="dueDate"
           type="date"
           aria-invalid={!!(errors as any).dueDate}
+          aria-describedby={
+            (errors as any).dueDate ? 'task-due-date-error' : undefined
+          }
           {...register('dueDate' as never)}
         />
         {(errors as any).dueDate && (
-          <p className="text-sm text-destructive">
+          <p
+            id="task-due-date-error"
+            role="alert"
+            className="text-sm text-destructive"
+          >
             {(errors as any).dueDate.message}
           </p>
         )}
       </div>
 
       {errorMessage ? (
-        <p className="text-sm text-destructive">{errorMessage}</p>
+        <p
+          id="task-form-server-error"
+          role="alert"
+          className="text-sm text-destructive"
+        >
+          {errorMessage}
+        </p>
       ) : null}
 
       <Button type="submit" className="w-full" disabled={submitting}>

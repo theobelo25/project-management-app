@@ -99,7 +99,7 @@ export function InviteMemberDialog({
     >
       <DialogTrigger asChild>
         <Button type="button" variant="outline" size="sm">
-          <UserPlus className="mr-2 h-4 w-4" />
+          <UserPlus className="mr-2 h-4 w-4" aria-hidden />
           Invite Member
         </Button>
       </DialogTrigger>
@@ -119,6 +119,7 @@ export function InviteMemberDialog({
         >
           {errorMessage ? (
             <p
+              id="invite-member-error"
               className="text-sm text-destructive"
               role="alert"
               aria-live="polite"
@@ -143,6 +144,10 @@ export function InviteMemberDialog({
               selectedUserDisplay={selectedUser}
               excludeUserIds={currentMemberIds}
               disabled={submitting}
+              ariaDescribedBy={
+                errorMessage ? 'invite-member-error' : undefined
+              }
+              ariaInvalid={!!errorMessage}
             />
 
             {selectedUser ? (
@@ -163,7 +168,14 @@ export function InviteMemberDialog({
                 })
               }
             >
-              <SelectTrigger id="role" className="w-full">
+              <SelectTrigger
+                id="role"
+                className="w-full"
+                aria-describedby={
+                  errorMessage ? 'invite-member-error' : undefined
+                }
+                aria-invalid={!!errorMessage}
+              >
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
               <SelectContent>

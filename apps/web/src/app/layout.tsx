@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
+import { SkipLink } from '@web/components/layout/skip-link';
 import { AppProvider } from '@web/components/providers/app-provider';
 
 const geistSans = Geist({
@@ -42,6 +43,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
         <AppProvider>
+          <SkipLink />
           <div className="flex min-h-0 min-h-screen flex-1 flex-col">
             {children}
           </div>

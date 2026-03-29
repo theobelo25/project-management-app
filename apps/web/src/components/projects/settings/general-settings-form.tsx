@@ -29,11 +29,21 @@ export function GeneralSettingsForm({
     updateMutation.mutate({ name, description: description || null });
   };
 
+  const errorId = 'general-settings-error';
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="name">Project name</Label>
-        <Input id="name" name="name" defaultValue={defaultName} />
+        <Input
+          id="name"
+          name="name"
+          defaultValue={defaultName}
+          aria-describedby={
+            updateMutation.error ? errorId : undefined
+          }
+          aria-invalid={!!updateMutation.error}
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
@@ -43,6 +53,10 @@ export function GeneralSettingsForm({
           rows={5}
           defaultValue={defaultDescription}
           placeholder="Describe this project"
+          aria-describedby={
+            updateMutation.error ? errorId : undefined
+          }
+          aria-invalid={!!updateMutation.error}
         />
       </div>
       <div className="flex flex-col gap-3 sm:flex-row">
@@ -54,7 +68,7 @@ export function GeneralSettingsForm({
         </Button>
       </div>
       {updateMutation.error && (
-        <p className="text-sm text-destructive">
+        <p id={errorId} role="alert" className="text-sm text-destructive">
           {updateMutation.error.message}
         </p>
       )}

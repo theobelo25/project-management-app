@@ -22,9 +22,18 @@ export function CalendarDayCell({
     disabled: !canEditTasks,
   });
 
+  const dayAriaLabel = [
+    !day.inMonth ? 'Outside current month,' : null,
+    `Day ${day.dayNumber}`,
+    isToday ? 'today' : null,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <div
       ref={setNodeRef}
+      aria-label={dayAriaLabel}
       className={[
         'min-h-36 rounded-lg border p-2 transition-colors',
         day.inMonth ? 'bg-background' : 'bg-muted/30',

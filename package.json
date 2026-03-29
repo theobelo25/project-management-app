@@ -13,7 +13,12 @@
     "typecheck": "turbo run typecheck",
     "db:migrate": "pnpm --filter database exec prisma migrate dev",
     "db:studio": "pnpm --filter database exec prisma studio",
-    "db:generate": "pnpm --filter database exec prisma generate"
+    "db:generate": "pnpm --filter database exec prisma generate",
+    "web:test": "pnpm --filter web test",
+    "web:test-unit": "pnpm --filter web test:unit",
+    "web:test-integration": "pnpm --filter web test:integration",
+    "web:test-storybook": "pnpm --filter web test:storybook",
+    "web:test-e2e": "pnpm --filter web test:e2e"
   },
   "devDependencies": {
     "@types/node": "^25.3.5",

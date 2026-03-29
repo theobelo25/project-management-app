@@ -81,7 +81,7 @@ export function CreateOrganizationDialog({
       <DialogTrigger asChild>
         {trigger ?? (
           <Button type="button" variant="outline" size="sm">
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 h-4 w-4" aria-hidden />
             {triggerLabel}
           </Button>
         )}
@@ -99,9 +99,16 @@ export function CreateOrganizationDialog({
           onSubmit={handleSubmit(onSubmit)}
           noValidate
           className="space-y-6"
+          aria-describedby={
+            rootError ? 'create-organization-root-error' : undefined
+          }
         >
           {rootError ? (
-            <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <div
+              id="create-organization-root-error"
+              role="alert"
+              className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            >
               {rootError}
             </div>
           ) : null}
@@ -114,9 +121,18 @@ export function CreateOrganizationDialog({
               autoComplete="off"
               {...register('name')}
               aria-invalid={!!errors.name}
+              aria-describedby={
+                errors.name ? 'organization-name-error' : undefined
+              }
             />
             {errors.name?.message ? (
-              <p className="text-xs text-destructive">{errors.name.message}</p>
+              <p
+                id="organization-name-error"
+                role="alert"
+                className="text-xs text-destructive"
+              >
+                {errors.name.message}
+              </p>
             ) : null}
           </div>
 

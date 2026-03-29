@@ -56,9 +56,18 @@ export function ProjectForm({
   const rootError = createProjectMutation.error?.message ?? null;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
+      className="space-y-6"
+      aria-describedby={rootError ? 'project-form-root-error' : undefined}
+    >
       {rootError ? (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <div
+          id="project-form-root-error"
+          role="alert"
+          className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+        >
           {rootError}
         </div>
       ) : null}
@@ -71,9 +80,12 @@ export function ProjectForm({
           autoComplete="off"
           {...register('name')}
           aria-invalid={!!errors.name}
+          aria-describedby={errors.name ? 'project-name-error' : undefined}
         />
         {errors.name?.message ? (
-          <p className="text-xs text-destructive">{errors.name.message}</p>
+          <p id="project-name-error" role="alert" className="text-xs text-destructive">
+            {errors.name.message}
+          </p>
         ) : null}
       </div>
 
@@ -85,9 +97,16 @@ export function ProjectForm({
           rows={4}
           {...register('description')}
           aria-invalid={!!errors.description}
+          aria-describedby={
+            errors.description ? 'project-description-error' : undefined
+          }
         />
         {errors.description?.message ? (
-          <p className="text-xs text-destructive">
+          <p
+            id="project-description-error"
+            role="alert"
+            className="text-xs text-destructive"
+          >
             {errors.description.message}
           </p>
         ) : null}
