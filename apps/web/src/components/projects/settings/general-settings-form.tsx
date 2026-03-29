@@ -39,9 +39,7 @@ export function GeneralSettingsForm({
           id="name"
           name="name"
           defaultValue={defaultName}
-          aria-describedby={
-            updateMutation.error ? errorId : undefined
-          }
+          aria-describedby={updateMutation.error ? errorId : undefined}
           aria-invalid={!!updateMutation.error}
         />
       </div>
@@ -53,9 +51,7 @@ export function GeneralSettingsForm({
           rows={5}
           defaultValue={defaultDescription}
           placeholder="Describe this project"
-          aria-describedby={
-            updateMutation.error ? errorId : undefined
-          }
+          aria-describedby={updateMutation.error ? errorId : undefined}
           aria-invalid={!!updateMutation.error}
         />
       </div>

@@ -8,6 +8,8 @@ describe('cn', () => {
   });
 
   it('handles conditional classes', () => {
-    expect(cn('base', false && 'hidden', true && 'block')).toBe('base block');
+    const hide = false;
+    const show = true;
+    expect(cn('base', hide && 'hidden', show && 'block')).toBe('base block');
   });
 });

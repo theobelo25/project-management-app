@@ -83,7 +83,11 @@ export function ProjectForm({
           aria-describedby={errors.name ? 'project-name-error' : undefined}
         />
         {errors.name?.message ? (
-          <p id="project-name-error" role="alert" className="text-xs text-destructive">
+          <p
+            id="project-name-error"
+            role="alert"
+            className="text-xs text-destructive"
+          >
             {errors.name.message}
           </p>
         ) : null}

@@ -71,7 +71,11 @@ export function TaskForm<TValues extends FieldValues>({
           {...register('title' as never)}
         />
         {(errors as any).title && (
-          <p id="task-title-error" role="alert" className="text-sm text-destructive">
+          <p
+            id="task-title-error"
+            role="alert"
+            className="text-sm text-destructive"
+          >
             {(errors as any).title.message}
           </p>
         )}

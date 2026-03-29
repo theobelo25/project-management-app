@@ -203,7 +203,11 @@ export default function ProfileForm({ user }: ProfileFormProps) {
               {...register('name')}
             />
             {errors.name ? (
-              <p id="profile-name-error" role="alert" className="text-sm text-destructive">
+              <p
+                id="profile-name-error"
+                role="alert"
+                className="text-sm text-destructive"
+              >
                 {errors.name.message}
               </p>
             ) : null}
@@ -216,11 +220,17 @@ export default function ProfileForm({ user }: ProfileFormProps) {
               type="email"
               disabled={submitting}
               aria-invalid={!!errors.email}
-              aria-describedby={errors.email ? 'profile-email-error' : undefined}
+              aria-describedby={
+                errors.email ? 'profile-email-error' : undefined
+              }
               {...register('email')}
             />
             {errors.email ? (
-              <p id="profile-email-error" role="alert" className="text-sm text-destructive">
+              <p
+                id="profile-email-error"
+                role="alert"
+                className="text-sm text-destructive"
+              >
                 {errors.email.message}
               </p>
             ) : null}
@@ -258,7 +268,9 @@ export default function ProfileForm({ user }: ProfileFormProps) {
               disabled={submitting}
               aria-invalid={!!errors.confirmPassword}
               aria-describedby={
-                errors.confirmPassword ? 'profile-confirm-password-error' : undefined
+                errors.confirmPassword
+                  ? 'profile-confirm-password-error'
+                  : undefined
               }
               {...register('confirmPassword')}
             />

@@ -77,7 +77,11 @@ export default function SignUpForm({ isLoading = false }: SignUpFormProps) {
           {...register('name')}
         />
         {errors.name && (
-          <p id="signup-name-error" role="alert" className="text-sm text-destructive">
+          <p
+            id="signup-name-error"
+            role="alert"
+            className="text-sm text-destructive"
+          >
             {errors.name.message}
           </p>
         )}
@@ -95,7 +99,11 @@ export default function SignUpForm({ isLoading = false }: SignUpFormProps) {
           {...register('email')}
         />
         {errors.email && (
-          <p id="signup-email-error" role="alert" className="text-sm text-destructive">
+          <p
+            id="signup-email-error"
+            role="alert"
+            className="text-sm text-destructive"
+          >
             {errors.email.message}
           </p>
         )}
@@ -151,7 +159,9 @@ export default function SignUpForm({ isLoading = false }: SignUpFormProps) {
             className="pr-10"
             aria-invalid={!!errors.confirmPassword}
             aria-describedby={
-              errors.confirmPassword ? 'signup-confirm-password-error' : undefined
+              errors.confirmPassword
+                ? 'signup-confirm-password-error'
+                : undefined
             }
             {...register('confirmPassword')}
           />

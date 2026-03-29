@@ -74,7 +74,11 @@ export default function SignInForm({ isLoading = false }: SignInFormProps) {
           {...register('email')}
         />
         {errors.email && (
-          <p id="signin-email-error" role="alert" className="text-sm text-destructive">
+          <p
+            id="signin-email-error"
+            role="alert"
+            className="text-sm text-destructive"
+          >
             {errors.email.message}
           </p>
         )}

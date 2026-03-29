@@ -5,8 +5,6 @@ test.describe('sign in page', () => {
     await page.goto('/signin', { waitUntil: 'domcontentloaded' });
     await expect(page.getByLabel('Email')).toBeVisible();
     await expect(page.locator('#password')).toBeVisible();
-    await expect(
-      page.getByRole('button', { name: /sign in/i }),
-    ).toBeVisible();
+    await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible();
   });
 });

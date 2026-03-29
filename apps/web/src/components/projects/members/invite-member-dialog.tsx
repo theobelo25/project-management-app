@@ -144,9 +144,7 @@ export function InviteMemberDialog({
               selectedUserDisplay={selectedUser}
               excludeUserIds={currentMemberIds}
               disabled={submitting}
-              ariaDescribedBy={
-                errorMessage ? 'invite-member-error' : undefined
-              }
+              ariaDescribedBy={errorMessage ? 'invite-member-error' : undefined}
               ariaInvalid={!!errorMessage}
             />
 

@@ -49,7 +49,11 @@ export function TasksTable({
       </CardHeader>
 
       <CardContent className="p-0">
-        <div className="hidden md:block" role="table" aria-label="Project tasks">
+        <div
+          className="hidden md:block"
+          role="table"
+          aria-label="Project tasks"
+        >
           <div
             role="row"
             className={`${TASKS_ROW_GRID_CLASS} border-b px-6 py-3 text-sm font-medium text-muted-foreground`}
