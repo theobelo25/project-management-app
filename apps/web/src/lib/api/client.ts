@@ -298,6 +298,8 @@ export async function fetchTasks(
   params.set('page', String(query.page ?? 1));
   params.set('limit', String(query.limit ?? 20));
   if (query.status) params.set('status', query.status);
+  if (query.priority) params.set('priority', query.priority);
+  if (query.labelColor) params.set('labelColor', query.labelColor);
   if (query.assigneeId) params.set('assigneeId', query.assigneeId);
   if (query.search?.trim()) params.set('search', query.search.trim());
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ProjectRoleSchema } from "./project-role.schema";
+import { OptionalProjectRoleSchema } from "./project-role.schema";
 
 export const ProjectViewSchema = z.object({
   id: z.string(),
@@ -9,7 +9,7 @@ export const ProjectViewSchema = z.object({
   archivedAt: z.iso.datetime().nullable(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
-  currentUserRole: ProjectRoleSchema.optional(),
+  currentUserRole: OptionalProjectRoleSchema,
 });
 
 export const PaginatedProjectsViewSchema = z.object({

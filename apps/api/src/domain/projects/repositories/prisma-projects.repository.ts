@@ -152,6 +152,10 @@ export class PrismaProjectsRepository
       where: {
         id: projectId,
         organizationId: orgId,
+        OR: [
+          { ownerId: userId },
+          { members: { some: { userId } } },
+        ],
       },
       include: {
         members: {
@@ -176,7 +180,14 @@ export class PrismaProjectsRepository
     const prisma = db ?? this.prisma;
 
     const project = await prisma.project.findFirst({
-      where: { id: projectId, organizationId: orgId },
+      where: {
+        id: projectId,
+        organizationId: orgId,
+        OR: [
+          { ownerId: userId },
+          { members: { some: { userId } } },
+        ],
+      },
       select: {
         id: true,
         organizationId: true,

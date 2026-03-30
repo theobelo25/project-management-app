@@ -13,5 +13,6 @@ export function taskViewToCalendarTask(task: TaskView): CalendarTask | null {
     title: task.title,
     dueDate: dateOnly,
     status: task.status,
+    labelColor: task.labelColor,
   };
 }

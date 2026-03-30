@@ -102,6 +102,7 @@ describe('TasksController', () => {
             description: null,
             status: 'TODO',
             priority: 'MEDIUM',
+            labelColor: 'NONE',
             dueDate: null,
             position: 1,
             createdById: 'user-1',
@@ -141,6 +142,7 @@ describe('TasksController', () => {
         dueDate: undefined,
         status: undefined,
         priority: undefined,
+        labelColor: undefined,
         position: undefined,
       };
 

@@ -46,6 +46,8 @@ export function CreateTaskDialog({
             title: '',
             description: '',
             dueDate: '',
+            priority: 'MEDIUM',
+            labelColor: 'NONE',
             ...(defaultStatus != null && { status: defaultStatus }),
           }}
           onSubmit={async (values) => {

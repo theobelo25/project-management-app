@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { ZodSerializationException } from 'nestjs-zod';
 import { Prisma } from '@repo/database';
 import { mapPrismaException } from '../mappers/prisma-exception.mapper';
 import { extractHttpExceptionPayload } from './error-details.extractor';
@@ -29,7 +30,15 @@ export function normalizeException(exception: unknown): NormalizedError {
     let error = exception.name || 'Error';
     let details: unknown | undefined;
 
-    if (payload) {
+    if (exception instanceof ZodSerializationException) {
+      const zodErr = exception.getZodError();
+      message = 'Response validation failed';
+      error = 'ZodSerializationError';
+      details =
+        zodErr && typeof zodErr === 'object' && 'issues' in zodErr
+          ? (zodErr as { issues: unknown }).issues
+          : zodErr;
+    } else if (payload) {
       if (payload.validationMessages) {
         message = 'Validation failed';
         error = payload.error ?? exception.name;

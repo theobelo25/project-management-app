@@ -37,6 +37,21 @@ export const TaskPriority = {
 export type TaskPriority = (typeof TaskPriority)[keyof typeof TaskPriority]
 
 
+export const TaskLabelColor = {
+  NONE: 'NONE',
+  SLATE: 'SLATE',
+  RED: 'RED',
+  ORANGE: 'ORANGE',
+  AMBER: 'AMBER',
+  GREEN: 'GREEN',
+  BLUE: 'BLUE',
+  VIOLET: 'VIOLET',
+  ROSE: 'ROSE'
+} as const
+
+export type TaskLabelColor = (typeof TaskLabelColor)[keyof typeof TaskLabelColor]
+
+
 export const OrganizationRole = {
   OWNER: 'OWNER',
   ADMIN: 'ADMIN',

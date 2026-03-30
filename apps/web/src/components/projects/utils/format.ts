@@ -1,4 +1,4 @@
-import type { ProjectRole, TaskStatus } from '@repo/types';
+import type { ProjectRole, TaskPriority, TaskStatus } from '@repo/types';
 
 export function formatProjectRole(role: ProjectRole | undefined): string {
   if (!role) return 'Member';
@@ -26,6 +26,34 @@ export function formatTaskStatus(status: TaskStatus) {
       return 'Done';
     default:
       return status;
+  }
+}
+
+export function formatTaskPriority(priority: TaskPriority): string {
+  switch (priority) {
+    case 'LOW':
+      return 'Low';
+    case 'MEDIUM':
+      return 'Medium';
+    case 'HIGH':
+      return 'High';
+    default:
+      return priority;
+  }
+}
+
+export function getPriorityBadgeVariant(
+  priority: TaskPriority,
+): 'default' | 'secondary' | 'destructive' | 'outline' {
+  switch (priority) {
+    case 'HIGH':
+      return 'destructive';
+    case 'MEDIUM':
+      return 'secondary';
+    case 'LOW':
+      return 'outline';
+    default:
+      return 'outline';
   }
 }
 

@@ -8,6 +8,8 @@ export function taskViewToListItem(task: TaskView): TaskListItem {
     title: task.title,
     description: task.description ?? null,
     status: task.status,
+    priority: task.priority,
+    labelColor: task.labelColor,
     assignee: firstAssignee
       ? {
           id: firstAssignee.user.id,

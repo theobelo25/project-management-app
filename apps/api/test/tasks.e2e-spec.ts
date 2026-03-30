@@ -7,6 +7,7 @@ import { PRISMA } from '../src/prisma/types/prisma.constants';
 import {
   PrismaClient,
   ProjectRole,
+  TaskLabelColor,
   TaskPriority,
   TaskStatus,
 } from '@repo/database';
@@ -82,6 +83,7 @@ describe('Tasks E2E', () => {
         description: 'Do something important',
         status: TaskStatus.TODO,
         priority: TaskPriority.MEDIUM,
+        labelColor: TaskLabelColor.NONE,
         createdById: owner.userId,
         assignees: [],
       }),
@@ -98,6 +100,7 @@ describe('Tasks E2E', () => {
         description: 'Do something important',
         status: TaskStatus.TODO,
         priority: TaskPriority.MEDIUM,
+        labelColor: TaskLabelColor.NONE,
         createdById: owner.userId,
       }),
     );

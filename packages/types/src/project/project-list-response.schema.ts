@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ProjectRoleSchema } from "./project-role.schema";
+import { OptionalProjectRoleSchema } from "./project-role.schema";
 
 export const ProjectsListMemberSchema = z.object({
   id: z.string(),
@@ -15,7 +15,7 @@ export const ProjectListItemViewSchema = z.object({
   archivedAt: z.iso.datetime().nullable(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
-  currentUserRole: ProjectRoleSchema.optional(),
+  currentUserRole: OptionalProjectRoleSchema,
   totalTasks: z.number().int().min(0),
   completedTasks: z.number().int().min(0),
   openTasks: z.number().int().min(0),

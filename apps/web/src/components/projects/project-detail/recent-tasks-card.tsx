@@ -1,6 +1,11 @@
 import Link from 'next/link';
 
+import {
+  TASK_LABEL_COLOR_BORDER_CLASS,
+  TASK_LABEL_COLOR_SWATCH_CLASS,
+} from '@web/components/projects/tasks/task-label-color-styles';
 import { formatTaskStatus } from '@web/components/projects/utils';
+import { cn } from '@web/lib/utils';
 import { Badge } from '@web/components/ui/badge';
 import { Button } from '@web/components/ui/button';
 import {
@@ -45,9 +50,19 @@ export function RecentTasksCard({
               <Link
                 key={task.id}
                 href={`/projects/${project.id}/tasks/${task.id}`}
-                className="flex items-center justify-between rounded-lg border p-4"
+                className={cn(
+                  'flex items-center justify-between gap-3 rounded-lg border p-4',
+                  TASK_LABEL_COLOR_BORDER_CLASS[task.labelColor],
+                )}
               >
-                <div className="min-w-0">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  <span
+                    className={cn(
+                      'h-2.5 w-2.5 shrink-0 rounded-full',
+                      TASK_LABEL_COLOR_SWATCH_CLASS[task.labelColor],
+                    )}
+                    aria-hidden
+                  />
                   <p className="truncate font-medium">{task.title}</p>
                 </div>
                 <Badge variant="outline">{formatTaskStatus(task.status)}</Badge>
@@ -55,9 +70,19 @@ export function RecentTasksCard({
             ) : (
               <div
                 key={task.id}
-                className="flex items-center justify-between rounded-lg border p-4"
+                className={cn(
+                  'flex items-center justify-between gap-3 rounded-lg border p-4',
+                  TASK_LABEL_COLOR_BORDER_CLASS[task.labelColor],
+                )}
               >
-                <div className="min-w-0">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  <span
+                    className={cn(
+                      'h-2.5 w-2.5 shrink-0 rounded-full',
+                      TASK_LABEL_COLOR_SWATCH_CLASS[task.labelColor],
+                    )}
+                    aria-hidden
+                  />
                   <p className="truncate font-medium">{task.title}</p>
                 </div>
                 <Badge variant="outline">{formatTaskStatus(task.status)}</Badge>

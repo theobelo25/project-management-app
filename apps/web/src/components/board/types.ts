@@ -1,10 +1,12 @@
-import type { TaskStatus } from '@repo/types';
+import type { TaskLabelColor, TaskPriority, TaskStatus } from '@repo/types';
 
 export type BoardTask = {
   id: string;
   title: string;
   description?: string;
   status: TaskStatus;
+  priority: TaskPriority;
+  labelColor: TaskLabelColor;
   assignee?: string;
 };
 
