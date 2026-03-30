@@ -220,6 +220,13 @@ export type EnumTaskPriorityFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumTaskPriorityFilter<$PrismaModel> | $Enums.TaskPriority
 }
 
+export type EnumTaskLabelColorFilter<$PrismaModel = never> = {
+  equals?: $Enums.TaskLabelColor | Prisma.EnumTaskLabelColorFieldRefInput<$PrismaModel>
+  in?: $Enums.TaskLabelColor[] | Prisma.ListEnumTaskLabelColorFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TaskLabelColor[] | Prisma.ListEnumTaskLabelColorFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTaskLabelColorFilter<$PrismaModel> | $Enums.TaskLabelColor
+}
+
 export type IntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>
@@ -249,6 +256,16 @@ export type EnumTaskPriorityWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumTaskPriorityFilter<$PrismaModel>
   _max?: Prisma.NestedEnumTaskPriorityFilter<$PrismaModel>
+}
+
+export type EnumTaskLabelColorWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TaskLabelColor | Prisma.EnumTaskLabelColorFieldRefInput<$PrismaModel>
+  in?: $Enums.TaskLabelColor[] | Prisma.ListEnumTaskLabelColorFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TaskLabelColor[] | Prisma.ListEnumTaskLabelColorFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTaskLabelColorWithAggregatesFilter<$PrismaModel> | $Enums.TaskLabelColor
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTaskLabelColorFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTaskLabelColorFilter<$PrismaModel>
 }
 
 export type IntWithAggregatesFilter<$PrismaModel = never> = {
@@ -550,6 +567,13 @@ export type NestedEnumTaskPriorityFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumTaskPriorityFilter<$PrismaModel> | $Enums.TaskPriority
 }
 
+export type NestedEnumTaskLabelColorFilter<$PrismaModel = never> = {
+  equals?: $Enums.TaskLabelColor | Prisma.EnumTaskLabelColorFieldRefInput<$PrismaModel>
+  in?: $Enums.TaskLabelColor[] | Prisma.ListEnumTaskLabelColorFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TaskLabelColor[] | Prisma.ListEnumTaskLabelColorFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTaskLabelColorFilter<$PrismaModel> | $Enums.TaskLabelColor
+}
+
 export type NestedEnumTaskStatusWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.TaskStatus | Prisma.EnumTaskStatusFieldRefInput<$PrismaModel>
   in?: $Enums.TaskStatus[] | Prisma.ListEnumTaskStatusFieldRefInput<$PrismaModel>
@@ -568,6 +592,16 @@ export type NestedEnumTaskPriorityWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumTaskPriorityFilter<$PrismaModel>
   _max?: Prisma.NestedEnumTaskPriorityFilter<$PrismaModel>
+}
+
+export type NestedEnumTaskLabelColorWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TaskLabelColor | Prisma.EnumTaskLabelColorFieldRefInput<$PrismaModel>
+  in?: $Enums.TaskLabelColor[] | Prisma.ListEnumTaskLabelColorFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TaskLabelColor[] | Prisma.ListEnumTaskLabelColorFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTaskLabelColorWithAggregatesFilter<$PrismaModel> | $Enums.TaskLabelColor
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTaskLabelColorFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTaskLabelColorFilter<$PrismaModel>
 }
 
 export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {

@@ -10,6 +10,8 @@ import {
   taskViewToListItem,
   TasksTable,
   TasksToolbar,
+  type TasksFilterLabelColor,
+  type TasksFilterPriority,
   type TasksFilterStatus,
   type TasksSort,
 } from '@web/components/projects/tasks';
@@ -27,6 +29,8 @@ export function ProjectTasksPageContent({
 }: ProjectTasksPageContentProps) {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<TasksFilterStatus>('all');
+  const [priority, setPriority] = useState<TasksFilterPriority>('all');
+  const [labelColor, setLabelColor] = useState<TasksFilterLabelColor>('all');
   const [assigneeId, setAssigneeId] = useState('all');
   const [sort, setSort] = useState<TasksSort>('updated-desc');
   const [page, setPage] = useState(1);
@@ -40,6 +44,8 @@ export function ProjectTasksPageContent({
     page,
     limit: PAGE_SIZE,
     status: status === 'all' ? undefined : status,
+    priority: priority === 'all' ? undefined : priority,
+    labelColor: labelColor === 'all' ? undefined : labelColor,
     assigneeId: assigneeId === 'all' ? undefined : assigneeId,
     search: search.trim() || undefined,
     sort,
@@ -54,6 +60,8 @@ export function ProjectTasksPageContent({
   function handleClear() {
     setSearch('');
     setStatus('all');
+    setPriority('all');
+    setLabelColor('all');
     setAssigneeId('all');
     setSort('updated-desc');
     setPage(1);
@@ -110,6 +118,8 @@ export function ProjectTasksPageContent({
       <TasksToolbar
         search={search}
         status={status}
+        priority={priority}
+        labelColor={labelColor}
         assigneeId={assigneeId}
         sort={sort}
         assignees={members}
@@ -119,6 +129,14 @@ export function ProjectTasksPageContent({
         }}
         onStatusChange={(value) => {
           setStatus(value);
+          setPage(1);
+        }}
+        onPriorityChange={(value) => {
+          setPriority(value);
+          setPage(1);
+        }}
+        onLabelColorChange={(value) => {
+          setLabelColor(value);
           setPage(1);
         }}
         onAssigneeChange={(value) => {

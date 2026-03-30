@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { TaskStatusSchema } from "./task-status.schema";
+import { TaskLabelColorSchema } from "./task-label-color.schema";
 import { TaskPrioritySchema } from "./task-priority.schema";
 
 export const TaskAssigneeViewSchema = z.object({
@@ -25,6 +26,7 @@ export const TaskViewSchema = z.object({
   description: z.string().nullable(),
   status: TaskStatusSchema,
   priority: TaskPrioritySchema,
+  labelColor: TaskLabelColorSchema.default("NONE"),
   dueDate: z.string().datetime().nullable(),
   position: z.number().int(),
   createdById: z.string(),

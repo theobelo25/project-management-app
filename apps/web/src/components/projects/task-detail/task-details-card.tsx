@@ -1,4 +1,4 @@
-import { Calendar, Circle, User, Hash } from 'lucide-react';
+import { Calendar, Circle, Flag, Hash, Palette, User } from 'lucide-react';
 
 import {
   Card,
@@ -9,7 +9,12 @@ import {
 } from '@web/components/ui/card';
 import type { TaskView } from '@repo/types';
 
-import { formatTaskStatus } from '../utils/format';
+import {
+  formatTaskLabelColor,
+  TASK_LABEL_COLOR_SWATCH_CLASS,
+} from '../tasks/task-label-color-styles';
+import { formatTaskPriority, formatTaskStatus } from '../utils/format';
+import { cn } from '@web/lib/utils';
 
 function formatDueDate(iso: string | null): string {
   if (!iso) return 'No due date';
@@ -18,7 +23,10 @@ function formatDueDate(iso: string | null): string {
 }
 
 type TaskDetailsCardProps = {
-  task: Pick<TaskView, 'id' | 'description' | 'status' | 'dueDate'>;
+  task: Pick<
+    TaskView,
+    'id' | 'description' | 'status' | 'priority' | 'labelColor' | 'dueDate'
+  >;
   assignee?: {
     name: string;
   } | null;
@@ -46,39 +54,68 @@ export function TaskDetailsCard({ task, assignee }: TaskDetailsCardProps) {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div className="rounded-xl border p-4">
-            <div className="mb-2 flex items-center gap-2 text-muted-foreground">
-              <Circle className="h-4 w-4" />
+            <dt className="mb-2 flex items-center gap-2 text-muted-foreground">
+              <Circle className="h-4 w-4 shrink-0" aria-hidden />
               <span className="text-sm">Status</span>
-            </div>
-            <p className="font-medium">{formatTaskStatus(task.status)}</p>
+            </dt>
+            <dd className="font-medium">{formatTaskStatus(task.status)}</dd>
           </div>
 
           <div className="rounded-xl border p-4">
-            <div className="mb-2 flex items-center gap-2 text-muted-foreground">
-              <User className="h-4 w-4" />
+            <dt className="mb-2 flex items-center gap-2 text-muted-foreground">
+              <Flag className="h-4 w-4 shrink-0" aria-hidden />
+              <span className="text-sm">Priority</span>
+            </dt>
+            <dd className="font-medium">{formatTaskPriority(task.priority)}</dd>
+          </div>
+
+          <div className="rounded-xl border p-4">
+            <dt className="mb-2 flex items-center gap-2 text-muted-foreground">
+              <Palette className="h-4 w-4 shrink-0" aria-hidden />
+              <span className="text-sm">Label color</span>
+            </dt>
+            <dd className="flex flex-wrap items-center gap-2 font-medium">
+              <span
+                className={cn(
+                  'inline-block h-4 w-4 shrink-0 rounded-full',
+                  TASK_LABEL_COLOR_SWATCH_CLASS[task.labelColor],
+                )}
+                aria-hidden
+              />
+              {formatTaskLabelColor(task.labelColor)}
+            </dd>
+          </div>
+
+          <div className="rounded-xl border p-4">
+            <dt className="mb-2 flex items-center gap-2 text-muted-foreground">
+              <User className="h-4 w-4 shrink-0" aria-hidden />
               <span className="text-sm">Assignee</span>
-            </div>
-            <p className="font-medium">{assignee?.name || 'Unassigned'}</p>
+            </dt>
+            <dd className="font-medium">{assignee?.name || 'Unassigned'}</dd>
           </div>
 
           <div className="rounded-xl border p-4">
-            <div className="mb-2 flex items-center gap-2 text-muted-foreground">
-              <Calendar className="h-4 w-4" />
+            <dt className="mb-2 flex items-center gap-2 text-muted-foreground">
+              <Calendar className="h-4 w-4 shrink-0" aria-hidden />
               <span className="text-sm">Due date</span>
-            </div>
-            <p className="font-medium">{formatDueDate(task.dueDate ?? null)}</p>
+            </dt>
+            <dd className="font-medium">
+              {formatDueDate(task.dueDate ?? null)}
+            </dd>
           </div>
 
           <div className="rounded-xl border p-4">
-            <div className="mb-2 flex items-center gap-2 text-muted-foreground">
-              <Hash className="h-4 w-4" />
+            <dt className="mb-2 flex items-center gap-2 text-muted-foreground">
+              <Hash className="h-4 w-4 shrink-0" aria-hidden />
               <span className="text-sm">Task ID</span>
-            </div>
-            <p className="truncate font-medium">{task.id}</p>
+            </dt>
+            <dd className="break-all font-mono text-sm font-medium leading-relaxed">
+              {task.id}
+            </dd>
           </div>
-        </div>
+        </dl>
       </CardContent>
     </Card>
   );

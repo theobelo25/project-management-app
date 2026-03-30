@@ -8,6 +8,8 @@ export function taskViewToBoardTask(task: TaskView): BoardTask {
     title: task.title,
     description: task.description ?? undefined,
     status: task.status,
+    priority: task.priority,
+    labelColor: task.labelColor,
     assignee: firstAssignee?.user.name,
   };
 }

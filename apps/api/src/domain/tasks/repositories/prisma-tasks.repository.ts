@@ -56,6 +56,7 @@ function buildTaskWhere(input: FindTasksInput): Prisma.TaskWhereInput {
     project: { organizationId: input.orgId },
     ...(input.status !== undefined ? { status: input.status } : {}),
     ...(input.priority !== undefined ? { priority: input.priority } : {}),
+    ...(input.labelColor !== undefined ? { labelColor: input.labelColor } : {}),
     ...(input.assigneeId !== undefined
       ? { assignees: { some: { userId: input.assigneeId } } }
       : {}),
@@ -93,6 +94,7 @@ function buildUpdateTaskPatch(data: UpdateTaskInput): Prisma.TaskUpdateInput {
       : {}),
     ...(data.status !== undefined ? { status: data.status } : {}),
     ...(data.priority !== undefined ? { priority: data.priority } : {}),
+    ...(data.labelColor !== undefined ? { labelColor: data.labelColor } : {}),
     ...(data.dueDate !== undefined ? { dueDate: data.dueDate } : {}),
     ...(data.position !== undefined ? { position: data.position } : {}),
   };

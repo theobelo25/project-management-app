@@ -20,9 +20,7 @@ export function AuthCard({ title, children, footer }: AuthCardProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          <h2>{title}</h2>
-        </CardTitle>
+        <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>{children}</CardContent>
       <CardFooter>{footer}</CardFooter>

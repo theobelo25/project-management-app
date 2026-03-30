@@ -1253,6 +1253,7 @@ export const TaskScalarFieldEnum = {
   description: 'description',
   status: 'status',
   priority: 'priority',
+  labelColor: 'labelColor',
   createdById: 'createdById',
   dueDate: 'dueDate',
   position: 'position',
@@ -1439,6 +1440,20 @@ export type EnumTaskPriorityFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
  * Reference to a field of type 'TaskPriority[]'
  */
 export type ListEnumTaskPriorityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaskPriority[]'>
+    
+
+
+/**
+ * Reference to a field of type 'TaskLabelColor'
+ */
+export type EnumTaskLabelColorFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaskLabelColor'>
+    
+
+
+/**
+ * Reference to a field of type 'TaskLabelColor[]'
+ */
+export type ListEnumTaskLabelColorFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaskLabelColor[]'>
     
 
 

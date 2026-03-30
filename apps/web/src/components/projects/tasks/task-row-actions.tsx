@@ -9,6 +9,7 @@ import {
 } from '@web/components/projects/row-actions-menu';
 import { EditTaskDialog } from '@web/components/projects/tasks';
 import { DropdownMenuItem } from '@web/components/ui/dropdown-menu';
+import type { TaskLabelColor, TaskPriority } from '@repo/types';
 
 type TaskRowActionsProps = {
   projectId: string;
@@ -18,6 +19,8 @@ type TaskRowActionsProps = {
     title: string;
     description: string | null;
     dueDate?: string | null;
+    priority: TaskPriority;
+    labelColor: TaskLabelColor;
   };
   onDelete?: (taskId: string) => void;
 };

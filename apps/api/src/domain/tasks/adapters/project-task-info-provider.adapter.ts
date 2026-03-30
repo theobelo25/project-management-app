@@ -9,6 +9,7 @@
  * (`PROJECT_TASK_CONTEXT_REPOSITORY`), not `ProjectsModule`, avoiding a Projects ↔ Tasks module cycle.
  */
 import { Injectable } from '@nestjs/common';
+import { TaskLabelColor } from '@repo/database';
 import type { ProjectRecentTask } from '@repo/types';
 import type { IProjectTaskInfoProvider } from '@api/domain/projects/types/project-task-info.types';
 import { TasksRepository } from '../repositories/tasks.repository';
@@ -39,6 +40,8 @@ export class ProjectTaskInfoProviderAdapter implements IProjectTaskInfoProvider 
       id: t.id,
       title: t.title,
       status: t.status,
+      priority: t.priority,
+      labelColor: t.labelColor ?? TaskLabelColor.NONE,
     }));
   }
 }

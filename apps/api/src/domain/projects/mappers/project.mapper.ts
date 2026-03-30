@@ -24,7 +24,7 @@ export function toProjectView(project: ProjectWithRole): ProjectView {
     archivedAt: toIsoStringOrNull(project.archivedAt),
     createdAt: toIsoString(project.createdAt),
     updatedAt: toIsoString(project.updatedAt),
-    currentUserRole: project.currentUserRole,
+    currentUserRole: project.currentUserRole ?? undefined,
   };
 }
 
@@ -91,6 +91,8 @@ export function toProjectDetailView(
       id: t.id,
       title: t.title,
       status: t.status,
+      priority: t.priority,
+      labelColor: t.labelColor,
     })),
   };
 }

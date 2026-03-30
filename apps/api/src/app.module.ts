@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -24,7 +25,12 @@ import { ZodSerializerInterceptor } from 'nestjs-zod';
     ConfigModule.forRoot({
       isGlobal: true,
       validate: validateEnv,
-      envFilePath: ['.env'],
+      // Later entries override: keep Prisma CLI + @repo/database on the same DATABASE_URL
+      // as `packages/database/.env` (see prisma.config.ts).
+      envFilePath: [
+        '.env',
+        path.resolve(process.cwd(), '../../packages/database/.env'),
+      ],
     }),
     AppConfigModule,
     PrismaModule,

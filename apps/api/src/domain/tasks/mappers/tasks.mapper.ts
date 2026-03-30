@@ -2,6 +2,7 @@ import {
   toIsoString,
   toIsoStringOrNull,
 } from '@api/common/mappers/mapper.utils';
+import { TaskLabelColor } from '@repo/database';
 import {
   TaskWithAssignees,
   CreateTaskInput,
@@ -20,6 +21,7 @@ export function toTaskView(task: TaskWithAssignees): TaskView {
     description: task.description,
     status: task.status,
     priority: task.priority,
+    labelColor: task.labelColor ?? TaskLabelColor.NONE,
     dueDate: toIsoStringOrNull(task.dueDate),
     position: task.position,
     createdAt: toIsoString(task.createdAt),

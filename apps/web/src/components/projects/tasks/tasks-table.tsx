@@ -6,8 +6,10 @@ import {
   TasksEmptyState,
 } from '@web/components/projects/tasks';
 import {
+  formatTaskPriority,
   formatTaskStatus,
   formatUpdatedAt,
+  getPriorityBadgeVariant,
   getStatusBadgeVariant,
 } from '@web/components/projects/utils';
 import { Badge } from '@web/components/ui/badge';
@@ -17,9 +19,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@web/components/ui/card';
+import { cn } from '@web/lib/utils';
+
+import { TASK_LABEL_COLOR_BORDER_CLASS } from './task-label-color-styles';
 
 const TASKS_ROW_GRID_CLASS =
-  'grid grid-cols-[minmax(0,2fr)_160px_180px_140px_56px] items-center gap-4';
+  'grid grid-cols-[minmax(0,2fr)_140px_120px_160px_120px_56px] items-center gap-4';
 
 type TasksTableProps = {
   projectId: string;
@@ -60,6 +65,7 @@ export function TasksTable({
           >
             <div role="columnheader">Title</div>
             <div role="columnheader">Status</div>
+            <div role="columnheader">Priority</div>
             <div role="columnheader">Assignee</div>
             <div role="columnheader">Updated</div>
             <div role="columnheader" className="sr-only">
@@ -72,7 +78,11 @@ export function TasksTable({
               <div
                 key={task.id}
                 role="row"
-                className={`${TASKS_ROW_GRID_CLASS} px-6 py-4`}
+                className={cn(
+                  TASKS_ROW_GRID_CLASS,
+                  'px-6 py-4',
+                  TASK_LABEL_COLOR_BORDER_CLASS[task.labelColor],
+                )}
               >
                 <div role="cell" className="min-w-0">
                   <Link
@@ -91,6 +101,12 @@ export function TasksTable({
                 <div role="cell">
                   <Badge variant={getStatusBadgeVariant(task.status)}>
                     {formatTaskStatus(task.status)}
+                  </Badge>
+                </div>
+
+                <div role="cell">
+                  <Badge variant={getPriorityBadgeVariant(task.priority)}>
+                    {formatTaskPriority(task.priority)}
                   </Badge>
                 </div>
 
@@ -114,6 +130,8 @@ export function TasksTable({
                       title: task.title,
                       description: task.description,
                       dueDate: task.dueDate ?? null,
+                      priority: task.priority,
+                      labelColor: task.labelColor,
                     }}
                     onDelete={onDelete}
                   />
@@ -129,7 +147,14 @@ export function TasksTable({
           aria-label="Project tasks"
         >
           {tasks.map((task) => (
-            <div key={task.id} className="space-y-3 px-4 py-4" role="listitem">
+            <div
+              key={task.id}
+              className={cn(
+                'space-y-3 px-4 py-4',
+                TASK_LABEL_COLOR_BORDER_CLASS[task.labelColor],
+              )}
+              role="listitem"
+            >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <Link
@@ -153,6 +178,8 @@ export function TasksTable({
                     title: task.title,
                     description: task.description,
                     dueDate: task.dueDate ?? null,
+                    priority: task.priority,
+                    labelColor: task.labelColor,
                   }}
                   onDelete={onDelete}
                 />
@@ -161,6 +188,9 @@ export function TasksTable({
               <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                 <Badge variant={getStatusBadgeVariant(task.status)}>
                   {formatTaskStatus(task.status)}
+                </Badge>
+                <Badge variant={getPriorityBadgeVariant(task.priority)}>
+                  {formatTaskPriority(task.priority)}
                 </Badge>
                 <span>•</span>
                 <span>{task.assignee?.name || 'Unassigned'}</span>

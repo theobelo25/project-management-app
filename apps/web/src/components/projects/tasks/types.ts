@@ -1,4 +1,4 @@
-import type { TaskStatus } from '@repo/types';
+import type { TaskLabelColor, TaskPriority, TaskStatus } from '@repo/types';
 
 export type TaskAssignee = {
   id: string;
@@ -11,6 +11,8 @@ export type TaskListItem = {
   title: string;
   description: string | null;
   status: TaskStatus;
+  priority: TaskPriority;
+  labelColor: TaskLabelColor;
   assignee: TaskAssignee | null;
   updatedAt: string | Date;
   dueDate: string | null;

@@ -33,6 +33,7 @@ export class AppExceptionFilter implements ExceptionFilter {
     this.logger.error(
       {
         requestId: getRequestCorrelationId(request),
+        ...(payload.details !== undefined ? { details: payload.details } : {}),
       },
       `${payload.statusCode} ${payload.message}`,
     );

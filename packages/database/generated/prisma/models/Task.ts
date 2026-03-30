@@ -41,6 +41,7 @@ export type TaskMinAggregateOutputType = {
   description: string | null
   status: $Enums.TaskStatus | null
   priority: $Enums.TaskPriority | null
+  labelColor: $Enums.TaskLabelColor | null
   createdById: string | null
   dueDate: Date | null
   position: number | null
@@ -56,6 +57,7 @@ export type TaskMaxAggregateOutputType = {
   description: string | null
   status: $Enums.TaskStatus | null
   priority: $Enums.TaskPriority | null
+  labelColor: $Enums.TaskLabelColor | null
   createdById: string | null
   dueDate: Date | null
   position: number | null
@@ -71,6 +73,7 @@ export type TaskCountAggregateOutputType = {
   description: number
   status: number
   priority: number
+  labelColor: number
   createdById: number
   dueDate: number
   position: number
@@ -96,6 +99,7 @@ export type TaskMinAggregateInputType = {
   description?: true
   status?: true
   priority?: true
+  labelColor?: true
   createdById?: true
   dueDate?: true
   position?: true
@@ -111,6 +115,7 @@ export type TaskMaxAggregateInputType = {
   description?: true
   status?: true
   priority?: true
+  labelColor?: true
   createdById?: true
   dueDate?: true
   position?: true
@@ -126,6 +131,7 @@ export type TaskCountAggregateInputType = {
   description?: true
   status?: true
   priority?: true
+  labelColor?: true
   createdById?: true
   dueDate?: true
   position?: true
@@ -228,6 +234,7 @@ export type TaskGroupByOutputType = {
   description: string | null
   status: $Enums.TaskStatus
   priority: $Enums.TaskPriority
+  labelColor: $Enums.TaskLabelColor
   createdById: string
   dueDate: Date | null
   position: number
@@ -266,6 +273,7 @@ export type TaskWhereInput = {
   description?: Prisma.StringNullableFilter<"Task"> | string | null
   status?: Prisma.EnumTaskStatusFilter<"Task"> | $Enums.TaskStatus
   priority?: Prisma.EnumTaskPriorityFilter<"Task"> | $Enums.TaskPriority
+  labelColor?: Prisma.EnumTaskLabelColorFilter<"Task"> | $Enums.TaskLabelColor
   createdById?: Prisma.UuidFilter<"Task"> | string
   dueDate?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
   position?: Prisma.IntFilter<"Task"> | number
@@ -285,6 +293,7 @@ export type TaskOrderByWithRelationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   priority?: Prisma.SortOrder
+  labelColor?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   position?: Prisma.SortOrder
@@ -307,6 +316,7 @@ export type TaskWhereUniqueInput = Prisma.AtLeast<{
   description?: Prisma.StringNullableFilter<"Task"> | string | null
   status?: Prisma.EnumTaskStatusFilter<"Task"> | $Enums.TaskStatus
   priority?: Prisma.EnumTaskPriorityFilter<"Task"> | $Enums.TaskPriority
+  labelColor?: Prisma.EnumTaskLabelColorFilter<"Task"> | $Enums.TaskLabelColor
   createdById?: Prisma.UuidFilter<"Task"> | string
   dueDate?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
   position?: Prisma.IntFilter<"Task"> | number
@@ -326,6 +336,7 @@ export type TaskOrderByWithAggregationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   priority?: Prisma.SortOrder
+  labelColor?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   position?: Prisma.SortOrder
@@ -349,6 +360,7 @@ export type TaskScalarWhereWithAggregatesInput = {
   description?: Prisma.StringNullableWithAggregatesFilter<"Task"> | string | null
   status?: Prisma.EnumTaskStatusWithAggregatesFilter<"Task"> | $Enums.TaskStatus
   priority?: Prisma.EnumTaskPriorityWithAggregatesFilter<"Task"> | $Enums.TaskPriority
+  labelColor?: Prisma.EnumTaskLabelColorWithAggregatesFilter<"Task"> | $Enums.TaskLabelColor
   createdById?: Prisma.UuidWithAggregatesFilter<"Task"> | string
   dueDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Task"> | Date | string | null
   position?: Prisma.IntWithAggregatesFilter<"Task"> | number
@@ -363,6 +375,7 @@ export type TaskCreateInput = {
   description?: string | null
   status?: $Enums.TaskStatus
   priority?: $Enums.TaskPriority
+  labelColor?: $Enums.TaskLabelColor
   dueDate?: Date | string | null
   position?: number
   createdAt?: Date | string
@@ -380,6 +393,7 @@ export type TaskUncheckedCreateInput = {
   description?: string | null
   status?: $Enums.TaskStatus
   priority?: $Enums.TaskPriority
+  labelColor?: $Enums.TaskLabelColor
   createdById: string
   dueDate?: Date | string | null
   position?: number
@@ -395,6 +409,7 @@ export type TaskUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
+  labelColor?: Prisma.EnumTaskLabelColorFieldUpdateOperationsInput | $Enums.TaskLabelColor
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -412,6 +427,7 @@ export type TaskUncheckedUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
+  labelColor?: Prisma.EnumTaskLabelColorFieldUpdateOperationsInput | $Enums.TaskLabelColor
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
@@ -428,6 +444,7 @@ export type TaskCreateManyInput = {
   description?: string | null
   status?: $Enums.TaskStatus
   priority?: $Enums.TaskPriority
+  labelColor?: $Enums.TaskLabelColor
   createdById: string
   dueDate?: Date | string | null
   position?: number
@@ -442,6 +459,7 @@ export type TaskUpdateManyMutationInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
+  labelColor?: Prisma.EnumTaskLabelColorFieldUpdateOperationsInput | $Enums.TaskLabelColor
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -455,6 +473,7 @@ export type TaskUncheckedUpdateManyInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
+  labelColor?: Prisma.EnumTaskLabelColorFieldUpdateOperationsInput | $Enums.TaskLabelColor
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
@@ -480,6 +499,7 @@ export type TaskCountOrderByAggregateInput = {
   description?: Prisma.SortOrder
   status?: Prisma.SortOrder
   priority?: Prisma.SortOrder
+  labelColor?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   dueDate?: Prisma.SortOrder
   position?: Prisma.SortOrder
@@ -499,6 +519,7 @@ export type TaskMaxOrderByAggregateInput = {
   description?: Prisma.SortOrder
   status?: Prisma.SortOrder
   priority?: Prisma.SortOrder
+  labelColor?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   dueDate?: Prisma.SortOrder
   position?: Prisma.SortOrder
@@ -514,6 +535,7 @@ export type TaskMinOrderByAggregateInput = {
   description?: Prisma.SortOrder
   status?: Prisma.SortOrder
   priority?: Prisma.SortOrder
+  labelColor?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   dueDate?: Prisma.SortOrder
   position?: Prisma.SortOrder
@@ -665,6 +687,10 @@ export type EnumTaskPriorityFieldUpdateOperationsInput = {
   set?: $Enums.TaskPriority
 }
 
+export type EnumTaskLabelColorFieldUpdateOperationsInput = {
+  set?: $Enums.TaskLabelColor
+}
+
 export type IntFieldUpdateOperationsInput = {
   set?: number
   increment?: number
@@ -693,6 +719,7 @@ export type TaskCreateWithoutCreatedByInput = {
   description?: string | null
   status?: $Enums.TaskStatus
   priority?: $Enums.TaskPriority
+  labelColor?: $Enums.TaskLabelColor
   dueDate?: Date | string | null
   position?: number
   createdAt?: Date | string
@@ -709,6 +736,7 @@ export type TaskUncheckedCreateWithoutCreatedByInput = {
   description?: string | null
   status?: $Enums.TaskStatus
   priority?: $Enums.TaskPriority
+  labelColor?: $Enums.TaskLabelColor
   dueDate?: Date | string | null
   position?: number
   createdAt?: Date | string
@@ -733,6 +761,7 @@ export type TaskCreateWithoutUserInput = {
   description?: string | null
   status?: $Enums.TaskStatus
   priority?: $Enums.TaskPriority
+  labelColor?: $Enums.TaskLabelColor
   dueDate?: Date | string | null
   position?: number
   createdAt?: Date | string
@@ -749,6 +778,7 @@ export type TaskUncheckedCreateWithoutUserInput = {
   description?: string | null
   status?: $Enums.TaskStatus
   priority?: $Enums.TaskPriority
+  labelColor?: $Enums.TaskLabelColor
   createdById: string
   dueDate?: Date | string | null
   position?: number
@@ -793,6 +823,7 @@ export type TaskScalarWhereInput = {
   description?: Prisma.StringNullableFilter<"Task"> | string | null
   status?: Prisma.EnumTaskStatusFilter<"Task"> | $Enums.TaskStatus
   priority?: Prisma.EnumTaskPriorityFilter<"Task"> | $Enums.TaskPriority
+  labelColor?: Prisma.EnumTaskLabelColorFilter<"Task"> | $Enums.TaskLabelColor
   createdById?: Prisma.UuidFilter<"Task"> | string
   dueDate?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
   position?: Prisma.IntFilter<"Task"> | number
@@ -823,6 +854,7 @@ export type TaskCreateWithoutProjectInput = {
   description?: string | null
   status?: $Enums.TaskStatus
   priority?: $Enums.TaskPriority
+  labelColor?: $Enums.TaskLabelColor
   dueDate?: Date | string | null
   position?: number
   createdAt?: Date | string
@@ -838,6 +870,7 @@ export type TaskUncheckedCreateWithoutProjectInput = {
   description?: string | null
   status?: $Enums.TaskStatus
   priority?: $Enums.TaskPriority
+  labelColor?: $Enums.TaskLabelColor
   createdById: string
   dueDate?: Date | string | null
   position?: number
@@ -879,6 +912,7 @@ export type TaskCreateWithoutAssigneesInput = {
   description?: string | null
   status?: $Enums.TaskStatus
   priority?: $Enums.TaskPriority
+  labelColor?: $Enums.TaskLabelColor
   dueDate?: Date | string | null
   position?: number
   createdAt?: Date | string
@@ -895,6 +929,7 @@ export type TaskUncheckedCreateWithoutAssigneesInput = {
   description?: string | null
   status?: $Enums.TaskStatus
   priority?: $Enums.TaskPriority
+  labelColor?: $Enums.TaskLabelColor
   createdById: string
   dueDate?: Date | string | null
   position?: number
@@ -925,6 +960,7 @@ export type TaskUpdateWithoutAssigneesInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
+  labelColor?: Prisma.EnumTaskLabelColorFieldUpdateOperationsInput | $Enums.TaskLabelColor
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -941,6 +977,7 @@ export type TaskUncheckedUpdateWithoutAssigneesInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
+  labelColor?: Prisma.EnumTaskLabelColorFieldUpdateOperationsInput | $Enums.TaskLabelColor
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
@@ -956,6 +993,7 @@ export type TaskCreateManyCreatedByInput = {
   description?: string | null
   status?: $Enums.TaskStatus
   priority?: $Enums.TaskPriority
+  labelColor?: $Enums.TaskLabelColor
   dueDate?: Date | string | null
   position?: number
   createdAt?: Date | string
@@ -970,6 +1008,7 @@ export type TaskCreateManyUserInput = {
   description?: string | null
   status?: $Enums.TaskStatus
   priority?: $Enums.TaskPriority
+  labelColor?: $Enums.TaskLabelColor
   createdById: string
   dueDate?: Date | string | null
   position?: number
@@ -983,6 +1022,7 @@ export type TaskUpdateWithoutCreatedByInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
+  labelColor?: Prisma.EnumTaskLabelColorFieldUpdateOperationsInput | $Enums.TaskLabelColor
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -999,6 +1039,7 @@ export type TaskUncheckedUpdateWithoutCreatedByInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
+  labelColor?: Prisma.EnumTaskLabelColorFieldUpdateOperationsInput | $Enums.TaskLabelColor
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1014,6 +1055,7 @@ export type TaskUncheckedUpdateManyWithoutCreatedByInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
+  labelColor?: Prisma.EnumTaskLabelColorFieldUpdateOperationsInput | $Enums.TaskLabelColor
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1027,6 +1069,7 @@ export type TaskUpdateWithoutUserInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
+  labelColor?: Prisma.EnumTaskLabelColorFieldUpdateOperationsInput | $Enums.TaskLabelColor
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1043,6 +1086,7 @@ export type TaskUncheckedUpdateWithoutUserInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
+  labelColor?: Prisma.EnumTaskLabelColorFieldUpdateOperationsInput | $Enums.TaskLabelColor
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1058,6 +1102,7 @@ export type TaskUncheckedUpdateManyWithoutUserInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
+  labelColor?: Prisma.EnumTaskLabelColorFieldUpdateOperationsInput | $Enums.TaskLabelColor
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1071,6 +1116,7 @@ export type TaskCreateManyProjectInput = {
   description?: string | null
   status?: $Enums.TaskStatus
   priority?: $Enums.TaskPriority
+  labelColor?: $Enums.TaskLabelColor
   createdById: string
   dueDate?: Date | string | null
   position?: number
@@ -1085,6 +1131,7 @@ export type TaskUpdateWithoutProjectInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
+  labelColor?: Prisma.EnumTaskLabelColorFieldUpdateOperationsInput | $Enums.TaskLabelColor
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1100,6 +1147,7 @@ export type TaskUncheckedUpdateWithoutProjectInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
+  labelColor?: Prisma.EnumTaskLabelColorFieldUpdateOperationsInput | $Enums.TaskLabelColor
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1115,6 +1163,7 @@ export type TaskUncheckedUpdateManyWithoutProjectInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
+  labelColor?: Prisma.EnumTaskLabelColorFieldUpdateOperationsInput | $Enums.TaskLabelColor
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1161,6 +1210,7 @@ export type TaskSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   description?: boolean
   status?: boolean
   priority?: boolean
+  labelColor?: boolean
   createdById?: boolean
   dueDate?: boolean
   position?: boolean
@@ -1181,6 +1231,7 @@ export type TaskSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   description?: boolean
   status?: boolean
   priority?: boolean
+  labelColor?: boolean
   createdById?: boolean
   dueDate?: boolean
   position?: boolean
@@ -1199,6 +1250,7 @@ export type TaskSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   description?: boolean
   status?: boolean
   priority?: boolean
+  labelColor?: boolean
   createdById?: boolean
   dueDate?: boolean
   position?: boolean
@@ -1217,6 +1269,7 @@ export type TaskSelectScalar = {
   description?: boolean
   status?: boolean
   priority?: boolean
+  labelColor?: boolean
   createdById?: boolean
   dueDate?: boolean
   position?: boolean
@@ -1225,7 +1278,7 @@ export type TaskSelectScalar = {
   userId?: boolean
 }
 
-export type TaskOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "title" | "description" | "status" | "priority" | "createdById" | "dueDate" | "position" | "createdAt" | "updatedAt" | "userId", ExtArgs["result"]["task"]>
+export type TaskOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "title" | "description" | "status" | "priority" | "labelColor" | "createdById" | "dueDate" | "position" | "createdAt" | "updatedAt" | "userId", ExtArgs["result"]["task"]>
 export type TaskInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1259,6 +1312,7 @@ export type $TaskPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     description: string | null
     status: $Enums.TaskStatus
     priority: $Enums.TaskPriority
+    labelColor: $Enums.TaskLabelColor
     createdById: string
     dueDate: Date | null
     position: number
@@ -1698,6 +1752,7 @@ export interface TaskFieldRefs {
   readonly description: Prisma.FieldRef<"Task", 'String'>
   readonly status: Prisma.FieldRef<"Task", 'TaskStatus'>
   readonly priority: Prisma.FieldRef<"Task", 'TaskPriority'>
+  readonly labelColor: Prisma.FieldRef<"Task", 'TaskLabelColor'>
   readonly createdById: Prisma.FieldRef<"Task", 'String'>
   readonly dueDate: Prisma.FieldRef<"Task", 'DateTime'>
   readonly position: Prisma.FieldRef<"Task", 'Int'>

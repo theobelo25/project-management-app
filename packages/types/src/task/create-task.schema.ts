@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { TaskStatusSchema } from "./task-status.schema";
+import { TaskLabelColorSchema } from "./task-label-color.schema";
 import { TaskPrioritySchema } from "./task-priority.schema";
 
 export const CreateTaskSchema = z.object({
@@ -12,6 +13,8 @@ export const CreateTaskSchema = z.object({
   status: TaskStatusSchema.optional(),
 
   priority: TaskPrioritySchema.optional(),
+
+  labelColor: TaskLabelColorSchema.optional(),
 
   dueDate: z.iso.datetime().optional().nullable(),
 

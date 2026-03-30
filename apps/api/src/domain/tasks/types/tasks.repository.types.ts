@@ -2,6 +2,7 @@ import {
   Prisma,
   Task,
   TaskAssignee,
+  TaskLabelColor,
   TaskPriority,
   TaskStatus,
   User,
@@ -35,6 +36,7 @@ export type CreateTaskInput = {
   description?: string | null;
   status?: TaskStatus;
   priority?: TaskPriority;
+  labelColor?: TaskLabelColor;
   createdById: string;
   dueDate?: Date | null;
   position?: number;
@@ -46,6 +48,7 @@ export type UpdateTaskInput = {
   description?: string | null;
   status?: TaskStatus;
   priority?: TaskPriority;
+  labelColor?: TaskLabelColor;
   dueDate?: Date | null;
   position?: number;
 };
@@ -55,6 +58,7 @@ export type FindTasksInput = {
   projectId: string;
   status?: TaskStatus;
   priority?: TaskPriority;
+  labelColor?: TaskLabelColor;
   assigneeId?: string;
   search?: string;
   sort?: 'updated-desc' | 'created-desc' | 'title-asc' | 'status-asc';

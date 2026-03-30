@@ -14,7 +14,12 @@ import {
   DialogTrigger,
 } from '@web/components/ui/dialog';
 import { useUpdateTask } from '@web/lib/api/mutations/use-update-task';
-import { UpdateTaskSchema, type UpdateTaskInput } from '@repo/types';
+import {
+  UpdateTaskSchema,
+  type TaskLabelColor,
+  type TaskPriority,
+  type UpdateTaskInput,
+} from '@repo/types';
 
 type EditTaskDialogProps = {
   projectId: string;
@@ -23,6 +28,8 @@ type EditTaskDialogProps = {
     title: string;
     description: string | null;
     dueDate?: string | null;
+    priority: TaskPriority;
+    labelColor: TaskLabelColor;
   };
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -64,7 +71,8 @@ export function EditTaskDialog({
         <DialogHeader>
           <DialogTitle>Edit task</DialogTitle>
           <DialogDescription>
-            Update this task’s title, description, and due date.
+            Update this task’s title, description, priority, label color, and
+            due date.
           </DialogDescription>
         </DialogHeader>
 
@@ -79,6 +87,8 @@ export function EditTaskDialog({
               title: task.title,
               description: task.description ?? '',
               dueDate: task.dueDate ? task.dueDate.slice(0, 10) : '',
+              priority: task.priority,
+              labelColor: task.labelColor,
             } as unknown as Partial<UpdateTaskInput>
           }
           onSubmit={async (values) => {

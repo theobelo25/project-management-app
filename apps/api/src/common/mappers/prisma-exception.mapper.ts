@@ -35,6 +35,15 @@ export function mapPrismaException(
         details: exception.meta,
       };
 
+    case 'P2022':
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message:
+          'Database schema is out of date (missing column or type). Run migrations.',
+        error: 'Internal Server Error',
+        details: exception.meta,
+      };
+
     default:
       return {
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,

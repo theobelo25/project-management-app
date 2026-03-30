@@ -26,6 +26,18 @@ enum TaskPriority {
     HIGH
 }
 
+enum TaskLabelColor {
+    NONE
+    SLATE
+    RED
+    ORANGE
+    AMBER
+    GREEN
+    BLUE
+    VIOLET
+    ROSE
+}
+
 enum OrganizationRole {
     OWNER
     ADMIN
@@ -129,9 +141,10 @@ model Task {
     projectId   String       @db.Uuid
     title       String
     description String?
-    status      TaskStatus   @default(TODO)
-    priority    TaskPriority @default(MEDIUM)
-    createdById String       @db.Uuid
+    status      TaskStatus      @default(TODO)
+    priority    TaskPriority    @default(MEDIUM)
+    labelColor  TaskLabelColor  @default(NONE)
+    createdById String          @db.Uuid
     dueDate     DateTime?
     position    Int          @default(0)
     createdAt   DateTime     @default(now())
