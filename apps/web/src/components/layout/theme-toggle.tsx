@@ -21,16 +21,16 @@ export function ThemeToggle() {
     setMounted(true);
   }, []);
 
-  const triggerIcon =
-    !mounted ? (
-      <Sun className="size-4 opacity-50" aria-hidden />
-    ) : theme === 'dark' ? (
-      <Moon className="size-4" aria-hidden />
-    ) : theme === 'light' ? (
-      <Sun className="size-4" aria-hidden />
-    ) : (
-      <Monitor className="size-4" aria-hidden />
-    );
+  let triggerIcon: React.ReactNode;
+  if (!mounted) {
+    triggerIcon = <Sun className="size-4 opacity-50" aria-hidden />;
+  } else if (theme === 'dark') {
+    triggerIcon = <Moon className="size-4" aria-hidden />;
+  } else if (theme === 'light') {
+    triggerIcon = <Sun className="size-4" aria-hidden />;
+  } else {
+    triggerIcon = <Monitor className="size-4" aria-hidden />;
+  }
 
   return (
     <DropdownMenu modal={false}>

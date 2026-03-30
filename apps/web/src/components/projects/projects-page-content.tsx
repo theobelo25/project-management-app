@@ -81,7 +81,6 @@ export function ProjectsPageContent({
 
   const { data, isLoading, isError, error } = useProjectsQuery(query, {
     initialData: initialData ?? undefined,
-    initialDataUpdatedAt: initialData ? Date.now() - 30_000 : undefined,
   });
 
   const updateUrl = useCallback(

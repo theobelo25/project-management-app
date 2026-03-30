@@ -9,8 +9,10 @@ export function useArchiveProject(projectId: string) {
   return useMutation({
     mutationFn: () => archiveProject(projectId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PROJECT_QUERY_KEY(projectId) });
-      queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
+      void queryClient.invalidateQueries({
+        queryKey: PROJECT_QUERY_KEY(projectId),
+      });
+      void queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
       toast.success('Project archived successfully!');
     },
     onError: (error: Error) => {
@@ -25,8 +27,10 @@ export function useUnarchiveProject(projectId: string) {
   return useMutation({
     mutationFn: () => unarchiveProject(projectId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PROJECT_QUERY_KEY(projectId) });
-      queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
+      void queryClient.invalidateQueries({
+        queryKey: PROJECT_QUERY_KEY(projectId),
+      });
+      void queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
       toast.success('Project unarchived successfully!');
     },
     onError: (error: Error) => {

@@ -50,7 +50,6 @@ export function DashboardContent({
 }: DashboardContentProps) {
   const projectsQuery = useProjectsQuery(DASHBOARD_PROJECTS_QUERY, {
     initialData: initialProjects ?? undefined,
-    initialDataUpdatedAt: initialProjects ? Date.now() : 0,
   });
 
   const tasksQueryParams = {
@@ -80,7 +79,6 @@ export function DashboardContent({
         enabled: projectIdsForTasks.length > 0,
         staleTime: 30 * 1000,
         initialData: isFirstServerProject ? initialTasks : undefined,
-        initialDataUpdatedAt: isFirstServerProject ? Date.now() : undefined,
       };
     }),
   });

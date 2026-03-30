@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { SubmitHandler, useForm, useWatch } from 'react-hook-form';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import { UserPlus } from 'lucide-react';
 
@@ -59,7 +59,7 @@ export function InviteMemberDialog({
   const {
     handleSubmit,
     setValue,
-    watch,
+    control,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<AddMemberFormValues>({
@@ -68,8 +68,8 @@ export function InviteMemberDialog({
     mode: 'onBlur',
   });
 
-  const role = watch('role');
-  const userId = watch('userId');
+  const role = useWatch({ control, name: 'role' });
+  const userId = useWatch({ control, name: 'userId' });
 
   const onSubmit: SubmitHandler<AddMemberFormValues> = (values) => {
     addMemberMutation.mutate({
@@ -113,7 +113,9 @@ export function InviteMemberDialog({
         </DialogHeader>
 
         <form
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={(e) => {
+            void handleSubmit(onSubmit)(e);
+          }}
           noValidate
           className="space-y-6"
         >

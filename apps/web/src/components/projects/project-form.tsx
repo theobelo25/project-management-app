@@ -57,7 +57,9 @@ export function ProjectForm({
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={(e) => {
+        void handleSubmit(onSubmit)(e);
+      }}
       noValidate
       className="space-y-6"
       aria-describedby={rootError ? 'project-form-root-error' : undefined}

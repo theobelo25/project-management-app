@@ -96,7 +96,9 @@ export function CreateOrganizationDialog({
         </DialogHeader>
 
         <form
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={(e) => {
+            void handleSubmit(onSubmit)(e);
+          }}
           noValidate
           className="space-y-6"
           aria-describedby={
