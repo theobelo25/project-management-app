@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import {
   Dialog,
@@ -36,7 +36,7 @@ type OrganizationDetailDialogProps = {
   activeOrganizationId: string | null;
 };
 
-export function OrganizationDetailDialog({
+function OrganizationDetailDialogBody({
   organizationId,
   open,
   onOpenChange,
@@ -56,12 +56,6 @@ export function OrganizationDetailDialog({
 
   const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-
-  useEffect(() => {
-    setSelectedUser(null);
-    setLeaveConfirmOpen(false);
-    setDeleteConfirmOpen(false);
-  }, [organizationId]);
 
   const organization = detailQuery.data ?? null;
   const isActiveOrganization =
@@ -186,7 +180,9 @@ export function OrganizationDetailDialog({
                 isActiveOrganization={isActiveOrganization}
                 selectedUser={selectedUser}
                 onSelectedUserChange={setSelectedUser}
-                onSubmit={handleSendInvite}
+                onSubmit={(e) => {
+                  void handleSendInvite(e);
+                }}
                 isPending={inviteMutation.isPending}
               />
 
@@ -234,5 +230,14 @@ export function OrganizationDetailDialog({
         onConfirm={handleDeleteOrganization}
       />
     </>
+  );
+}
+
+export function OrganizationDetailDialog(props: OrganizationDetailDialogProps) {
+  return (
+    <OrganizationDetailDialogBody
+      key={props.organizationId ?? 'none'}
+      {...props}
+    />
   );
 }

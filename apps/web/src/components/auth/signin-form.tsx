@@ -61,7 +61,13 @@ export default function SignInForm({ isLoading = false }: SignInFormProps) {
   const submitting = isSubmitting || isLoading;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
+    <form
+      onSubmit={(e) => {
+        void handleSubmit(onSubmit)(e);
+      }}
+      noValidate
+      className="space-y-6"
+    >
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input

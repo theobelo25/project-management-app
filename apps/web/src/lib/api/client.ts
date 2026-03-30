@@ -33,6 +33,28 @@ import { getPublicApiBaseUrl } from './public-api-url';
 
 const API_BASE = getPublicApiBaseUrl();
 
+function errorMessageFromJsonBody(body: unknown): string | undefined {
+  if (typeof body !== 'object' || body === null) return undefined;
+  if (!('message' in body)) return undefined;
+  const m = (body as { message: unknown }).message;
+  return typeof m === 'string' ? m : undefined;
+}
+
+async function readJsonBody(res: Response): Promise<unknown> {
+  const text = await res.text();
+  if (!text.trim()) return {};
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return {};
+  }
+}
+
+async function parseJsonResponse<T>(res: Response): Promise<T> {
+  const text = await res.text();
+  return JSON.parse(text) as T;
+}
+
 type SessionExpiredHandler = () => void;
 let sessionExpiredHandler: SessionExpiredHandler | null = null;
 
@@ -104,11 +126,11 @@ export async function signup(dto: SignupRequestDto): Promise<UserView | null> {
   });
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to sign up');
+    const body = await readJsonBody(res);
+    throw new Error(errorMessageFromJsonBody(body) ?? 'Failed to sign up');
   }
 
-  return res.json();
+  return parseJsonResponse<UserView | null>(res);
 }
 
 export async function signin(dto: LoginRequestDto): Promise<UserView | null> {
@@ -120,11 +142,11 @@ export async function signin(dto: LoginRequestDto): Promise<UserView | null> {
   });
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to sign in');
+    const body = await readJsonBody(res);
+    throw new Error(errorMessageFromJsonBody(body) ?? 'Failed to sign in');
   }
 
-  return res.json();
+  return parseJsonResponse<UserView | null>(res);
 }
 
 export async function logout(): Promise<void> {
@@ -135,8 +157,8 @@ export async function logout(): Promise<void> {
   });
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to sign out');
+    const body = await readJsonBody(res);
+    throw new Error(errorMessageFromJsonBody(body) ?? 'Failed to sign out');
   }
 
   return;
@@ -151,7 +173,7 @@ export async function fetchMe(): Promise<UserView | null> {
   if (res.status === 401) return null;
   if (!res.ok) throw new Error('Failed to fetch user');
 
-  return res.json();
+  return parseJsonResponse<UserView>(res);
 }
 
 export async function updateMe(dto: {
@@ -167,11 +189,13 @@ export async function updateMe(dto: {
   });
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to update profile');
+    const body = await readJsonBody(res);
+    throw new Error(
+      errorMessageFromJsonBody(body) ?? 'Failed to update profile',
+    );
   }
 
-  return res.json();
+  return parseJsonResponse<UserView>(res);
 }
 
 /** Invites (for org switching) */
@@ -180,7 +204,7 @@ export async function fetchPendingInvites(): Promise<PendingInviteView[]> {
     credentials: 'include',
   });
   if (!res.ok) throw new Error('Failed to fetch invites');
-  return res.json();
+  return parseJsonResponse<PendingInviteView[]>(res);
 }
 
 export async function acceptInviteById(inviteId: string): Promise<void> {
@@ -189,8 +213,10 @@ export async function acceptInviteById(inviteId: string): Promise<void> {
     { method: 'POST', credentials: 'include' },
   );
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to accept invite');
+    const body = await readJsonBody(res);
+    throw new Error(
+      errorMessageFromJsonBody(body) ?? 'Failed to accept invite',
+    );
   }
 }
 
@@ -200,8 +226,10 @@ export async function declineInviteById(inviteId: string): Promise<void> {
     { method: 'POST', credentials: 'include' },
   );
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to decline invite');
+    const body = await readJsonBody(res);
+    throw new Error(
+      errorMessageFromJsonBody(body) ?? 'Failed to decline invite',
+    );
   }
 }
 
@@ -211,7 +239,7 @@ export async function fetchNotifications(): Promise<NotificationView[]> {
     credentials: 'include',
   });
   if (!res.ok) throw new Error('Failed to fetch notifications');
-  return res.json();
+  return parseJsonResponse<NotificationView[]>(res);
 }
 
 export async function clearNotification(notificationId: string): Promise<void> {
@@ -220,8 +248,10 @@ export async function clearNotification(notificationId: string): Promise<void> {
     { method: 'POST', credentials: 'include' },
   );
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to clear notification');
+    const body = await readJsonBody(res);
+    throw new Error(
+      errorMessageFromJsonBody(body) ?? 'Failed to clear notification',
+    );
   }
   return;
 }
@@ -243,7 +273,7 @@ export async function fetchProjects(
     { credentials: 'include' },
   );
   if (!res.ok) throw new Error('Failed to fetch projects');
-  return res.json();
+  return parseJsonResponse<PaginatedProjectsListView>(res);
 }
 
 export async function createProject(
@@ -256,10 +286,12 @@ export async function createProject(
     credentials: 'include',
   });
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to create project');
+    const body = await readJsonBody(res);
+    throw new Error(
+      errorMessageFromJsonBody(body) ?? 'Failed to create project',
+    );
   }
-  return res.json();
+  return parseJsonResponse<ProjectView>(res);
 }
 
 export async function fetchProject(id: string): Promise<ProjectDetailView> {
@@ -270,7 +302,7 @@ export async function fetchProject(id: string): Promise<ProjectDetailView> {
     if (res.status === 404) throw new Error('Project not found');
     throw new Error('Failed to fetch project');
   }
-  return res.json();
+  return parseJsonResponse<ProjectDetailView>(res);
 }
 
 export async function createTask(
@@ -284,10 +316,10 @@ export async function createTask(
     credentials: 'include',
   });
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to create task');
+    const body = await readJsonBody(res);
+    throw new Error(errorMessageFromJsonBody(body) ?? 'Failed to create task');
   }
-  return res.json();
+  return parseJsonResponse<TaskView>(res);
 }
 
 export async function fetchTasks(
@@ -309,7 +341,7 @@ export async function fetchTasks(
   );
 
   if (!res.ok) throw new Error('Failed to fetch tasks');
-  return res.json();
+  return parseJsonResponse<PaginationResult<TaskView>>(res);
 }
 
 export async function fetchTask(taskId: string): Promise<TaskView> {
@@ -320,7 +352,7 @@ export async function fetchTask(taskId: string): Promise<TaskView> {
     if (res.status === 404) throw new Error('Task not found');
     throw new Error('Failed to fetch task.');
   }
-  return res.json();
+  return parseJsonResponse<TaskView>(res);
 }
 
 export async function updateProject(
@@ -334,10 +366,12 @@ export async function updateProject(
     credentials: 'include',
   });
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to update project');
+    const body = await readJsonBody(res);
+    throw new Error(
+      errorMessageFromJsonBody(body) ?? 'Failed to update project',
+    );
   }
-  return res.json();
+  return parseJsonResponse<ProjectView>(res);
 }
 
 export async function archiveProject(id: string): Promise<ProjectView> {
@@ -346,10 +380,12 @@ export async function archiveProject(id: string): Promise<ProjectView> {
     credentials: 'include',
   });
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to archive project');
+    const body = await readJsonBody(res);
+    throw new Error(
+      errorMessageFromJsonBody(body) ?? 'Failed to archive project',
+    );
   }
-  return res.json();
+  return parseJsonResponse<ProjectView>(res);
 }
 
 export async function unarchiveProject(id: string): Promise<ProjectView> {
@@ -358,10 +394,12 @@ export async function unarchiveProject(id: string): Promise<ProjectView> {
     credentials: 'include',
   });
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to unarchive project');
+    const body = await readJsonBody(res);
+    throw new Error(
+      errorMessageFromJsonBody(body) ?? 'Failed to unarchive project',
+    );
   }
-  return res.json();
+  return parseJsonResponse<ProjectView>(res);
 }
 
 export async function fetchProjectMembers(
@@ -372,7 +410,7 @@ export async function fetchProjectMembers(
     { credentials: 'include' },
   );
   if (!res.ok) throw new Error('Failed to fetch project members');
-  return res.json();
+  return parseJsonResponse<ProjectMembersView>(res);
 }
 
 export async function addProjectMember(
@@ -389,10 +427,10 @@ export async function addProjectMember(
     },
   );
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to add member');
+    const body = await readJsonBody(res);
+    throw new Error(errorMessageFromJsonBody(body) ?? 'Failed to add member');
   }
-  return res.json();
+  return parseJsonResponse<ProjectMemberView>(res);
 }
 
 export async function updateProjectMemberRole(
@@ -410,10 +448,10 @@ export async function updateProjectMemberRole(
     },
   );
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to update role');
+    const body = await readJsonBody(res);
+    throw new Error(errorMessageFromJsonBody(body) ?? 'Failed to update role');
   }
-  return res.json();
+  return parseJsonResponse<ProjectMemberView>(res);
 }
 
 export async function removeProjectMember(
@@ -425,8 +463,10 @@ export async function removeProjectMember(
     { method: 'DELETE', credentials: 'include' },
   );
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to remove member');
+    const body = await readJsonBody(res);
+    throw new Error(
+      errorMessageFromJsonBody(body) ?? 'Failed to remove member',
+    );
   }
 }
 
@@ -436,7 +476,7 @@ export async function fetchUsers(search?: string): Promise<UserView[]> {
     : `${API_BASE}/api/users`;
   const res = await fetchWithAuth(url, { credentials: 'include' });
   if (!res.ok) throw new Error('Failed to fetch users');
-  return res.json();
+  return parseJsonResponse<UserView[]>(res);
 }
 
 export async function deleteTask(taskId: string): Promise<void> {
@@ -445,8 +485,8 @@ export async function deleteTask(taskId: string): Promise<void> {
     credentials: 'include',
   });
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to delete task');
+    const body = await readJsonBody(res);
+    throw new Error(errorMessageFromJsonBody(body) ?? 'Failed to delete task');
   }
 }
 
@@ -465,11 +505,11 @@ export async function updateTask(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => null);
-    throw new Error(error?.message ?? 'Failed to update task');
+    const body = await readJsonBody(response);
+    throw new Error(errorMessageFromJsonBody(body) ?? 'Failed to update task');
   }
 
-  return response.json();
+  return parseJsonResponse<TaskView>(response);
 }
 
 export async function deleteProject(projectId: string): Promise<void> {
@@ -478,8 +518,10 @@ export async function deleteProject(projectId: string): Promise<void> {
     credentials: 'include',
   });
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to delete project');
+    const body = await readJsonBody(res);
+    throw new Error(
+      errorMessageFromJsonBody(body) ?? 'Failed to delete project',
+    );
   }
 }
 
@@ -495,10 +537,12 @@ export async function assignTaskUser(
     },
   );
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to assign user to task');
+    const body = await readJsonBody(res);
+    throw new Error(
+      errorMessageFromJsonBody(body) ?? 'Failed to assign user to task',
+    );
   }
-  return res.json();
+  return parseJsonResponse<TaskAssignmentView>(res);
 }
 
 export async function unassignTaskUser(
@@ -513,8 +557,10 @@ export async function unassignTaskUser(
     },
   );
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to unassign user from task');
+    const body = await readJsonBody(res);
+    throw new Error(
+      errorMessageFromJsonBody(body) ?? 'Failed to unassign user from task',
+    );
   }
 }
 
@@ -523,7 +569,7 @@ export async function fetchOrganizations(): Promise<OrganizationView[]> {
     credentials: 'include',
   });
   if (!res.ok) throw new Error('Failed to fetch organizations');
-  return res.json();
+  return parseJsonResponse<OrganizationView[]>(res);
 }
 
 export async function createOrganization(
@@ -536,8 +582,10 @@ export async function createOrganization(
     credentials: 'include',
   });
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to create organization');
+    const body = await readJsonBody(res);
+    throw new Error(
+      errorMessageFromJsonBody(body) ?? 'Failed to create organization',
+    );
   }
 }
 
@@ -552,8 +600,10 @@ export async function switchOrganization(
     },
   );
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to switch organization');
+    const body = await readJsonBody(res);
+    throw new Error(
+      errorMessageFromJsonBody(body) ?? 'Failed to switch organization',
+    );
   }
 }
 
@@ -570,7 +620,7 @@ export async function fetchOrganization(
     if (res.status === 404) throw new Error('Organization not found');
     throw new Error('Failed to fetch organization');
   }
-  return res.json();
+  return parseJsonResponse<OrganizationDetailView>(res);
 }
 export async function createOrganizationInvite(
   dto: CreateOrganizationInviteDto,
@@ -582,10 +632,12 @@ export async function createOrganizationInvite(
     credentials: 'include',
   });
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to create invite');
+    const body = await readJsonBody(res);
+    throw new Error(
+      errorMessageFromJsonBody(body) ?? 'Failed to create invite',
+    );
   }
-  return res.json();
+  return parseJsonResponse<OrganizationInviteView>(res);
 }
 export async function leaveOrganization(organizationId: string): Promise<void> {
   const res = await fetchWithAuth(
@@ -596,8 +648,10 @@ export async function leaveOrganization(organizationId: string): Promise<void> {
     },
   );
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to leave organization');
+    const body = await readJsonBody(res);
+    throw new Error(
+      errorMessageFromJsonBody(body) ?? 'Failed to leave organization',
+    );
   }
 }
 export async function deleteOrganization(
@@ -611,8 +665,10 @@ export async function deleteOrganization(
     },
   );
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to delete organization');
+    const body = await readJsonBody(res);
+    throw new Error(
+      errorMessageFromJsonBody(body) ?? 'Failed to delete organization',
+    );
   }
 }
 
@@ -622,7 +678,7 @@ export async function fetchAllUsers(search?: string): Promise<UserView[]> {
     : `${API_BASE}/api/users/search`;
   const res = await fetchWithAuth(url, { credentials: 'include' });
   if (!res.ok) throw new Error('Failed to fetch users');
-  return res.json();
+  return parseJsonResponse<UserView[]>(res);
 }
 export async function addOrganizationMember(
   organizationId: string,
@@ -638,8 +694,8 @@ export async function addOrganizationMember(
     },
   );
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Failed to add member');
+    const body = await readJsonBody(res);
+    throw new Error(errorMessageFromJsonBody(body) ?? 'Failed to add member');
   }
-  return res.json();
+  return parseJsonResponse<OrganizationMemberView>(res);
 }

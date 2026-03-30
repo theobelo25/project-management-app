@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import type { UseMutationResult } from '@tanstack/react-query';
 import { Copy, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -35,15 +35,15 @@ export function DeleteProjectDialog({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const isConfirmed = confirmValue.trim() === projectName.trim();
 
-  useEffect(() => {
-    if (!deleteDialogOpen) {
+  function handleOpenChange(open: boolean) {
+    setDeleteDialogOpen(open);
+    if (!open) {
       setConfirmValue('');
-      return;
     }
-  }, [deleteDialogOpen]);
+  }
 
   return (
-    <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+    <Dialog open={deleteDialogOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button
           type="button"
@@ -95,7 +95,7 @@ export function DeleteProjectDialog({
           <Button
             type="button"
             variant="outline"
-            onClick={() => setDeleteDialogOpen(false)}
+            onClick={() => handleOpenChange(false)}
             disabled={deleteMutation.isPending}
           >
             Cancel

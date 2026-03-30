@@ -14,6 +14,11 @@ import { getPublicApiBaseUrl } from './public-api-url';
 
 const API_BASE = getPublicApiBaseUrl();
 
+async function parseJsonResponse<T>(res: Response): Promise<T> {
+  const data: unknown = await res.json();
+  return data as T;
+}
+
 async function getCookieHeader(): Promise<string> {
   const cookieStore = await cookies();
   const auth = cookieStore.get(COOKIE.AUTHENTICATION);
@@ -44,7 +49,7 @@ export async function fetchProjectsServer(
 
   if (!res.ok) throw new Error('Failed to fetch projects');
 
-  return res.json();
+  return parseJsonResponse<PaginatedProjectsListView>(res);
 }
 
 export async function fetchProjectServer(
@@ -58,7 +63,7 @@ export async function fetchProjectServer(
     if (res.status === 404) throw new Error('Project not found');
     throw new Error('Failed to fetch project');
   }
-  return res.json();
+  return parseJsonResponse<ProjectDetailView>(res);
 }
 
 export async function fetchTasksServer(
@@ -82,7 +87,7 @@ export async function fetchTasksServer(
 
   if (!res.ok) throw new Error('Failed to fetch tasks');
 
-  return res.json();
+  return parseJsonResponse<PaginationResult<TaskView>>(res);
 }
 
 export async function fetchProjectMembersServer(
@@ -96,7 +101,7 @@ export async function fetchProjectMembersServer(
     if (res.status === 404) throw new Error('Project not found');
     throw new Error('Failed to fetch project members');
   }
-  return res.json();
+  return parseJsonResponse<ProjectMembersView>(res);
 }
 
 export async function fetchTaskServer(taskId: string): Promise<TaskView> {
@@ -108,5 +113,5 @@ export async function fetchTaskServer(taskId: string): Promise<TaskView> {
     if (res.status === 404) throw new Error('Task not found');
     throw new Error('Failed to fetch task');
   }
-  return res.json();
+  return parseJsonResponse<TaskView>(res);
 }

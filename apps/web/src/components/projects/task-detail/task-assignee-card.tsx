@@ -81,22 +81,23 @@ export function TaskAssigneeCard({
               key={selectKey}
               disabled={isBusy}
               value={undefined}
-              onValueChange={async (userId) => {
+              onValueChange={(userId) => {
                 // Immediately reset the Select back to placeholder
                 setSelectKey((k) => k + 1);
                 if (!userId || userId === assigneeUserId) return;
-                // Replace behavior: remove old assignee then add new
-                try {
-                  if (assigneeUserId) {
-                    await unassignMutation.mutateAsync({
-                      taskId,
-                      userId: assigneeUserId,
-                    });
+                void (async () => {
+                  try {
+                    if (assigneeUserId) {
+                      await unassignMutation.mutateAsync({
+                        taskId,
+                        userId: assigneeUserId,
+                      });
+                    }
+                    await assignMutation.mutateAsync({ taskId, userId });
+                  } catch {
+                    // mutations already toast errors; nothing else needed here
                   }
-                  await assignMutation.mutateAsync({ taskId, userId });
-                } catch {
-                  // mutations already toast errors; nothing else needed here
-                }
+                })();
               }}
             >
               <SelectTrigger>

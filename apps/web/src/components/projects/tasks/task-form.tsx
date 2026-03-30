@@ -1,7 +1,13 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Controller, useForm, type FieldValues } from 'react-hook-form';
+import {
+  Controller,
+  useForm,
+  type FieldError,
+  type FieldErrors,
+  type FieldValues,
+} from 'react-hook-form';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 
 import { Button } from '@web/components/ui/button';
@@ -21,6 +27,15 @@ import {
   TASK_LABEL_COLOR_OPTIONS,
   TASK_LABEL_COLOR_SWATCH_CLASS,
 } from './task-label-color-styles';
+
+function fieldError<TValues extends FieldValues>(
+  errors: FieldErrors<TValues>,
+  key: string,
+): FieldError | undefined {
+  const e = errors[key as keyof FieldErrors<TValues>];
+  if (e == null || typeof e !== 'object') return undefined;
+  return e as FieldError;
+}
 
 type TaskFormProps<TValues extends FieldValues> = {
   projectId: string;
@@ -67,7 +82,9 @@ export function TaskForm<TValues extends FieldValues>({
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={(e) => {
+        void handleSubmit(onSubmit)(e);
+      }}
       noValidate
       className="space-y-6"
       aria-describedby={errorMessage ? 'task-form-server-error' : undefined}
@@ -78,21 +95,21 @@ export function TaskForm<TValues extends FieldValues>({
           id="title"
           type="text"
           placeholder="Finish project toolbar"
-          aria-invalid={!!(errors as any).title}
+          aria-invalid={!!fieldError(errors, 'title')}
           aria-describedby={
-            (errors as any).title ? 'task-title-error' : undefined
+            fieldError(errors, 'title') ? 'task-title-error' : undefined
           }
           {...register('title' as never)}
         />
-        {(errors as any).title && (
+        {fieldError(errors, 'title') ? (
           <p
             id="task-title-error"
             role="alert"
             className="text-sm text-destructive"
           >
-            {(errors as any).title.message}
+            {fieldError(errors, 'title')?.message}
           </p>
-        )}
+        ) : null}
       </div>
 
       <div className="space-y-2">
@@ -101,21 +118,23 @@ export function TaskForm<TValues extends FieldValues>({
           id="description"
           placeholder="Add search, filter, and sort controls to the projects page"
           rows={4}
-          aria-invalid={!!(errors as any).description}
+          aria-invalid={!!fieldError(errors, 'description')}
           aria-describedby={
-            (errors as any).description ? 'task-description-error' : undefined
+            fieldError(errors, 'description')
+              ? 'task-description-error'
+              : undefined
           }
           {...register('description' as never)}
         />
-        {(errors as any).description && (
+        {fieldError(errors, 'description') ? (
           <p
             id="task-description-error"
             role="alert"
             className="text-sm text-destructive"
           >
-            {(errors as any).description.message}
+            {fieldError(errors, 'description')?.message}
           </p>
-        )}
+        ) : null}
       </div>
 
       <div className="space-y-2">
@@ -131,9 +150,11 @@ export function TaskForm<TValues extends FieldValues>({
               <SelectTrigger
                 id="task-priority"
                 className="w-full"
-                aria-invalid={!!(errors as any).priority}
+                aria-invalid={!!fieldError(errors, 'priority')}
                 aria-describedby={
-                  (errors as any).priority ? 'task-priority-error' : undefined
+                  fieldError(errors, 'priority')
+                    ? 'task-priority-error'
+                    : undefined
                 }
               >
                 <SelectValue placeholder="Priority" />
@@ -146,15 +167,15 @@ export function TaskForm<TValues extends FieldValues>({
             </Select>
           )}
         />
-        {(errors as any).priority && (
+        {fieldError(errors, 'priority') ? (
           <p
             id="task-priority-error"
             role="alert"
             className="text-sm text-destructive"
           >
-            {(errors as any).priority.message}
+            {fieldError(errors, 'priority')?.message}
           </p>
-        )}
+        ) : null}
       </div>
 
       <div className="space-y-2">
@@ -200,15 +221,15 @@ export function TaskForm<TValues extends FieldValues>({
             </div>
           )}
         />
-        {(errors as any).labelColor && (
+        {fieldError(errors, 'labelColor') ? (
           <p
             id="task-label-color-error"
             role="alert"
             className="text-sm text-destructive"
           >
-            {(errors as any).labelColor.message}
+            {fieldError(errors, 'labelColor')?.message}
           </p>
-        )}
+        ) : null}
       </div>
 
       <div className="space-y-2">
@@ -216,21 +237,21 @@ export function TaskForm<TValues extends FieldValues>({
         <Input
           id="dueDate"
           type="date"
-          aria-invalid={!!(errors as any).dueDate}
+          aria-invalid={!!fieldError(errors, 'dueDate')}
           aria-describedby={
-            (errors as any).dueDate ? 'task-due-date-error' : undefined
+            fieldError(errors, 'dueDate') ? 'task-due-date-error' : undefined
           }
           {...register('dueDate' as never)}
         />
-        {(errors as any).dueDate && (
+        {fieldError(errors, 'dueDate') ? (
           <p
             id="task-due-date-error"
             role="alert"
             className="text-sm text-destructive"
           >
-            {(errors as any).dueDate.message}
+            {fieldError(errors, 'dueDate')?.message}
           </p>
-        )}
+        ) : null}
       </div>
 
       {errorMessage ? (

@@ -75,7 +75,9 @@ export default function OrganizationsPage() {
           organizations={filteredOrganizations}
           activeOrganizationId={activeOrganizationId}
           switchingToOrganizationId={switchingToOrganizationId}
-          onSwitch={handleSwitch}
+          onSwitch={(organizationId) => {
+            void handleSwitch(organizationId);
+          }}
           onOpenOrganization={setSelectedOrgId}
         />
       </div>

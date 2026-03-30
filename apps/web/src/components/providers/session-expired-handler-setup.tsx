@@ -17,7 +17,7 @@ export function SessionExpiredHandlerSetup() {
       queryClient.setQueryData(ME_QUERY_KEY, null);
       router.push(ROUTES.signin);
     });
-  }, [router]);
+  }, [router, queryClient]);
 
   return null;
 }

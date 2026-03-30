@@ -194,9 +194,7 @@ function OrganizationSwitcher({
 
   if (organizationsQuery.isLoading && !organizationsQuery.data) {
     return (
-      <div
-        className={cn('h-9 animate-pulse rounded-md bg-muted', className)}
-      />
+      <div className={cn('h-9 animate-pulse rounded-md bg-muted', className)} />
     );
   }
 
@@ -240,26 +238,28 @@ function OrganizationSwitcher({
           isSwitching
         }
         value={user.orgId}
-        onChange={async (event) => {
+        onChange={(event) => {
           const nextOrganizationId = event.target.value;
           if (nextOrganizationId === user.orgId) return;
 
           setIsSwitching(true);
 
-          try {
-            await switchOrganizationMutation.mutateAsync(nextOrganizationId);
-            toast.success('Organization switched');
-            router.replace(ROUTES.dashboard);
-            onSwitched?.();
-          } catch (error) {
-            toast.error(
-              error instanceof Error
-                ? error.message
-                : 'Failed to switch organization',
-            );
-          } finally {
-            setIsSwitching(false);
-          }
+          void (async () => {
+            try {
+              await switchOrganizationMutation.mutateAsync(nextOrganizationId);
+              toast.success('Organization switched');
+              router.replace(ROUTES.dashboard);
+              onSwitched?.();
+            } catch (error) {
+              toast.error(
+                error instanceof Error
+                  ? error.message
+                  : 'Failed to switch organization',
+              );
+            } finally {
+              setIsSwitching(false);
+            }
+          })();
         }}
       >
         {organizations.map((organization) => (
@@ -358,18 +358,20 @@ function NotificationsPopover({ enabled }: { enabled: boolean }) {
                         variant="outline"
                         disabled={busy}
                         aria-label="Accept invite"
-                        onClick={async () => {
-                          try {
-                            await acceptMutation.mutateAsync(invite.id);
-                            toast.success('Invite accepted');
-                            setOpen(false);
-                          } catch (e) {
-                            toast.error(
-                              e instanceof Error
-                                ? e.message
-                                : 'Failed to accept invite',
-                            );
-                          }
+                        onClick={() => {
+                          void (async () => {
+                            try {
+                              await acceptMutation.mutateAsync(invite.id);
+                              toast.success('Invite accepted');
+                              setOpen(false);
+                            } catch (e) {
+                              toast.error(
+                                e instanceof Error
+                                  ? e.message
+                                  : 'Failed to accept invite',
+                              );
+                            }
+                          })();
                         }}
                       >
                         <Check className="size-4" />
@@ -381,17 +383,19 @@ function NotificationsPopover({ enabled }: { enabled: boolean }) {
                         variant="outline"
                         disabled={busy}
                         aria-label="Decline invite"
-                        onClick={async () => {
-                          try {
-                            await declineMutation.mutateAsync(invite.id);
-                            toast.success('Invite declined');
-                          } catch (e) {
-                            toast.error(
-                              e instanceof Error
-                                ? e.message
-                                : 'Failed to decline invite',
-                            );
-                          }
+                        onClick={() => {
+                          void (async () => {
+                            try {
+                              await declineMutation.mutateAsync(invite.id);
+                              toast.success('Invite declined');
+                            } catch (e) {
+                              toast.error(
+                                e instanceof Error
+                                  ? e.message
+                                  : 'Failed to decline invite',
+                              );
+                            }
+                          })();
                         }}
                       >
                         <X className="size-4" />
@@ -441,17 +445,19 @@ function NotificationsPopover({ enabled }: { enabled: boolean }) {
                       variant="outline"
                       disabled={busy}
                       aria-label="Clear notification"
-                      onClick={async () => {
-                        try {
-                          await clearMutation.mutateAsync(n.id);
-                          toast.success('Notification cleared');
-                        } catch (e) {
-                          toast.error(
-                            e instanceof Error
-                              ? e.message
-                              : 'Failed to clear notification',
-                          );
-                        }
+                      onClick={() => {
+                        void (async () => {
+                          try {
+                            await clearMutation.mutateAsync(n.id);
+                            toast.success('Notification cleared');
+                          } catch (e) {
+                            toast.error(
+                              e instanceof Error
+                                ? e.message
+                                : 'Failed to clear notification',
+                            );
+                          }
+                        })();
                       }}
                     >
                       <X className="size-4" />
@@ -477,7 +483,7 @@ export function SecondaryNav({
   const isAuthenticated = !!user;
 
   const handleLogoutClick = () => {
-    logout();
+    void logout();
     queryClient.setQueryData(ME_QUERY_KEY, null);
     toast.success('Logged out successfully');
     router.push('/');

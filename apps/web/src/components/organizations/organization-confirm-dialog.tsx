@@ -49,13 +49,15 @@ export function OrganizationConfirmDialog({
           </Button>
           <Button
             variant={variant === 'destructive' ? 'destructive' : 'default'}
-            onClick={async () => {
-              try {
-                await onConfirm();
-                onOpenChange(false);
-              } catch {
-                // Caller handles the error state and toast.
-              }
+            onClick={() => {
+              void (async () => {
+                try {
+                  await onConfirm();
+                  onOpenChange(false);
+                } catch {
+                  // Caller handles the error state and toast.
+                }
+              })();
             }}
             disabled={isPending}
           >
