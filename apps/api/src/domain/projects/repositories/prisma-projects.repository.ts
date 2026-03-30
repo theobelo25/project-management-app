@@ -152,10 +152,7 @@ export class PrismaProjectsRepository
       where: {
         id: projectId,
         organizationId: orgId,
-        OR: [
-          { ownerId: userId },
-          { members: { some: { userId } } },
-        ],
+        OR: [{ ownerId: userId }, { members: { some: { userId } } }],
       },
       include: {
         members: {
@@ -183,10 +180,7 @@ export class PrismaProjectsRepository
       where: {
         id: projectId,
         organizationId: orgId,
-        OR: [
-          { ownerId: userId },
-          { members: { some: { userId } } },
-        ],
+        OR: [{ ownerId: userId }, { members: { some: { userId } } }],
       },
       select: {
         id: true,
