@@ -18,10 +18,12 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@web/lib/routes';
+import { cn } from '@web/lib/utils';
 import { toast } from 'sonner';
-import { Bell, Check, LogOut, X } from 'lucide-react';
+import { Bell, Check, LogOut, Plus, X } from 'lucide-react';
 import * as React from 'react';
 import { CreateOrganizationDialog } from '@web/components/organizations/create-organization-dialog';
+import { ThemeToggle } from './theme-toggle';
 import { Separator } from '@web/components/ui/separator';
 import type { UserView } from '@repo/types';
 
@@ -52,15 +54,39 @@ function UserAccountMenu({
 }) {
   const [open, setOpen] = React.useState(false);
   const initials = userDisplayInitials(user.name);
+  const closeAccountPopover =
+    variant === 'bar' ? () => setOpen(false) : undefined;
 
   const infoBlock = (
     <>
       <p className="truncate text-sm font-medium leading-tight">{user.name}</p>
       <p className="truncate text-xs text-muted-foreground">{user.email}</p>
-      <p className="mt-1 truncate text-xs text-muted-foreground">
-        {user.organizationName}
-      </p>
     </>
+  );
+
+  const organizationSection = (
+    <div className="space-y-2">
+      <p className="text-xs font-medium text-muted-foreground">Organization</p>
+      <OrganizationSwitcher
+        enabled
+        user={user}
+        onSwitched={closeAccountPopover}
+        className="w-full"
+      />
+      <CreateOrganizationDialog
+        trigger={
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-9 w-full justify-start gap-2 px-2"
+            onClick={closeAccountPopover}
+          >
+            <Plus className="size-4 shrink-0" aria-hidden />
+            New organization
+          </Button>
+        }
+      />
+    </div>
   );
 
   const logoutControl = (
@@ -90,6 +116,8 @@ function UserAccountMenu({
           </div>
           <div className="min-w-0 flex-1">{infoBlock}</div>
         </div>
+        {organizationSection}
+        <Separator />
         <Button asChild variant="ghost" className="h-9 w-full justify-start">
           <Link href={ROUTES.profile}>Profile</Link>
         </Button>
@@ -124,6 +152,8 @@ function UserAccountMenu({
           <div className="min-w-0 flex-1 space-y-1">{infoBlock}</div>
         </div>
         <Separator className="my-3" />
+        {organizationSection}
+        <Separator className="my-3" />
         <Button asChild variant="ghost" className="h-9 w-full justify-start">
           <Link
             href={ROUTES.profile}
@@ -147,9 +177,13 @@ interface SecondaryNavProps {
 function OrganizationSwitcher({
   enabled,
   user,
+  onSwitched,
+  className,
 }: {
   enabled: boolean;
   user: { orgId: string; organizationName: string };
+  onSwitched?: () => void;
+  className?: string;
 }) {
   const organizationsQuery = useOrganizationsQuery(enabled);
   const switchOrganizationMutation = useSwitchOrganizationMutation();
@@ -159,14 +193,23 @@ function OrganizationSwitcher({
   if (!enabled) return null;
 
   if (organizationsQuery.isLoading && !organizationsQuery.data) {
-    return <div className="h-9 w-56 animate-pulse rounded-md bg-muted" />;
+    return (
+      <div
+        className={cn('h-9 animate-pulse rounded-md bg-muted', className)}
+      />
+    );
   }
 
   const organizations = organizationsQuery.data ?? [];
 
   if (organizations.length === 0) {
     return (
-      <div className="max-w-[240px] truncate text-sm font-medium text-muted-foreground">
+      <div
+        className={cn(
+          'truncate text-sm font-medium text-muted-foreground',
+          className,
+        )}
+      >
         {user.organizationName}
       </div>
     );
@@ -187,7 +230,10 @@ function OrganizationSwitcher({
 
       <select
         aria-label="Switch organization"
-        className="h-9 max-w-[240px] rounded-md border border-border bg-background px-2 py-1 text-sm"
+        className={cn(
+          'h-9 rounded-md border border-border bg-background px-2 py-1 text-sm',
+          className,
+        )}
         disabled={
           organizationsQuery.isFetching ||
           switchOrganizationMutation.isPending ||
@@ -204,6 +250,7 @@ function OrganizationSwitcher({
             await switchOrganizationMutation.mutateAsync(nextOrganizationId);
             toast.success('Organization switched');
             router.replace(ROUTES.dashboard);
+            onSwitched?.();
           } catch (error) {
             toast.error(
               error instanceof Error
@@ -440,11 +487,13 @@ export function SecondaryNav({
     return (
       <>
         {isPending ? (
-          <div className="h-10 animate-pulse rounded-lg bg-muted" />
+          <div className="flex flex-col gap-3 border-t border-border pt-4">
+            <ThemeToggle />
+            <div className="h-10 animate-pulse rounded-lg bg-muted" />
+          </div>
         ) : isAuthenticated ? (
-          <div className="flex flex-col gap-3">
-            <OrganizationSwitcher enabled={isAuthenticated} user={user} />
-            <CreateOrganizationDialog />
+          <div className="flex flex-col gap-3 border-t border-border pt-4">
+            <ThemeToggle />
             <UserAccountMenu
               user={user}
               variant="drawer"
@@ -453,6 +502,7 @@ export function SecondaryNav({
           </div>
         ) : (
           <div className="flex flex-col gap-2 border-t border-border pt-4">
+            <ThemeToggle />
             {authItems.map(({ href, label, primary }) => (
               <Link
                 key={href}
@@ -474,15 +524,12 @@ export function SecondaryNav({
 
   return (
     <nav className="flex items-center gap-3" aria-label="Account">
+      <ThemeToggle />
       {isPending ? (
         <div className="h-8 w-24 animate-pulse rounded bg-muted" />
       ) : isAuthenticated ? (
         <>
           <NotificationsPopover enabled={isAuthenticated} />
-          <div className="flex items-center gap-2">
-            <OrganizationSwitcher enabled={isAuthenticated} user={user} />
-            <CreateOrganizationDialog />
-          </div>
           <UserAccountMenu
             user={user}
             variant="bar"
