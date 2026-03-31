@@ -54,7 +54,8 @@ export function toUserView(user: UserLike): UserView {
       ? 'default'
       : user.colorScheme === 'PASTEL_WARM' || user.colorScheme === 'pastel-warm'
         ? 'pastel-warm'
-        : user.colorScheme === 'PASTEL_COOL' || user.colorScheme === 'pastel-cool'
+        : user.colorScheme === 'PASTEL_COOL' ||
+            user.colorScheme === 'pastel-cool'
           ? 'pastel-cool'
           : undefined;
 
