@@ -127,18 +127,26 @@ export class ProjectMembersService {
       'Project member added',
     );
 
-    this.realtimePublisher.toOrg(actor.orgId, REALTIME_EVENT.projectMemberAdded, {
-      projectId,
-      userId: dto.userId,
-      actorUserId: actor.id,
-      role: dto.role,
-    });
-    this.realtimePublisher.toUser(dto.userId, REALTIME_EVENT.projectMemberAdded, {
-      projectId,
-      userId: dto.userId,
-      actorUserId: actor.id,
-      role: dto.role,
-    });
+    this.realtimePublisher.toOrg(
+      actor.orgId,
+      REALTIME_EVENT.projectMemberAdded,
+      {
+        projectId,
+        userId: dto.userId,
+        actorUserId: actor.id,
+        role: dto.role,
+      },
+    );
+    this.realtimePublisher.toUser(
+      dto.userId,
+      REALTIME_EVENT.projectMemberAdded,
+      {
+        projectId,
+        userId: dto.userId,
+        actorUserId: actor.id,
+        role: dto.role,
+      },
+    );
 
     try {
       await this.notificationsService.notifyProjectMemberAdded(dto.userId, {

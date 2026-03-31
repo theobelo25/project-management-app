@@ -205,13 +205,17 @@ export class OrganizationInvitesService {
       });
 
       if (existingUser) {
-        this.realtimePublisher.toUser(existingUser.id, REALTIME_EVENT.inviteCreated, {
-          inviteId: invite.id,
-          organizationId: actor.orgId,
-          email: normalizedEmail,
-          createdById: actor.id,
-          expiresAt: invite.expiresAt.toISOString(),
-        });
+        this.realtimePublisher.toUser(
+          existingUser.id,
+          REALTIME_EVENT.inviteCreated,
+          {
+            inviteId: invite.id,
+            organizationId: actor.orgId,
+            email: normalizedEmail,
+            createdById: actor.id,
+            expiresAt: invite.expiresAt.toISOString(),
+          },
+        );
       }
 
       return {
@@ -418,11 +422,15 @@ export class OrganizationInvitesService {
         'Organization invite declined',
       );
 
-      this.realtimePublisher.toOrg(invite.organizationId, REALTIME_EVENT.inviteDeclined, {
-        inviteId,
-        organizationId: invite.organizationId,
-        userId,
-      });
+      this.realtimePublisher.toOrg(
+        invite.organizationId,
+        REALTIME_EVENT.inviteDeclined,
+        {
+          inviteId,
+          organizationId: invite.organizationId,
+          userId,
+        },
+      );
       this.realtimePublisher.toUser(userId, REALTIME_EVENT.inviteDeclined, {
         inviteId,
         organizationId: invite.organizationId,
@@ -485,11 +493,15 @@ export class OrganizationInvitesService {
       'Organization invite accepted',
     );
 
-    this.realtimePublisher.toOrg(invite.organizationId, REALTIME_EVENT.inviteAccepted, {
-      inviteId,
-      organizationId: invite.organizationId,
-      userId,
-    });
+    this.realtimePublisher.toOrg(
+      invite.organizationId,
+      REALTIME_EVENT.inviteAccepted,
+      {
+        inviteId,
+        organizationId: invite.organizationId,
+        userId,
+      },
+    );
     this.realtimePublisher.toUser(userId, REALTIME_EVENT.inviteAccepted, {
       inviteId,
       organizationId: invite.organizationId,

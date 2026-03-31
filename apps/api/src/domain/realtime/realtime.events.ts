@@ -26,11 +26,13 @@ export const REALTIME_EVENT = {
 export const realtimeRoom = {
   user: (userId: string) => `${REALTIME_ROOM_PREFIX.user}:${userId}`,
   org: (orgId: string) => `${REALTIME_ROOM_PREFIX.org}:${orgId}`,
-  project: (projectId: string) => `${REALTIME_ROOM_PREFIX.project}:${projectId}`,
+  project: (projectId: string) =>
+    `${REALTIME_ROOM_PREFIX.project}:${projectId}`,
   task: (taskId: string) => `${REALTIME_ROOM_PREFIX.task}:${taskId}`,
 };
 
-export type RealtimeEnvelope<TPayload extends object = Record<string, unknown>> =
-  TPayload & {
-    emittedAt: string;
-  };
+export type RealtimeEnvelope<
+  TPayload extends object = Record<string, unknown>,
+> = TPayload & {
+  emittedAt: string;
+};

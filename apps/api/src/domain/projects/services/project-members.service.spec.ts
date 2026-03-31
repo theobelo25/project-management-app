@@ -236,13 +236,12 @@ describe('ProjectMembersService', () => {
         },
         'Project member added',
       );
-      expect(notificationsService.notifyProjectMemberAdded).toHaveBeenCalledWith(
-        'user-2',
-        {
-          projectId: 'project-1',
-          addedById: actorOwner.id,
-        },
-      );
+      expect(
+        notificationsService.notifyProjectMemberAdded,
+      ).toHaveBeenCalledWith('user-2', {
+        projectId: 'project-1',
+        addedById: actorOwner.id,
+      });
       expect(realtimePublisher.toOrg).toHaveBeenCalledWith(
         orgId,
         'project.member.added',
@@ -284,7 +283,9 @@ describe('ProjectMembersService', () => {
       ).rejects.toThrow('User is already a project member');
 
       expect(projectMemberRepository.addMember).not.toHaveBeenCalled();
-      expect(notificationsService.notifyProjectMemberAdded).not.toHaveBeenCalled();
+      expect(
+        notificationsService.notifyProjectMemberAdded,
+      ).not.toHaveBeenCalled();
       expect(realtimePublisher.toOrg).not.toHaveBeenCalled();
     });
 
@@ -310,7 +311,9 @@ describe('ProjectMembersService', () => {
       expect(usersService.findById).not.toHaveBeenCalled();
       expect(projectMemberRepository.findMembership).not.toHaveBeenCalled();
       expect(projectMemberRepository.addMember).not.toHaveBeenCalled();
-      expect(notificationsService.notifyProjectMemberAdded).not.toHaveBeenCalled();
+      expect(
+        notificationsService.notifyProjectMemberAdded,
+      ).not.toHaveBeenCalled();
       expect(realtimePublisher.toOrg).not.toHaveBeenCalled();
     });
   });

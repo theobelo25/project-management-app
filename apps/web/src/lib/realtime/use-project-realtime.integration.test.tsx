@@ -36,7 +36,7 @@ function createMockSocket(connected = true) {
 const getRealtimeSocketMock = vi.fn();
 
 vi.mock('./socket', () => ({
-  getRealtimeSocket: () => getRealtimeSocketMock(),
+  getRealtimeSocket: getRealtimeSocketMock,
 }));
 
 function ProjectRealtimeHarness({ projectId }: { projectId: string }) {
@@ -62,7 +62,9 @@ describe('useProjectRealtime (integration)', () => {
       </QueryClientProvider>,
     );
 
-    expect(socket.emit).toHaveBeenCalledWith('project.subscribe', { projectId });
+    expect(socket.emit).toHaveBeenCalledWith('project.subscribe', {
+      projectId,
+    });
 
     trigger('task.updated', { taskId: 'task-123' });
 
@@ -95,7 +97,9 @@ describe('useProjectRealtime (integration)', () => {
     );
 
     unmount();
-    expect(socket.emit).toHaveBeenCalledWith('project.unsubscribe', { projectId });
+    expect(socket.emit).toHaveBeenCalledWith('project.unsubscribe', {
+      projectId,
+    });
     expect(socket.off).toHaveBeenCalled();
   });
 });

@@ -163,14 +163,11 @@ export class RealtimeGateway
         return null;
       }
 
-      const payload = await this.jwtService.verifyAsync<TokenPayload>(
-        token,
-        {
-          secret: this.authConfig.access.secret,
-          issuer: this.authConfig.access.issuer,
-          audience: this.authConfig.access.audience,
-        },
-      );
+      const payload = await this.jwtService.verifyAsync<TokenPayload>(token, {
+        secret: this.authConfig.access.secret,
+        issuer: this.authConfig.access.issuer,
+        audience: this.authConfig.access.audience,
+      });
       return this.authorizedUserForOrg.fromTokenPayload(payload);
     } catch (error) {
       this.logger.warn(

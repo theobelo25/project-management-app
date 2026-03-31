@@ -42,7 +42,10 @@ export class TaskAssigneePolicy {
   ): Promise<void> {
     await this.assertAssigneeInSameOrgOrThrow(assigneeUserId, currentUser);
 
-    const membership = await this.projects.findMembership(projectId, assigneeUserId);
+    const membership = await this.projects.findMembership(
+      projectId,
+      assigneeUserId,
+    );
     if (!membership) {
       throw taskForbidden('ASSIGN_USER_FORBIDDEN_NOT_PROJECT_MEMBER', {
         assigneeUserId,

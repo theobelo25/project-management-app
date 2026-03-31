@@ -123,12 +123,16 @@ export class TasksService {
       'Task created successfully',
     );
 
-    this.realtimePublisher.toProject(task.projectId, REALTIME_EVENT.taskCreated, {
-      taskId: task.id,
-      projectId: task.projectId,
-      updatedById: user.id,
-      changedFields: ['created'],
-    });
+    this.realtimePublisher.toProject(
+      task.projectId,
+      REALTIME_EVENT.taskCreated,
+      {
+        taskId: task.id,
+        projectId: task.projectId,
+        updatedById: user.id,
+        changedFields: ['created'],
+      },
+    );
 
     return toTaskView(task);
   }
@@ -162,9 +166,10 @@ export class TasksService {
       'Task updated successfully',
     );
 
-    const projectMembers = await this.projectMembersRepository.findMembersByProjectId(
-      task.projectId,
-    );
+    const projectMembers =
+      await this.projectMembersRepository.findMembersByProjectId(
+        task.projectId,
+      );
 
     for (const member of projectMembers) {
       if (member.userId === user.id) continue;
@@ -193,12 +198,16 @@ export class TasksService {
       }
     }
 
-    this.realtimePublisher.toProject(task.projectId, REALTIME_EVENT.taskUpdated, {
-      taskId: task.id,
-      projectId: task.projectId,
-      updatedById: user.id,
-      changedFields,
-    });
+    this.realtimePublisher.toProject(
+      task.projectId,
+      REALTIME_EVENT.taskUpdated,
+      {
+        taskId: task.id,
+        projectId: task.projectId,
+        updatedById: user.id,
+        changedFields,
+      },
+    );
     this.realtimePublisher.toTask(task.id, REALTIME_EVENT.taskUpdated, {
       taskId: task.id,
       projectId: task.projectId,
@@ -254,12 +263,16 @@ export class TasksService {
       'Task deleted successfully',
     );
 
-    this.realtimePublisher.toProject(task.projectId, REALTIME_EVENT.taskDeleted, {
-      taskId,
-      projectId: task.projectId,
-      updatedById: user.id,
-      changedFields: ['deleted'],
-    });
+    this.realtimePublisher.toProject(
+      task.projectId,
+      REALTIME_EVENT.taskDeleted,
+      {
+        taskId,
+        projectId: task.projectId,
+        updatedById: user.id,
+        changedFields: ['deleted'],
+      },
+    );
     this.realtimePublisher.toTask(taskId, REALTIME_EVENT.taskDeleted, {
       taskId,
       projectId: task.projectId,
@@ -405,13 +418,17 @@ export class TasksService {
           changedFields: ['assignees'],
         },
       );
-      this.realtimePublisher.toTask(taskId, REALTIME_EVENT.taskAssigneeRemoved, {
+      this.realtimePublisher.toTask(
         taskId,
-        projectId: task.projectId,
-        assigneeUserId,
-        updatedById: currentUser.id,
-        changedFields: ['assignees'],
-      });
+        REALTIME_EVENT.taskAssigneeRemoved,
+        {
+          taskId,
+          projectId: task.projectId,
+          assigneeUserId,
+          updatedById: currentUser.id,
+          changedFields: ['assignees'],
+        },
+      );
     }
   }
 }

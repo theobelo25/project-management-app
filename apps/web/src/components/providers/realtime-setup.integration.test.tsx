@@ -35,15 +35,19 @@ function createMockSocket() {
   return { socket, trigger };
 }
 
-const useMeQueryMock = vi.fn();
+type MeQueryResult = {
+  data: { id: string; orgId: string } | null;
+};
+
+const useMeQueryMock = vi.fn<() => MeQueryResult>(() => ({ data: null }));
 const getRealtimeSocketMock = vi.fn();
 
 vi.mock('@web/lib/api/queries', () => ({
-  useMeQuery: () => useMeQueryMock(),
+  useMeQuery: useMeQueryMock,
 }));
 
 vi.mock('@web/lib/realtime/socket', () => ({
-  getRealtimeSocket: () => getRealtimeSocketMock(),
+  getRealtimeSocket: getRealtimeSocketMock,
 }));
 
 describe('RealtimeSetup (integration)', () => {

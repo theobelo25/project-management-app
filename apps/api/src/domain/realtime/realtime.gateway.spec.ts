@@ -11,7 +11,9 @@ describe('RealtimeGateway', () => {
         if (key === 'FRONTEND_ORIGIN') return 'http://localhost:3000';
         throw new Error(`Unexpected key ${key}`);
       }),
-      get: jest.fn((key: string) => (key === 'REALTIME_ENABLED' ? true : undefined)),
+      get: jest.fn((key: string) =>
+        key === 'REALTIME_ENABLED' ? true : undefined,
+      ),
     };
 
     const authConfig = {
@@ -64,10 +66,11 @@ describe('RealtimeGateway', () => {
     const client = { id: 'socket-1' };
 
     // Seed connected user map
-    (gateway as unknown as { connectedUsers: Map<string, { id: string; orgId: string }> }).connectedUsers.set(
-      'socket-1',
-      { id: 'user-1', orgId: 'org-1' },
-    );
+    (
+      gateway as unknown as {
+        connectedUsers: Map<string, { id: string; orgId: string }>;
+      }
+    ).connectedUsers.set('socket-1', { id: 'user-1', orgId: 'org-1' });
 
     projectAuthRepository.findAuthorizedById.mockResolvedValue(null);
 

@@ -14,7 +14,11 @@ export class RealtimePublisher {
     this.gateway.emitToUser(userId, event, this.withEnvelope(payload));
   }
 
-  toOrg<TPayload extends object>(orgId: string, event: string, payload: TPayload) {
+  toOrg<TPayload extends object>(
+    orgId: string,
+    event: string,
+    payload: TPayload,
+  ) {
     this.gateway.emitToOrg(orgId, event, this.withEnvelope(payload));
   }
 
@@ -26,7 +30,11 @@ export class RealtimePublisher {
     this.gateway.emitToProject(projectId, event, this.withEnvelope(payload));
   }
 
-  toTask<TPayload extends object>(taskId: string, event: string, payload: TPayload) {
+  toTask<TPayload extends object>(
+    taskId: string,
+    event: string,
+    payload: TPayload,
+  ) {
     this.gateway.emitToTask(taskId, event, this.withEnvelope(payload));
   }
 
