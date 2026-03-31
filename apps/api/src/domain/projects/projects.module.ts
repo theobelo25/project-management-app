@@ -12,9 +12,16 @@ import { ProjectsQueriesService } from './services/projects-queries.service';
 import { TasksModule } from '../tasks/tasks.module';
 import { ProjectsFacade } from './projects.facade';
 import { ProjectsPersistenceModule } from './projects-persistence.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [PrismaModule, UsersModule, ProjectsPersistenceModule, TasksModule],
+  imports: [
+    PrismaModule,
+    UsersModule,
+    ProjectsPersistenceModule,
+    TasksModule,
+    NotificationsModule,
+  ],
   controllers: [ProjectsController],
   providers: [
     ProjectsService,

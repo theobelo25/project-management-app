@@ -35,6 +35,8 @@ import {
   canCreateInvites,
   canRevokeInvites,
 } from '../policies/organization-permissions.policy';
+import { RealtimePublisher } from '../../realtime/realtime.publisher';
+import { REALTIME_EVENT } from '../../realtime/realtime.events';
 
 const INVITE_EXPIRY_DAYS = 7;
 
@@ -53,6 +55,7 @@ export class OrganizationInvitesService {
     private readonly organizationMembershipsRepository: OrganizationMembershipsRepository,
     private readonly organizationMembershipsService: OrganizationMembershipsService,
     private readonly inviteUrlService: InviteUrlService,
+    private readonly realtimePublisher: RealtimePublisher,
     private readonly logger: PinoLogger,
   ) {
     this.logger.setContext(OrganizationInvitesService.name);
@@ -193,6 +196,24 @@ export class OrganizationInvitesService {
         'Organization invite created',
       );
 
+      this.realtimePublisher.toOrg(actor.orgId, REALTIME_EVENT.inviteCreated, {
+        inviteId: invite.id,
+        organizationId: actor.orgId,
+        email: normalizedEmail,
+        createdById: actor.id,
+        expiresAt: invite.expiresAt.toISOString(),
+      });
+
+      if (existingUser) {
+        this.realtimePublisher.toUser(existingUser.id, REALTIME_EVENT.inviteCreated, {
+          inviteId: invite.id,
+          organizationId: actor.orgId,
+          email: normalizedEmail,
+          createdById: actor.id,
+          expiresAt: invite.expiresAt.toISOString(),
+        });
+      }
+
       return {
         inviteUrl,
         email: normalizedEmail,
@@ -261,6 +282,12 @@ export class OrganizationInvitesService {
         },
         'Organization invite revoked',
       );
+
+      this.realtimePublisher.toOrg(actor.orgId, REALTIME_EVENT.inviteRevoked, {
+        inviteId,
+        organizationId: actor.orgId,
+        revokedById: actor.id,
+      });
     });
   }
 
@@ -390,6 +417,17 @@ export class OrganizationInvitesService {
         },
         'Organization invite declined',
       );
+
+      this.realtimePublisher.toOrg(invite.organizationId, REALTIME_EVENT.inviteDeclined, {
+        inviteId,
+        organizationId: invite.organizationId,
+        userId,
+      });
+      this.realtimePublisher.toUser(userId, REALTIME_EVENT.inviteDeclined, {
+        inviteId,
+        organizationId: invite.organizationId,
+        userId,
+      });
     });
   }
 
@@ -446,5 +484,16 @@ export class OrganizationInvitesService {
       },
       'Organization invite accepted',
     );
+
+    this.realtimePublisher.toOrg(invite.organizationId, REALTIME_EVENT.inviteAccepted, {
+      inviteId,
+      organizationId: invite.organizationId,
+      userId,
+    });
+    this.realtimePublisher.toUser(userId, REALTIME_EVENT.inviteAccepted, {
+      inviteId,
+      organizationId: invite.organizationId,
+      userId,
+    });
   }
 }

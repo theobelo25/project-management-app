@@ -10,6 +10,7 @@ import {
 import { EditTaskDialog } from '@web/components/projects/tasks';
 import { useProjectQuery, useTaskQuery } from '@web/lib/api/queries';
 import { useEffect } from 'react';
+import { useProjectRealtime } from '@web/lib/realtime/use-project-realtime';
 type TaskDetailPageContentProps = {
   projectId: string;
   taskId: string;
@@ -21,6 +22,7 @@ export function TaskDetailPageContent({
 }: TaskDetailPageContentProps) {
   const safeProjectId = projectId || null;
   const safeTaskId = taskId || null;
+  useProjectRealtime(safeProjectId);
 
   const { data: task, isLoading, isError, error } = useTaskQuery(safeTaskId);
   const { data: project } = useProjectQuery(safeProjectId);

@@ -175,7 +175,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         </CardContent>
 
         <CardFooter className="flex items-center justify-between gap-3 border-t pt-4 text-sm">
-          <RoleBadge role={project.currentUserRole ?? 'MEMBER'} />
+          {project.currentUserRole ? <RoleBadge role={project.currentUserRole} /> : <span />}
           <span className="text-muted-foreground">
             Updated {formatUpdatedAt(project.updatedAt)}
           </span>

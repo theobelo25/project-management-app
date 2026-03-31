@@ -5,6 +5,7 @@ import { useState, type ReactNode } from 'react';
 import { SessionExpiredHandlerSetup } from './session-expired-handler-setup';
 import { Toaster } from '../ui/sonner';
 import { ThemePreferenceSyncSetup } from './theme-preference-sync-setup';
+import { RealtimeSetup } from './realtime-setup';
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -14,6 +15,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <SessionExpiredHandlerSetup />
         <ThemePreferenceSyncSetup />
+        <RealtimeSetup />
         {children}
         <Toaster richColors />
       </ThemeProvider>

@@ -17,6 +17,7 @@ import {
 } from '@web/components/projects/tasks';
 import { useProjectQuery, useProjectTasksQuery } from '@web/lib/api/queries';
 import { useDeleteTask } from '@web/lib/api/mutations/use-delete-task';
+import { useProjectRealtime } from '@web/lib/realtime/use-project-realtime';
 
 type ProjectTasksPageContentProps = {
   projectId: string;
@@ -27,6 +28,8 @@ export function ProjectTasksPageContent({
   projectId,
   pageSize: PAGE_SIZE,
 }: ProjectTasksPageContentProps) {
+  useProjectRealtime(projectId || null);
+
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<TasksFilterStatus>('all');
   const [priority, setPriority] = useState<TasksFilterPriority>('all');

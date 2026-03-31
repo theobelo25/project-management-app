@@ -1,4 +1,9 @@
-export type NotificationType = "task_assigned";
+export type NotificationType =
+  | "task_assigned"
+  | "task_updated"
+  | "project_member_added"
+  | "project_member_removed"
+  | "project_member_role_changed";
 
 export type NotificationView = {
   id: string;

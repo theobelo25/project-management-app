@@ -1,6 +1,12 @@
 import { z } from "zod";
 
-export const NotificationTypeSchema = z.enum(["task_assigned"]);
+export const NotificationTypeSchema = z.enum([
+  "task_assigned",
+  "task_updated",
+  "project_member_added",
+  "project_member_removed",
+  "project_member_role_changed",
+]);
 
 export const NotificationViewSchema = z.object({
   id: z.string(),

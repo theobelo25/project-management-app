@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { addProjectMember } from '@web/lib/api/client';
 import {
+  PROJECTS_QUERY_KEY,
   PROJECT_MEMBERS_QUERY_KEY,
   PROJECT_QUERY_KEY,
 } from '@web/lib/api/queries';
@@ -23,6 +24,9 @@ export function useAddProjectMember(projectId: string, options: Options = {}) {
       });
       await queryClient.refetchQueries({
         queryKey: PROJECT_QUERY_KEY(projectId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: PROJECTS_QUERY_KEY,
       });
       toast.success('Member added successfully!');
       options.onSuccess?.();

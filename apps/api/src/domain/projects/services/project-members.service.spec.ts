@@ -8,6 +8,8 @@ import type { AuthUser } from '@repo/types';
 import { PinoLogger } from 'nestjs-pino';
 
 import { UsersService } from '@api/domain/users/users.service';
+import { NotificationsService } from '@api/domain/notifications/notifications.service';
+import { RealtimePublisher } from '@api/domain/realtime/realtime.publisher';
 import { ProjectMembersService } from './project-members.service';
 import { ProjectAccessService } from '../policies/project-access.service';
 import type { ProjectMemberRepository } from '../repositories/projects.repository';
@@ -57,6 +59,26 @@ describe('ProjectMembersService', () => {
     findById: jest.fn(),
   };
 
+  const notificationsService: jest.Mocked<
+    Pick<
+      NotificationsService,
+      | 'notifyProjectMemberAdded'
+      | 'notifyProjectMemberRemoved'
+      | 'notifyProjectMemberRoleChanged'
+    >
+  > = {
+    notifyProjectMemberAdded: jest.fn(),
+    notifyProjectMemberRemoved: jest.fn(),
+    notifyProjectMemberRoleChanged: jest.fn(),
+  };
+
+  const realtimePublisher: jest.Mocked<
+    Pick<RealtimePublisher, 'toOrg' | 'toUser'>
+  > = {
+    toOrg: jest.fn(),
+    toUser: jest.fn(),
+  };
+
   const makeProject = (
     overrides: Partial<ProjectWithRole> = {},
   ): ProjectWithRole => ({
@@ -100,6 +122,8 @@ describe('ProjectMembersService', () => {
       projectMemberRepository as unknown as ProjectMemberRepository,
       projectAccessService as unknown as ProjectAccessService,
       usersService as unknown as UsersService,
+      notificationsService as unknown as NotificationsService,
+      realtimePublisher as unknown as RealtimePublisher,
       logger,
     );
   });
@@ -212,6 +236,22 @@ describe('ProjectMembersService', () => {
         },
         'Project member added',
       );
+      expect(notificationsService.notifyProjectMemberAdded).toHaveBeenCalledWith(
+        'user-2',
+        {
+          projectId: 'project-1',
+          addedById: actorOwner.id,
+        },
+      );
+      expect(realtimePublisher.toOrg).toHaveBeenCalledWith(
+        orgId,
+        'project.member.added',
+        expect.objectContaining({
+          projectId: 'project-1',
+          userId: 'user-2',
+          actorUserId: actorOwner.id,
+        }),
+      );
     });
 
     it('throws when user is already a member', async () => {
@@ -244,6 +284,8 @@ describe('ProjectMembersService', () => {
       ).rejects.toThrow('User is already a project member');
 
       expect(projectMemberRepository.addMember).not.toHaveBeenCalled();
+      expect(notificationsService.notifyProjectMemberAdded).not.toHaveBeenCalled();
+      expect(realtimePublisher.toOrg).not.toHaveBeenCalled();
     });
 
     it('throws when owner tries to add themselves', async () => {
@@ -268,6 +310,8 @@ describe('ProjectMembersService', () => {
       expect(usersService.findById).not.toHaveBeenCalled();
       expect(projectMemberRepository.findMembership).not.toHaveBeenCalled();
       expect(projectMemberRepository.addMember).not.toHaveBeenCalled();
+      expect(notificationsService.notifyProjectMemberAdded).not.toHaveBeenCalled();
+      expect(realtimePublisher.toOrg).not.toHaveBeenCalled();
     });
   });
 
@@ -329,6 +373,23 @@ describe('ProjectMembersService', () => {
         },
         'Project member role updated',
       );
+      expect(realtimePublisher.toOrg).toHaveBeenCalledWith(
+        orgId,
+        'project.member.role.updated',
+        expect.objectContaining({
+          projectId: 'project-1',
+          userId: 'user-2',
+          actorUserId: actorOwner.id,
+          newRole: ProjectRole.ADMIN,
+        }),
+      );
+      expect(
+        notificationsService.notifyProjectMemberRoleChanged,
+      ).toHaveBeenCalledWith('user-2', {
+        projectId: 'project-1',
+        changedById: actorOwner.id,
+        newRole: ProjectRole.ADMIN,
+      });
     });
 
     it('throws when trying to update the owner through member role endpoint', async () => {
@@ -350,6 +411,10 @@ describe('ProjectMembersService', () => {
 
       expect(projectMemberRepository.findMembership).not.toHaveBeenCalled();
       expect(projectMemberRepository.updateMemberRole).not.toHaveBeenCalled();
+      expect(
+        notificationsService.notifyProjectMemberRoleChanged,
+      ).not.toHaveBeenCalled();
+      expect(realtimePublisher.toOrg).not.toHaveBeenCalled();
     });
 
     it('throws when project member does not exist', async () => {
@@ -371,6 +436,10 @@ describe('ProjectMembersService', () => {
       ).rejects.toThrow('Project member not found');
 
       expect(projectMemberRepository.updateMemberRole).not.toHaveBeenCalled();
+      expect(
+        notificationsService.notifyProjectMemberRoleChanged,
+      ).not.toHaveBeenCalled();
+      expect(realtimePublisher.toOrg).not.toHaveBeenCalled();
     });
   });
 
@@ -415,6 +484,21 @@ describe('ProjectMembersService', () => {
         },
         'Project member removed',
       );
+      expect(
+        notificationsService.notifyProjectMemberRemoved,
+      ).toHaveBeenCalledWith('user-2', {
+        projectId: 'project-1',
+        removedById: actorOwner.id,
+      });
+      expect(realtimePublisher.toOrg).toHaveBeenCalledWith(
+        orgId,
+        'project.member.removed',
+        expect.objectContaining({
+          projectId: 'project-1',
+          userId: 'user-2',
+          actorUserId: actorOwner.id,
+        }),
+      );
     });
 
     it('throws when trying to remove the owner', async () => {
@@ -432,6 +516,10 @@ describe('ProjectMembersService', () => {
 
       expect(projectMemberRepository.findMembership).not.toHaveBeenCalled();
       expect(projectMemberRepository.removeMember).not.toHaveBeenCalled();
+      expect(
+        notificationsService.notifyProjectMemberRemoved,
+      ).not.toHaveBeenCalled();
+      expect(realtimePublisher.toOrg).not.toHaveBeenCalled();
     });
 
     it('throws when project member does not exist', async () => {
@@ -449,6 +537,10 @@ describe('ProjectMembersService', () => {
       ).rejects.toThrow('Project member not found');
 
       expect(projectMemberRepository.removeMember).not.toHaveBeenCalled();
+      expect(
+        notificationsService.notifyProjectMemberRemoved,
+      ).not.toHaveBeenCalled();
+      expect(realtimePublisher.toOrg).not.toHaveBeenCalled();
     });
   });
 });

@@ -24,6 +24,10 @@ export const EnvSchema = z.object({
   REFRESH_TOKEN_EXPIRATION_MS: z.coerce.number().int().positive(),
   JWT_ISSUER: z.string().min(1),
   JWT_AUDIENCE: z.string().min(1),
+  REALTIME_ENABLED: z
+    .string()
+    .optional()
+    .transform((value) => value === 'true'),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

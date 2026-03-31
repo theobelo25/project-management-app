@@ -14,6 +14,7 @@ import {
 import { toTaskAssignmentView } from './mappers/task-assignment.mapper';
 import { TaskAssignmentNotifier } from './notifiers/task-assignment-notifier';
 import { TaskAssigneePolicy } from './policies/task-assignee-policy';
+import type { ProjectMemberRepository } from '../projects/repositories/projects.repository';
 
 jest.mock('./mappers/tasks.mapper', () => ({
   toCreateTaskInput: jest.fn(),
@@ -42,16 +43,26 @@ describe('TasksService', () => {
   };
 
   let taskAssigneePolicy: {
-    assertAssigneeInSameOrgOrThrow: jest.Mock;
+    assertAssigneeCanBeAssignedToProjectOrThrow: jest.Mock;
   };
 
   let taskAssignmentNotifier: {
     notifyTaskAssigned: jest.Mock;
+    notifyTaskUpdated: jest.Mock;
+  };
+
+  let realtimePublisher: {
+    toProject: jest.Mock;
+    toTask: jest.Mock;
   };
 
   let logger: {
     info: jest.Mock;
     warn: jest.Mock;
+  };
+
+  let projectMembersRepository: {
+    findMembersByProjectId: jest.Mock;
   };
 
   const currentUser: AuthUser = { id: 'user-1', orgId: 'org-1' };
@@ -68,11 +79,17 @@ describe('TasksService', () => {
     };
 
     taskAssigneePolicy = {
-      assertAssigneeInSameOrgOrThrow: jest.fn(),
+      assertAssigneeCanBeAssignedToProjectOrThrow: jest.fn(),
     };
 
     taskAssignmentNotifier = {
       notifyTaskAssigned: jest.fn(),
+      notifyTaskUpdated: jest.fn(),
+    };
+
+    realtimePublisher = {
+      toProject: jest.fn(),
+      toTask: jest.fn(),
     };
 
     logger = {
@@ -80,10 +97,16 @@ describe('TasksService', () => {
       warn: jest.fn(),
     };
 
+    projectMembersRepository = {
+      findMembersByProjectId: jest.fn(),
+    };
+
     service = new TasksService(
       tasksRepository as unknown as TasksRepository,
       taskAssigneePolicy as unknown as TaskAssigneePolicy,
       taskAssignmentNotifier as unknown as TaskAssignmentNotifier,
+      realtimePublisher as never,
+      projectMembersRepository as unknown as ProjectMemberRepository,
       logger as unknown as PinoLogger,
     );
 
@@ -136,7 +159,7 @@ describe('TasksService', () => {
       expect(toTaskView).toHaveBeenCalledWith(task);
       expect(result).toEqual(taskView);
       expect(
-        taskAssigneePolicy.assertAssigneeInSameOrgOrThrow,
+        taskAssigneePolicy.assertAssigneeCanBeAssignedToProjectOrThrow,
       ).not.toHaveBeenCalled();
       expect(taskAssignmentNotifier.notifyTaskAssigned).not.toHaveBeenCalled();
     });
@@ -171,14 +194,14 @@ describe('TasksService', () => {
       const result = await service.create(currentUser, dto);
 
       expect(
-        taskAssigneePolicy.assertAssigneeInSameOrgOrThrow,
+        taskAssigneePolicy.assertAssigneeCanBeAssignedToProjectOrThrow,
       ).toHaveBeenCalledTimes(2);
       expect(
-        taskAssigneePolicy.assertAssigneeInSameOrgOrThrow,
-      ).toHaveBeenCalledWith('user-2', currentUser);
+        taskAssigneePolicy.assertAssigneeCanBeAssignedToProjectOrThrow,
+      ).toHaveBeenCalledWith('user-2', dto.projectId, currentUser);
       expect(
-        taskAssigneePolicy.assertAssigneeInSameOrgOrThrow,
-      ).toHaveBeenCalledWith('user-1', currentUser);
+        taskAssigneePolicy.assertAssigneeCanBeAssignedToProjectOrThrow,
+      ).toHaveBeenCalledWith('user-1', dto.projectId, currentUser);
       expect(taskAssignmentNotifier.notifyTaskAssigned).toHaveBeenCalledTimes(
         1,
       );
@@ -210,12 +233,18 @@ describe('TasksService', () => {
         title: dto.title,
         description: dto.description,
         projectId: 'project-1',
+        assignees: [{ userId: 'user-2' }, { userId: currentUser.id }],
       };
 
       const taskView: TaskView = { id: taskId, title: dto.title } as TaskView;
 
       (toUpdateTaskInput as jest.Mock).mockReturnValue(updateInput);
       tasksRepository.update.mockResolvedValue(task);
+      projectMembersRepository.findMembersByProjectId.mockResolvedValue([
+        { userId: 'user-2' },
+        { userId: currentUser.id },
+        { userId: 'user-3' },
+      ]);
       (toTaskView as jest.Mock).mockReturnValue(taskView);
 
       const result = await service.update(taskId, currentUser, dto);
@@ -234,6 +263,24 @@ describe('TasksService', () => {
       );
       expect(toTaskView).toHaveBeenCalledWith(task);
       expect(result).toEqual(taskView);
+      expect(taskAssignmentNotifier.notifyTaskUpdated).toHaveBeenCalledWith(
+        'user-2',
+        expect.objectContaining({
+          taskId,
+          taskTitle: dto.title,
+          projectId: 'project-1',
+          updatedById: currentUser.id,
+        }),
+      );
+      expect(taskAssignmentNotifier.notifyTaskUpdated).toHaveBeenCalledWith(
+        'user-3',
+        expect.objectContaining({
+          taskId,
+          taskTitle: dto.title,
+          projectId: 'project-1',
+          updatedById: currentUser.id,
+        }),
+      );
     });
   });
 
@@ -300,6 +347,12 @@ describe('TasksService', () => {
   describe('delete', () => {
     it('deletes and logs success', async () => {
       const taskId = 'task-1';
+      tasksRepository.findByIdOrThrow.mockResolvedValue({
+        id: taskId,
+        projectId: 'project-1',
+        title: 'Task',
+        assignees: [],
+      });
 
       await service.delete(taskId, currentUser);
 
@@ -332,9 +385,15 @@ describe('TasksService', () => {
         userId: assigneeUserId,
       } as TaskAssignmentView;
 
-      taskAssigneePolicy.assertAssigneeInSameOrgOrThrow.mockResolvedValue(
+      taskAssigneePolicy.assertAssigneeCanBeAssignedToProjectOrThrow.mockResolvedValue(
         undefined,
       );
+      tasksRepository.findByIdOrThrow.mockResolvedValue({
+        id: taskId,
+        projectId: 'project-1',
+        title: 'Task',
+        assignees: [],
+      });
 
       tasksRepository.assignUser.mockResolvedValue({
         assignment,
@@ -350,8 +409,8 @@ describe('TasksService', () => {
       );
 
       expect(
-        taskAssigneePolicy.assertAssigneeInSameOrgOrThrow,
-      ).toHaveBeenCalledWith(assigneeUserId, currentUser);
+        taskAssigneePolicy.assertAssigneeCanBeAssignedToProjectOrThrow,
+      ).toHaveBeenCalledWith(assigneeUserId, 'project-1', currentUser);
 
       expect(tasksRepository.assignUser).toHaveBeenCalledWith(
         taskId,
@@ -398,9 +457,15 @@ describe('TasksService', () => {
         userId: assigneeUserId,
       } as TaskAssignmentView;
 
-      taskAssigneePolicy.assertAssigneeInSameOrgOrThrow.mockResolvedValue(
+      taskAssigneePolicy.assertAssigneeCanBeAssignedToProjectOrThrow.mockResolvedValue(
         undefined,
       );
+      tasksRepository.findByIdOrThrow.mockResolvedValue({
+        id: taskId,
+        projectId: 'project-1',
+        title: 'Task',
+        assignees: [],
+      });
 
       tasksRepository.assignUser.mockResolvedValue({
         assignment,
@@ -426,6 +491,12 @@ describe('TasksService', () => {
     it('unassigns and logs success', async () => {
       const taskId = 'task-1';
       const assigneeUserId = 'user-2';
+      tasksRepository.findByIdOrThrow.mockResolvedValue({
+        id: taskId,
+        projectId: 'project-1',
+        title: 'Task',
+        assignees: [],
+      });
 
       tasksRepository.unassignUser.mockResolvedValue(1);
 
@@ -451,6 +522,12 @@ describe('TasksService', () => {
     it('does not log when assignment does not exist', async () => {
       const taskId = 'task-1';
       const assigneeUserId = 'user-2';
+      tasksRepository.findByIdOrThrow.mockResolvedValue({
+        id: taskId,
+        projectId: 'project-1',
+        title: 'Task',
+        assignees: [],
+      });
 
       tasksRepository.unassignUser.mockResolvedValue(0);
 
