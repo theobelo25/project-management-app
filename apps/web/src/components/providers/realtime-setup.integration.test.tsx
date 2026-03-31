@@ -39,8 +39,10 @@ type MeQueryResult = {
   data: { id: string; orgId: string } | null;
 };
 
-const useMeQueryMock = vi.fn<() => MeQueryResult>(() => ({ data: null }));
-const getRealtimeSocketMock = vi.fn();
+const { useMeQueryMock, getRealtimeSocketMock } = vi.hoisted(() => ({
+  useMeQueryMock: vi.fn<() => MeQueryResult>(() => ({ data: null })),
+  getRealtimeSocketMock: vi.fn(),
+}));
 
 vi.mock('@web/lib/api/queries', () => ({
   useMeQuery: useMeQueryMock,

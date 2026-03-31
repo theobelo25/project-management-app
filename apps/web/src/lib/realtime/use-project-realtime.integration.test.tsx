@@ -33,7 +33,9 @@ function createMockSocket(connected = true) {
   return { socket, trigger };
 }
 
-const getRealtimeSocketMock = vi.fn();
+const { getRealtimeSocketMock } = vi.hoisted(() => ({
+  getRealtimeSocketMock: vi.fn(),
+}));
 
 vi.mock('./socket', () => ({
   getRealtimeSocket: getRealtimeSocketMock,
