@@ -4,9 +4,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateMe } from '@web/lib/api/client';
 import { ME_QUERY_KEY } from '@web/lib/api/queries';
 
-type UpdateMeInput = {
+export type UpdateMeInput = {
   name?: string;
   email?: string;
+  themeMode?: 'light' | 'dark' | 'system';
+  colorScheme?: 'default' | 'pastel-warm' | 'pastel-cool';
   password?: string;
   confirmPassword?: string;
 };

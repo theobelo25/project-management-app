@@ -1,3 +1,6 @@
+export type ThemeMode = 'light' | 'dark' | 'system';
+export type ColorScheme = 'default' | 'pastel-warm' | 'pastel-cool';
+
 export interface PrivateUser {
   id: string;
 
@@ -7,6 +10,8 @@ export interface PrivateUser {
 
   email: string;
   name: string;
+  themeMode?: ThemeMode | null;
+  colorScheme?: ColorScheme | null;
   passwordHash: string;
   createdAt: Date;
   updatedAt: Date;
@@ -21,6 +26,8 @@ export interface UserView {
 
   email: string;
   name: string;
+  themeMode?: ThemeMode | null;
+  colorScheme?: ColorScheme | null;
   createdAt: Date;
   updatedAt: Date;
 }

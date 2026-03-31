@@ -29,6 +29,8 @@ export type UserMinAggregateOutputType = {
   email: string | null
   name: string | null
   passwordHash: string | null
+  themeMode: $Enums.ThemeMode | null
+  colorScheme: $Enums.ColorScheme | null
   createdAt: Date | null
   updatedAt: Date | null
   defaultOrganizationId: string | null
@@ -40,6 +42,8 @@ export type UserMaxAggregateOutputType = {
   email: string | null
   name: string | null
   passwordHash: string | null
+  themeMode: $Enums.ThemeMode | null
+  colorScheme: $Enums.ColorScheme | null
   createdAt: Date | null
   updatedAt: Date | null
   defaultOrganizationId: string | null
@@ -51,6 +55,8 @@ export type UserCountAggregateOutputType = {
   email: number
   name: number
   passwordHash: number
+  themeMode: number
+  colorScheme: number
   createdAt: number
   updatedAt: number
   defaultOrganizationId: number
@@ -64,6 +70,8 @@ export type UserMinAggregateInputType = {
   email?: true
   name?: true
   passwordHash?: true
+  themeMode?: true
+  colorScheme?: true
   createdAt?: true
   updatedAt?: true
   defaultOrganizationId?: true
@@ -75,6 +83,8 @@ export type UserMaxAggregateInputType = {
   email?: true
   name?: true
   passwordHash?: true
+  themeMode?: true
+  colorScheme?: true
   createdAt?: true
   updatedAt?: true
   defaultOrganizationId?: true
@@ -86,6 +96,8 @@ export type UserCountAggregateInputType = {
   email?: true
   name?: true
   passwordHash?: true
+  themeMode?: true
+  colorScheme?: true
   createdAt?: true
   updatedAt?: true
   defaultOrganizationId?: true
@@ -170,6 +182,8 @@ export type UserGroupByOutputType = {
   email: string
   name: string
   passwordHash: string
+  themeMode: $Enums.ThemeMode | null
+  colorScheme: $Enums.ColorScheme | null
   createdAt: Date
   updatedAt: Date
   defaultOrganizationId: string | null
@@ -202,6 +216,8 @@ export type UserWhereInput = {
   email?: Prisma.StringFilter<"User"> | string
   name?: Prisma.StringFilter<"User"> | string
   passwordHash?: Prisma.StringFilter<"User"> | string
+  themeMode?: Prisma.EnumThemeModeNullableFilter<"User"> | $Enums.ThemeMode | null
+  colorScheme?: Prisma.EnumColorSchemeNullableFilter<"User"> | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   defaultOrganizationId?: Prisma.UuidNullableFilter<"User"> | string | null
@@ -225,6 +241,8 @@ export type UserOrderByWithRelationInput = {
   email?: Prisma.SortOrder
   name?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
+  themeMode?: Prisma.SortOrderInput | Prisma.SortOrder
+  colorScheme?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   defaultOrganizationId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -251,6 +269,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   name?: Prisma.StringFilter<"User"> | string
   passwordHash?: Prisma.StringFilter<"User"> | string
+  themeMode?: Prisma.EnumThemeModeNullableFilter<"User"> | $Enums.ThemeMode | null
+  colorScheme?: Prisma.EnumColorSchemeNullableFilter<"User"> | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   defaultOrganizationId?: Prisma.UuidNullableFilter<"User"> | string | null
@@ -274,6 +294,8 @@ export type UserOrderByWithAggregationInput = {
   email?: Prisma.SortOrder
   name?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
+  themeMode?: Prisma.SortOrderInput | Prisma.SortOrder
+  colorScheme?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   defaultOrganizationId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -291,6 +313,8 @@ export type UserScalarWhereWithAggregatesInput = {
   email?: Prisma.StringWithAggregatesFilter<"User"> | string
   name?: Prisma.StringWithAggregatesFilter<"User"> | string
   passwordHash?: Prisma.StringWithAggregatesFilter<"User"> | string
+  themeMode?: Prisma.EnumThemeModeNullableWithAggregatesFilter<"User"> | $Enums.ThemeMode | null
+  colorScheme?: Prisma.EnumColorSchemeNullableWithAggregatesFilter<"User"> | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   defaultOrganizationId?: Prisma.UuidNullableWithAggregatesFilter<"User"> | string | null
@@ -302,6 +326,8 @@ export type UserCreateInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -323,6 +349,8 @@ export type UserUncheckedCreateInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   defaultOrganizationId?: string | null
@@ -344,6 +372,8 @@ export type UserUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -365,6 +395,8 @@ export type UserUncheckedUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   defaultOrganizationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -386,6 +418,8 @@ export type UserCreateManyInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   defaultOrganizationId?: string | null
@@ -397,6 +431,8 @@ export type UserUpdateManyMutationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -406,6 +442,8 @@ export type UserUncheckedUpdateManyInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   defaultOrganizationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -417,6 +455,8 @@ export type UserCountOrderByAggregateInput = {
   email?: Prisma.SortOrder
   name?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
+  themeMode?: Prisma.SortOrder
+  colorScheme?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   defaultOrganizationId?: Prisma.SortOrder
@@ -428,6 +468,8 @@ export type UserMaxOrderByAggregateInput = {
   email?: Prisma.SortOrder
   name?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
+  themeMode?: Prisma.SortOrder
+  colorScheme?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   defaultOrganizationId?: Prisma.SortOrder
@@ -439,6 +481,8 @@ export type UserMinOrderByAggregateInput = {
   email?: Prisma.SortOrder
   name?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
+  themeMode?: Prisma.SortOrder
+  colorScheme?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   defaultOrganizationId?: Prisma.SortOrder
@@ -467,6 +511,14 @@ export type UserOrderByRelationAggregateInput = {
 
 export type StringFieldUpdateOperationsInput = {
   set?: string
+}
+
+export type NullableEnumThemeModeFieldUpdateOperationsInput = {
+  set?: $Enums.ThemeMode | null
+}
+
+export type NullableEnumColorSchemeFieldUpdateOperationsInput = {
+  set?: $Enums.ColorScheme | null
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -710,6 +762,8 @@ export type UserCreateWithoutRefreshTokensInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   ownedProjects?: Prisma.ProjectCreateNestedManyWithoutOwnerInput
@@ -730,6 +784,8 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   defaultOrganizationId?: string | null
@@ -766,6 +822,8 @@ export type UserUpdateWithoutRefreshTokensInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ownedProjects?: Prisma.ProjectUpdateManyWithoutOwnerNestedInput
@@ -786,6 +844,8 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   defaultOrganizationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -806,6 +866,8 @@ export type UserCreateWithoutOwnedProjectsInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -826,6 +888,8 @@ export type UserUncheckedCreateWithoutOwnedProjectsInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   defaultOrganizationId?: string | null
@@ -862,6 +926,8 @@ export type UserUpdateWithoutOwnedProjectsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -882,6 +948,8 @@ export type UserUncheckedUpdateWithoutOwnedProjectsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   defaultOrganizationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -902,6 +970,8 @@ export type UserCreateWithoutProjectMembersInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -922,6 +992,8 @@ export type UserUncheckedCreateWithoutProjectMembersInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   defaultOrganizationId?: string | null
@@ -958,6 +1030,8 @@ export type UserUpdateWithoutProjectMembersInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -978,6 +1052,8 @@ export type UserUncheckedUpdateWithoutProjectMembersInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   defaultOrganizationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -998,6 +1074,8 @@ export type UserCreateWithoutCreatedTasksInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -1018,6 +1096,8 @@ export type UserUncheckedCreateWithoutCreatedTasksInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   defaultOrganizationId?: string | null
@@ -1043,6 +1123,8 @@ export type UserCreateWithoutTasksInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -1063,6 +1145,8 @@ export type UserUncheckedCreateWithoutTasksInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   defaultOrganizationId?: string | null
@@ -1099,6 +1183,8 @@ export type UserUpdateWithoutCreatedTasksInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -1119,6 +1205,8 @@ export type UserUncheckedUpdateWithoutCreatedTasksInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   defaultOrganizationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1150,6 +1238,8 @@ export type UserUpdateWithoutTasksInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -1170,6 +1260,8 @@ export type UserUncheckedUpdateWithoutTasksInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   defaultOrganizationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1190,6 +1282,8 @@ export type UserCreateWithoutTaskAssigneesInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -1210,6 +1304,8 @@ export type UserUncheckedCreateWithoutTaskAssigneesInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   defaultOrganizationId?: string | null
@@ -1246,6 +1342,8 @@ export type UserUpdateWithoutTaskAssigneesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -1266,6 +1364,8 @@ export type UserUncheckedUpdateWithoutTaskAssigneesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   defaultOrganizationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1286,6 +1386,8 @@ export type UserCreateWithoutDefaultOrganizationInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -1306,6 +1408,8 @@ export type UserUncheckedCreateWithoutDefaultOrganizationInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   activeOrganizationId: string
@@ -1336,6 +1440,8 @@ export type UserCreateWithoutActiveOrganizationInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -1356,6 +1462,8 @@ export type UserUncheckedCreateWithoutActiveOrganizationInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   defaultOrganizationId?: string | null
@@ -1405,6 +1513,8 @@ export type UserScalarWhereInput = {
   email?: Prisma.StringFilter<"User"> | string
   name?: Prisma.StringFilter<"User"> | string
   passwordHash?: Prisma.StringFilter<"User"> | string
+  themeMode?: Prisma.EnumThemeModeNullableFilter<"User"> | $Enums.ThemeMode | null
+  colorScheme?: Prisma.EnumColorSchemeNullableFilter<"User"> | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   defaultOrganizationId?: Prisma.UuidNullableFilter<"User"> | string | null
@@ -1432,6 +1542,8 @@ export type UserCreateWithoutOrganizationMembershipsInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -1452,6 +1564,8 @@ export type UserUncheckedCreateWithoutOrganizationMembershipsInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   defaultOrganizationId?: string | null
@@ -1488,6 +1602,8 @@ export type UserUpdateWithoutOrganizationMembershipsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -1508,6 +1624,8 @@ export type UserUncheckedUpdateWithoutOrganizationMembershipsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   defaultOrganizationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1528,6 +1646,8 @@ export type UserCreateWithoutCreatedInvitesInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -1548,6 +1668,8 @@ export type UserUncheckedCreateWithoutCreatedInvitesInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   defaultOrganizationId?: string | null
@@ -1573,6 +1695,8 @@ export type UserCreateWithoutOrganizationInvitesInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -1593,6 +1717,8 @@ export type UserUncheckedCreateWithoutOrganizationInvitesInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   defaultOrganizationId?: string | null
@@ -1629,6 +1755,8 @@ export type UserUpdateWithoutCreatedInvitesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -1649,6 +1777,8 @@ export type UserUncheckedUpdateWithoutCreatedInvitesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   defaultOrganizationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1680,6 +1810,8 @@ export type UserUpdateWithoutOrganizationInvitesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -1700,6 +1832,8 @@ export type UserUncheckedUpdateWithoutOrganizationInvitesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   defaultOrganizationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1720,6 +1854,8 @@ export type UserCreateWithoutUserNotificationsInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -1740,6 +1876,8 @@ export type UserUncheckedCreateWithoutUserNotificationsInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   defaultOrganizationId?: string | null
@@ -1776,6 +1914,8 @@ export type UserUpdateWithoutUserNotificationsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -1796,6 +1936,8 @@ export type UserUncheckedUpdateWithoutUserNotificationsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   defaultOrganizationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1816,6 +1958,8 @@ export type UserCreateManyDefaultOrganizationInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   activeOrganizationId: string
@@ -1826,6 +1970,8 @@ export type UserCreateManyActiveOrganizationInput = {
   email: string
   name: string
   passwordHash: string
+  themeMode?: $Enums.ThemeMode | null
+  colorScheme?: $Enums.ColorScheme | null
   createdAt?: Date | string
   updatedAt?: Date | string
   defaultOrganizationId?: string | null
@@ -1836,6 +1982,8 @@ export type UserUpdateWithoutDefaultOrganizationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -1856,6 +2004,8 @@ export type UserUncheckedUpdateWithoutDefaultOrganizationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeOrganizationId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1876,6 +2026,8 @@ export type UserUncheckedUpdateManyWithoutDefaultOrganizationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeOrganizationId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1886,6 +2038,8 @@ export type UserUpdateWithoutActiveOrganizationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -1906,6 +2060,8 @@ export type UserUncheckedUpdateWithoutActiveOrganizationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   defaultOrganizationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1926,6 +2082,8 @@ export type UserUncheckedUpdateManyWithoutActiveOrganizationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  themeMode?: Prisma.NullableEnumThemeModeFieldUpdateOperationsInput | $Enums.ThemeMode | null
+  colorScheme?: Prisma.NullableEnumColorSchemeFieldUpdateOperationsInput | $Enums.ColorScheme | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   defaultOrganizationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2048,6 +2206,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   email?: boolean
   name?: boolean
   passwordHash?: boolean
+  themeMode?: boolean
+  colorScheme?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   defaultOrganizationId?: boolean
@@ -2072,6 +2232,8 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   email?: boolean
   name?: boolean
   passwordHash?: boolean
+  themeMode?: boolean
+  colorScheme?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   defaultOrganizationId?: boolean
@@ -2085,6 +2247,8 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   email?: boolean
   name?: boolean
   passwordHash?: boolean
+  themeMode?: boolean
+  colorScheme?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   defaultOrganizationId?: boolean
@@ -2098,13 +2262,15 @@ export type UserSelectScalar = {
   email?: boolean
   name?: boolean
   passwordHash?: boolean
+  themeMode?: boolean
+  colorScheme?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   defaultOrganizationId?: boolean
   activeOrganizationId?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name" | "passwordHash" | "createdAt" | "updatedAt" | "defaultOrganizationId" | "activeOrganizationId", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name" | "passwordHash" | "themeMode" | "colorScheme" | "createdAt" | "updatedAt" | "defaultOrganizationId" | "activeOrganizationId", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   refreshTokens?: boolean | Prisma.User$refreshTokensArgs<ExtArgs>
   ownedProjects?: boolean | Prisma.User$ownedProjectsArgs<ExtArgs>
@@ -2150,6 +2316,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     email: string
     name: string
     passwordHash: string
+    themeMode: $Enums.ThemeMode | null
+    colorScheme: $Enums.ColorScheme | null
     createdAt: Date
     updatedAt: Date
     defaultOrganizationId: string | null
@@ -2593,6 +2761,8 @@ export interface UserFieldRefs {
   readonly email: Prisma.FieldRef<"User", 'String'>
   readonly name: Prisma.FieldRef<"User", 'String'>
   readonly passwordHash: Prisma.FieldRef<"User", 'String'>
+  readonly themeMode: Prisma.FieldRef<"User", 'ThemeMode'>
+  readonly colorScheme: Prisma.FieldRef<"User", 'ColorScheme'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly defaultOrganizationId: Prisma.FieldRef<"User", 'String'>

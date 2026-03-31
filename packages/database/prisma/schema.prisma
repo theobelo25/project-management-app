@@ -44,11 +44,25 @@ enum OrganizationRole {
     MEMBER
 }
 
+enum ThemeMode {
+    LIGHT
+    DARK
+    SYSTEM
+}
+
+enum ColorScheme {
+    DEFAULT
+    PASTEL_WARM
+    PASTEL_COOL
+}
+
 model User {
     id                      String                   @id @default(uuid()) @db.Uuid
     email                   String                   @unique
     name                    String
     passwordHash            String
+    themeMode               ThemeMode?
+    colorScheme             ColorScheme?
     createdAt               DateTime                 @default(now())
     updatedAt               DateTime                 @updatedAt
     refreshTokens           RefreshToken[]

@@ -84,6 +84,8 @@ export const UserScalarFieldEnum = {
   email: 'email',
   name: 'name',
   passwordHash: 'passwordHash',
+  themeMode: 'themeMode',
+  colorScheme: 'colorScheme',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   defaultOrganizationId: 'defaultOrganizationId',
