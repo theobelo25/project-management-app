@@ -15,6 +15,8 @@ const UpdateProfileSchema = z
   .object({
     name: z.string().trim().min(1).max(200).optional(),
     email: z.email().optional(),
+    themeMode: z.enum(['light', 'dark', 'system']).optional(),
+    colorScheme: z.enum(['default', 'pastel-warm', 'pastel-cool']).optional(),
     password: z.preprocess(
       (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
       passwordSchema.optional(),
@@ -28,6 +30,8 @@ const UpdateProfileSchema = z
     const hasAnyUpdate =
       data.name !== undefined ||
       data.email !== undefined ||
+      data.themeMode !== undefined ||
+      data.colorScheme !== undefined ||
       data.password !== undefined ||
       data.confirmPassword !== undefined;
 

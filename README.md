@@ -10,7 +10,7 @@
 
 A full-stack project management platform built with **Next.js, NestJS, Prisma, and Turborepo**. The repo is a **pnpm workspace** with shared packages (`@repo/database`, `@repo/types`), a modular NestJS API, and a Next.js App Router frontend.
 
-This project is intended as a **production-style portfolio application**: typed APIs, validation, auth cookies, role-aware access, and automated tests on the backend.
+This project is intended as a **production-style portfolio application**: typed APIs, validation, auth cookies, role-aware access, and **automated tests** on the API (Jest) and web app (Vitest, Playwright, Storybook-driven browser tests). **CI** runs lint, typecheck, tests, Storybook Vitest, and production builds (see [.github/workflows/ci.yml](.github/workflows/ci.yml)).
 
 ---
 
@@ -23,7 +23,8 @@ This project is intended as a **production-style portfolio application**: typed 
 - **Notifications** — In-app notification domain
 - **API** — REST, **Zod**-validated DTOs (shared with `@repo/types`), global exception handling, **rate limiting**, structured logging (**Pino**)
 - **Docs** — **OpenAPI/Swagger** at `/api/docs` when `NODE_ENV` is not `production`
-- **Monorepo** — Turborepo for `build`, `lint`, `typecheck`, and `dev`
+- **Testing** — API: Jest unit tests and **supertest** e2e; Web: **Vitest** (unit + integration), **Playwright** e2e, **Storybook** with Vitest browser projects
+- **Monorepo** — Turborepo for `build`, `lint`, `typecheck`, `test`, and `dev`
 - **Containers** — `Dockerfile.web` and `Dockerfile.api` at the repository root for deployment
 
 ---
@@ -32,11 +33,11 @@ This project is intended as a **production-style portfolio application**: typed 
 
 | Area          | Technologies                                                                                                   |
 | ------------- | -------------------------------------------------------------------------------------------------------------- |
-| Frontend      | Next.js (App Router), React, TypeScript, Tailwind CSS, shadcn/ui (Radix), TanStack Query, React Hook Form, Zod |
+| Frontend      | Next.js (App Router), React, TypeScript, Tailwind CSS, shadcn/ui (Radix), TanStack Query, Jotai, React Hook Form, Zod |
 | Backend       | NestJS, Passport JWT (from cookies), cookie-parser, Terminus (health), Swagger                                 |
 | Data          | Prisma ORM, **PostgreSQL**                                                                                     |
 | Tooling       | pnpm workspaces, Turborepo, ESLint, Prettier                                                                   |
-| Testing (API) | Jest — unit tests (`*.spec.ts`) and e2e under `apps/api/test/`                                                 |
+| Testing       | **API:** Jest (`*.spec.ts`), e2e under `apps/api/test/` — **Web:** Vitest, Testing Library, MSW, Playwright, Storybook |
 
 ---
 
@@ -66,7 +67,7 @@ project-management-app
 
 ## Prerequisites
 
-- **Node.js** 20+
+- **Node.js** 20+ (CI currently uses Node 25; align locally if you hit version-specific issues)
 - **pnpm** (see [packageManager](package.json) for the version used in this repo)
 - **PostgreSQL** (local or hosted) for Prisma
 - **Git**
@@ -177,15 +178,21 @@ With the API running in non-production mode, OpenAPI UI is available at **`http:
 
 ## Scripts (root)
 
-| Command            | Description                              |
-| ------------------ | ---------------------------------------- |
-| `pnpm dev`         | Run dev tasks for workspace packages     |
-| `pnpm build`       | Production build (Turbo)                 |
-| `pnpm lint`        | ESLint across packages                   |
-| `pnpm typecheck`   | TypeScript checks                        |
-| `pnpm db:generate` | `prisma generate` in `@repo/database`    |
-| `pnpm db:migrate`  | `prisma migrate dev` in `@repo/database` |
-| `pnpm db:studio`   | Prisma Studio                            |
+| Command                     | Description                                                                 |
+| --------------------------- | --------------------------------------------------------------------------- |
+| `pnpm dev`                  | Run dev tasks for workspace packages                                        |
+| `pnpm build`                | Production build (Turbo)                                                  |
+| `pnpm lint`                 | ESLint across packages                                                      |
+| `pnpm typecheck`            | TypeScript checks                                                           |
+| `pnpm test`                 | Workspace tests via Turbo (API Jest + web Vitest unit/integration)        |
+| `pnpm db:generate`          | `prisma generate` in `@repo/database`                                       |
+| `pnpm db:migrate`           | `prisma migrate dev` in `@repo/database`                                    |
+| `pnpm db:studio`            | Prisma Studio                                                               |
+| `pnpm web:test`             | Web Vitest (unit + integration)                                             |
+| `pnpm web:test-unit`        | Web unit tests only                                                         |
+| `pnpm web:test-integration` | Web integration tests only                                                  |
+| `pnpm web:test-storybook`   | Storybook Vitest browser project (needs Chromium; see below)              |
+| `pnpm web:test-e2e`         | Playwright e2e (`apps/web`)                                                 |
 
 ### API tests
 
@@ -195,6 +202,27 @@ Run from the repo root:
 pnpm --filter api test       # unit tests
 pnpm --filter api test:e2e   # e2e (Jest + supertest)
 ```
+
+### Web tests
+
+```bash
+pnpm web:test                       # Vitest: unit + integration
+pnpm web:test-storybook             # Storybook + Vitest (install browser first)
+pnpm --filter web test:e2e:install  # one-time Playwright Chromium for e2e
+pnpm web:test-e2e                   # Playwright e2e
+```
+
+For Storybook Vitest (and CI), Chromium is installed with:
+
+```bash
+pnpm --filter web exec playwright install chromium
+```
+
+Local Storybook: `pnpm --filter web storybook` (port 6006).
+
+### CI
+
+On pull requests and pushes to `main`, CI runs `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm --filter web test:storybook` (after installing Chromium), then `pnpm build`. See [.github/workflows/ci.yml](.github/workflows/ci.yml).
 
 ---
 
@@ -207,7 +235,7 @@ Build and run using the root Dockerfiles (set build args / env such as `DATABASE
 ## Future improvements
 
 - **Real-time** — WebSockets or SSE for live task and notification updates
-- **Frontend tests** — Playwright or RTL for critical flows
+- **Broader e2e coverage** — Expand Playwright flows for critical product paths in CI
 - **Analytics** — Project dashboards and reporting
 
 ---

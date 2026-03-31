@@ -5,6 +5,8 @@ import { Monitor, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 import { Button } from '@web/components/ui/button';
+import { useMeQuery } from '@web/lib/api/queries';
+import { useDebouncedPreferenceUpdate } from '@web/lib/api/mutations/use-debounced-preference-update';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,10 +14,13 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@web/components/ui/dropdown-menu';
+import { isThemeMode } from '@web/lib/theme-preferences';
 
 export function ThemeToggle() {
   const [mounted, setMounted] = React.useState(false);
   const { theme, setTheme } = useTheme();
+  const { data: me } = useMeQuery();
+  const { queuePreferenceUpdate } = useDebouncedPreferenceUpdate();
 
   React.useEffect(() => {
     setMounted(true);
@@ -48,7 +53,13 @@ export function ThemeToggle() {
       <DropdownMenuContent align="end" className="min-w-40">
         <DropdownMenuRadioGroup
           value={mounted ? (theme ?? 'system') : 'system'}
-          onValueChange={setTheme}
+          onValueChange={(value) => {
+            if (!isThemeMode(value)) return;
+            setTheme(value);
+            if (me) {
+              queuePreferenceUpdate({ themeMode: value });
+            }
+          }}
         >
           <DropdownMenuRadioItem value="light">
             <Sun className="size-4" />

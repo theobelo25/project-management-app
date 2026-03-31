@@ -24,6 +24,7 @@ import { Bell, Check, LogOut, Plus, X } from 'lucide-react';
 import * as React from 'react';
 import { CreateOrganizationDialog } from '@web/components/organizations/create-organization-dialog';
 import { ThemeToggle } from './theme-toggle';
+import { ColorSchemeToggle } from './color-scheme-toggle';
 import { Separator } from '@web/components/ui/separator';
 import type { UserView } from '@repo/types';
 
@@ -494,12 +495,18 @@ export function SecondaryNav({
       <>
         {isPending ? (
           <div className="flex flex-col gap-3 border-t border-border pt-4">
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <ColorSchemeToggle />
+            </div>
             <div className="h-10 animate-pulse rounded-lg bg-muted" />
           </div>
         ) : isAuthenticated ? (
           <div className="flex flex-col gap-3 border-t border-border pt-4">
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <ColorSchemeToggle />
+            </div>
             <UserAccountMenu
               user={user}
               variant="drawer"
@@ -508,7 +515,10 @@ export function SecondaryNav({
           </div>
         ) : (
           <div className="flex flex-col gap-2 border-t border-border pt-4">
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <ColorSchemeToggle />
+            </div>
             {authItems.map(({ href, label, primary }) => (
               <Link
                 key={href}
@@ -531,6 +541,7 @@ export function SecondaryNav({
   return (
     <nav className="flex items-center gap-3" aria-label="Account">
       <ThemeToggle />
+      <ColorSchemeToggle />
       {isPending ? (
         <div className="h-8 w-24 animate-pulse rounded bg-muted" />
       ) : isAuthenticated ? (

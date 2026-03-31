@@ -131,6 +131,14 @@ export class AuthController {
       updateData.email = dto.email;
     }
 
+    if (dto.themeMode !== undefined) {
+      updateData.themeMode = dto.themeMode;
+    }
+
+    if (dto.colorScheme !== undefined) {
+      updateData.colorScheme = dto.colorScheme;
+    }
+
     if (dto.password !== undefined) {
       updateData.passwordHash = await this.authService.hashPassword(
         dto.password,

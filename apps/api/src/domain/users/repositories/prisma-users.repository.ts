@@ -21,6 +21,20 @@ function toPrismaUserUpdate(dto: UpdateUserInputDto): Prisma.UserUpdateInput {
   if (dto.email !== undefined) data.email = dto.email;
   if (dto.name !== undefined) data.name = dto.name;
   if (dto.passwordHash !== undefined) data.passwordHash = dto.passwordHash;
+  if (dto.themeMode !== undefined)
+    data.themeMode =
+      dto.themeMode === 'light'
+        ? 'LIGHT'
+        : dto.themeMode === 'dark'
+          ? 'DARK'
+          : 'SYSTEM';
+  if (dto.colorScheme !== undefined)
+    data.colorScheme =
+      dto.colorScheme === 'default'
+        ? 'DEFAULT'
+        : dto.colorScheme === 'pastel-warm'
+          ? 'PASTEL_WARM'
+          : 'PASTEL_COOL';
   return data;
 }
 

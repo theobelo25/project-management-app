@@ -1197,6 +1197,8 @@ export const UserScalarFieldEnum = {
   email: 'email',
   name: 'name',
   passwordHash: 'passwordHash',
+  themeMode: 'themeMode',
+  colorScheme: 'colorScheme',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   defaultOrganizationId: 'defaultOrganizationId',
@@ -1384,6 +1386,34 @@ export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
  * Reference to a field of type 'String[]'
  */
 export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ThemeMode'
+ */
+export type EnumThemeModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ThemeMode'>
+    
+
+
+/**
+ * Reference to a field of type 'ThemeMode[]'
+ */
+export type ListEnumThemeModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ThemeMode[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ColorScheme'
+ */
+export type EnumColorSchemeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ColorScheme'>
+    
+
+
+/**
+ * Reference to a field of type 'ColorScheme[]'
+ */
+export type ListEnumColorSchemeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ColorScheme[]'>
     
 
 

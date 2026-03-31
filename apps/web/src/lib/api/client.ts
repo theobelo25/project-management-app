@@ -179,6 +179,8 @@ export async function fetchMe(): Promise<UserView | null> {
 export async function updateMe(dto: {
   name?: string;
   email?: string;
+  themeMode?: 'light' | 'dark' | 'system';
+  colorScheme?: 'default' | 'pastel-warm' | 'pastel-cool';
   password?: string;
   confirmPassword?: string;
 }): Promise<UserView> {

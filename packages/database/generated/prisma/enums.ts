@@ -59,3 +59,21 @@ export const OrganizationRole = {
 } as const
 
 export type OrganizationRole = (typeof OrganizationRole)[keyof typeof OrganizationRole]
+
+
+export const ThemeMode = {
+  LIGHT: 'LIGHT',
+  DARK: 'DARK',
+  SYSTEM: 'SYSTEM'
+} as const
+
+export type ThemeMode = (typeof ThemeMode)[keyof typeof ThemeMode]
+
+
+export const ColorScheme = {
+  DEFAULT: 'DEFAULT',
+  PASTEL_WARM: 'PASTEL_WARM',
+  PASTEL_COOL: 'PASTEL_COOL'
+} as const
+
+export type ColorScheme = (typeof ColorScheme)[keyof typeof ColorScheme]
