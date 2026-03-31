@@ -20,7 +20,8 @@ This project is intended as a **production-style portfolio application**: typed 
 - **Organizations** — Multi-tenant workspaces with organization roles
 - **Projects** — Project membership with **project roles** (owner, admin, member) and settings
 - **Tasks** — CRUD, statuses and priorities, **Kanban board** with drag-and-drop (**@dnd-kit**), task detail and list views
-- **Notifications** — In-app notification domain
+- **Notifications** — In-app notification domain for task assignment, task updates, project membership add/remove, and role changes
+- **Realtime updates** — Socket.IO-based realtime events for notifications, invites, task updates, and project membership changes
 - **API** — REST, **Zod**-validated DTOs (shared with `@repo/types`), global exception handling, **rate limiting**, structured logging (**Pino**)
 - **Docs** — **OpenAPI/Swagger** at `/api/docs` when `NODE_ENV` is not `production`
 - **Testing** — API: Jest unit tests and **supertest** e2e; Web: **Vitest** (unit + integration), **Playwright** e2e, **Storybook** with Vitest browser projects
@@ -123,12 +124,14 @@ The API validates env at startup (`apps/api/src/config/env.validation.ts`). Crea
 | `REFRESH_TOKEN_EXPIRATION_MS`    | Refresh token lifetime (ms)                                                        |
 | `JWT_ISSUER`                     | JWT `iss`                                                                          |
 | `JWT_AUDIENCE`                   | JWT `aud`                                                                          |
+| `REALTIME_ENABLED`               | Enable backend realtime gateway (`true`/`false`)                                   |
 
 ### Web (`apps/web/.env.local`)
 
 | Variable              | Required | Description                                                                |
 | --------------------- | -------- | -------------------------------------------------------------------------- |
 | `NEXT_PUBLIC_API_URL` | Yes      | Public origin of the API (no trailing slash), e.g. `http://localhost:3333` |
+| `NEXT_PUBLIC_REALTIME_ENABLED` | No | Enable realtime socket client (`true`/`false`) |
 | `NEXT_PUBLIC_APP_URL` | No       | Site URL; defaults to `http://localhost:3000` in layout if unset           |
 
 ---
@@ -232,10 +235,10 @@ Build and run using the root Dockerfiles (set build args / env such as `DATABASE
 
 ---
 
-## Future improvements
+## Current status and next improvements
 
-- **Real-time** — WebSockets or SSE for live task and notification updates
-- **Broader e2e coverage** — Expand Playwright flows for critical product paths in CI
+- **Realtime is live** — WebSockets are implemented for notifications/invites and project/task collaboration events
+- **Broader e2e coverage** — Expand Playwright flows for critical realtime and role-based product paths
 - **Analytics** — Project dashboards and reporting
 
 ---
