@@ -15,7 +15,7 @@ export default function ProjectsLayout({ children }: LayoutProps) {
             <ProjectsUnifiedHeader />
           </div>
         </header>
-        <PageLayout className="flex-1 min-h-0 pb-6">{children}</PageLayout>
+        <PageLayout className="flex-1 min-h-0 pt-6 pb-6">{children}</PageLayout>
       </div>
     </TaskDetailProvider>
   );

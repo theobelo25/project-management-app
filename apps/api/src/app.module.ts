@@ -13,6 +13,7 @@ import { ProjectsModule } from './domain/projects/projects.module';
 import { TasksModule } from './domain/tasks/tasks.module';
 import { OrganizationsModule } from './domain/organizations/organizations.module';
 import { NotificationsModule } from './domain/notifications/notifications.module';
+import { RealtimeModule } from './domain/realtime/realtime.module';
 import { AppExceptionFilter } from './common/filters/app-exception.filter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
@@ -42,6 +43,7 @@ import { ZodSerializerInterceptor } from 'nestjs-zod';
     TasksModule,
     OrganizationsModule,
     NotificationsModule,
+    RealtimeModule,
     ThrottlerModule.forRoot([
       {
         name: 'global',

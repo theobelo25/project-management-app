@@ -64,11 +64,8 @@ export default function OrganizationsPage() {
 
   return (
     <>
-      <div className="pt-6">
+      <div className="pt-6 space-y-6">
         <OrganizationsPageHeader search={search} onSearchChange={setSearch} />
-      </div>
-
-      <div className="space-y-6">
         <OrganizationsList
           isLoading={isLoading}
           isError={isError}

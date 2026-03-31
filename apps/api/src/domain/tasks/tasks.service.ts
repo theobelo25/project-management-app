@@ -23,6 +23,13 @@ import {
   throwTaskNotFoundOnPrismaP2025,
   throwTaskNotFoundOnPrismaAssignOrUnassignErrors,
 } from './utils/task-prisma-error-mapper';
+import { RealtimePublisher } from '../realtime/realtime.publisher';
+import { REALTIME_EVENT } from '../realtime/realtime.events';
+import {
+  PROJECT_MEMBER_REPOSITORY,
+  type ProjectMemberRepository,
+} from '../projects/repositories/projects.repository';
+import { Inject } from '@nestjs/common';
 
 /** Base fields so logs are filterable in Loki/Datadog/etc. */
 const TASKS_LOG_CTX = {
@@ -30,12 +37,26 @@ const TASKS_LOG_CTX = {
   component: 'TasksService',
 } as const;
 
+const TASK_UPDATE_LABELS: Record<string, string> = {
+  title: 'title',
+  description: 'description',
+  status: 'status',
+  priority: 'priority',
+  dueDate: 'due date',
+  labelColor: 'label',
+  assigneeIds: 'assignees',
+  position: 'position',
+};
+
 @Injectable()
 export class TasksService {
   constructor(
     private readonly tasksRepository: TasksRepository,
     private readonly taskAssigneePolicy: TaskAssigneePolicy,
     private readonly taskAssignmentNotifier: TaskAssignmentNotifier,
+    private readonly realtimePublisher: RealtimePublisher,
+    @Inject(PROJECT_MEMBER_REPOSITORY)
+    private readonly projectMembersRepository: ProjectMemberRepository,
     private readonly logger: PinoLogger,
   ) {}
 
@@ -57,8 +78,9 @@ export class TasksService {
         : [];
 
     for (const assigneeUserId of assigneeIds) {
-      await this.taskAssigneePolicy.assertAssigneeInSameOrgOrThrow(
+      await this.taskAssigneePolicy.assertAssigneeCanBeAssignedToProjectOrThrow(
         assigneeUserId,
+        dto.projectId,
         user,
       );
     }
@@ -101,6 +123,17 @@ export class TasksService {
       'Task created successfully',
     );
 
+    this.realtimePublisher.toProject(
+      task.projectId,
+      REALTIME_EVENT.taskCreated,
+      {
+        taskId: task.id,
+        projectId: task.projectId,
+        updatedById: user.id,
+        changedFields: ['created'],
+      },
+    );
+
     return toTaskView(task);
   }
 
@@ -110,6 +143,10 @@ export class TasksService {
     dto: UpdateTaskDto,
   ): Promise<TaskView> {
     const input = toUpdateTaskInput(dto);
+    const changedFields = Object.keys(input).filter(
+      (field) =>
+        (input as unknown as Record<string, unknown>)[field] !== undefined,
+    );
 
     let task;
     try {
@@ -128,6 +165,55 @@ export class TasksService {
       },
       'Task updated successfully',
     );
+
+    const projectMembers =
+      await this.projectMembersRepository.findMembersByProjectId(
+        task.projectId,
+      );
+
+    for (const member of projectMembers) {
+      if (member.userId === user.id) continue;
+      try {
+        await this.taskAssignmentNotifier.notifyTaskUpdated(member.userId, {
+          taskId: task.id,
+          taskTitle: task.title,
+          projectId: task.projectId,
+          updatedById: user.id,
+          changedFields: changedFields.map(
+            (field) => TASK_UPDATE_LABELS[field] ?? field,
+          ),
+        });
+      } catch (err) {
+        this.logger.warn(
+          {
+            ...TASKS_LOG_CTX,
+            event: 'task.updated.assignee_notification_failed',
+            taskId: task.id,
+            userId: member.userId,
+            updatedById: user.id,
+            err,
+          },
+          'Failed to notify task assignee on update',
+        );
+      }
+    }
+
+    this.realtimePublisher.toProject(
+      task.projectId,
+      REALTIME_EVENT.taskUpdated,
+      {
+        taskId: task.id,
+        projectId: task.projectId,
+        updatedById: user.id,
+        changedFields,
+      },
+    );
+    this.realtimePublisher.toTask(task.id, REALTIME_EVENT.taskUpdated, {
+      taskId: task.id,
+      projectId: task.projectId,
+      updatedById: user.id,
+      changedFields,
+    });
 
     return toTaskView(task);
   }
@@ -159,6 +245,8 @@ export class TasksService {
   }
 
   async delete(taskId: string, user: AuthUser): Promise<void> {
+    const task = await this.findById(taskId, user);
+
     try {
       await this.tasksRepository.delete(taskId);
     } catch (err) {
@@ -174,6 +262,23 @@ export class TasksService {
       },
       'Task deleted successfully',
     );
+
+    this.realtimePublisher.toProject(
+      task.projectId,
+      REALTIME_EVENT.taskDeleted,
+      {
+        taskId,
+        projectId: task.projectId,
+        updatedById: user.id,
+        changedFields: ['deleted'],
+      },
+    );
+    this.realtimePublisher.toTask(taskId, REALTIME_EVENT.taskDeleted, {
+      taskId,
+      projectId: task.projectId,
+      updatedById: user.id,
+      changedFields: ['deleted'],
+    });
   }
 
   async assignUser(
@@ -181,8 +286,16 @@ export class TasksService {
     assigneeUserId: string,
     currentUser: AuthUser,
   ): Promise<TaskAssignmentView> {
-    await this.taskAssigneePolicy.assertAssigneeInSameOrgOrThrow(
+    let task;
+    try {
+      task = await this.tasksRepository.findByIdOrThrow(taskId);
+    } catch (err) {
+      throwTaskNotFoundOnPrismaP2025(err, { taskId, userId: currentUser.id });
+    }
+
+    await this.taskAssigneePolicy.assertAssigneeCanBeAssignedToProjectOrThrow(
       assigneeUserId,
+      task.projectId,
       currentUser,
     );
 
@@ -237,6 +350,25 @@ export class TasksService {
         },
         'Task assignee added successfully',
       );
+
+      this.realtimePublisher.toProject(
+        assignment.task.projectId,
+        REALTIME_EVENT.taskAssigneeAdded,
+        {
+          taskId,
+          projectId: assignment.task.projectId,
+          assigneeUserId,
+          updatedById: currentUser.id,
+          changedFields: ['assignees'],
+        },
+      );
+      this.realtimePublisher.toTask(taskId, REALTIME_EVENT.taskAssigneeAdded, {
+        taskId,
+        projectId: assignment.task.projectId,
+        assigneeUserId,
+        updatedById: currentUser.id,
+        changedFields: ['assignees'],
+      });
     }
 
     return toTaskAssignmentView(assignment);
@@ -247,6 +379,8 @@ export class TasksService {
     assigneeUserId: string,
     currentUser: AuthUser,
   ): Promise<void> {
+    const task = await this.findById(taskId, currentUser);
+
     let deletedCount: number;
     try {
       deletedCount = await this.tasksRepository.unassignUser(
@@ -271,6 +405,29 @@ export class TasksService {
           updatedById: currentUser.id,
         },
         'Task assignee removed successfully',
+      );
+
+      this.realtimePublisher.toProject(
+        task.projectId,
+        REALTIME_EVENT.taskAssigneeRemoved,
+        {
+          taskId,
+          projectId: task.projectId,
+          assigneeUserId,
+          updatedById: currentUser.id,
+          changedFields: ['assignees'],
+        },
+      );
+      this.realtimePublisher.toTask(
+        taskId,
+        REALTIME_EVENT.taskAssigneeRemoved,
+        {
+          taskId,
+          projectId: task.projectId,
+          assigneeUserId,
+          updatedById: currentUser.id,
+          changedFields: ['assignees'],
+        },
       );
     }
   }

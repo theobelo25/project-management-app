@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { TaskAssignedNotificationPayload } from '../../notifications/notifications.payloads';
+import { TaskUpdatedNotificationPayload } from '../../notifications/notifications.payloads';
 
 @Injectable()
 export class TaskAssignmentNotifier {
@@ -11,5 +12,12 @@ export class TaskAssignmentNotifier {
     payload: TaskAssignedNotificationPayload,
   ): Promise<void> {
     await this.notificationsService.notifyTaskAssigned(userId, payload);
+  }
+
+  async notifyTaskUpdated(
+    userId: string,
+    payload: TaskUpdatedNotificationPayload,
+  ): Promise<void> {
+    await this.notificationsService.notifyTaskUpdated(userId, payload);
   }
 }

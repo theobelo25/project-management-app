@@ -480,8 +480,14 @@ export function SecondaryNav({
   const { data: user, isPending } = useMeQuery();
   const queryClient = useQueryClient();
   const router = useRouter();
+  const [isClientReady, setIsClientReady] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsClientReady(true);
+  }, []);
 
   const isAuthenticated = !!user;
+  const showLoadingState = !isClientReady || isPending;
 
   const handleLogoutClick = () => {
     void logout();
@@ -493,7 +499,7 @@ export function SecondaryNav({
   if (variant === 'drawer') {
     return (
       <>
-        {isPending ? (
+        {showLoadingState ? (
           <div className="flex flex-col gap-3 border-t border-border pt-4">
             <div className="flex items-center gap-2">
               <ThemeToggle />
@@ -542,7 +548,7 @@ export function SecondaryNav({
     <nav className="flex items-center gap-3" aria-label="Account">
       <ThemeToggle />
       <ColorSchemeToggle />
-      {isPending ? (
+      {showLoadingState ? (
         <div className="h-8 w-24 animate-pulse rounded bg-muted" />
       ) : isAuthenticated ? (
         <>

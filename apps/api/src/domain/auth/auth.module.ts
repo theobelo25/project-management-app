@@ -65,6 +65,11 @@ import { AuthorizedUserForOrgService } from './authorized-user-for-org.service';
     RefreshTokensService,
     CookiesService,
   ],
-  exports: [AuthService, AccessTokensService, CookiesService],
+  exports: [
+    AuthService,
+    AccessTokensService,
+    CookiesService,
+    AuthorizedUserForOrgService,
+  ],
 })
 export class AuthModule {}

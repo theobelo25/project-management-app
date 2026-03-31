@@ -19,6 +19,9 @@ import {
 import { PinoLogger } from 'nestjs-pino';
 import { UsersService } from '@api/domain/users/users.service';
 import { ProjectWithRole } from '../types/projects.repository.types';
+import { NotificationsService } from '@api/domain/notifications/notifications.service';
+import { RealtimePublisher } from '@api/domain/realtime/realtime.publisher';
+import { REALTIME_EVENT } from '@api/domain/realtime/realtime.events';
 
 @Injectable()
 export class ProjectMembersService {
@@ -27,6 +30,8 @@ export class ProjectMembersService {
     private readonly projects: ProjectMemberRepository,
     private readonly projectAccessService: ProjectAccessService,
     private readonly usersService: UsersService,
+    private readonly notificationsService: NotificationsService,
+    private readonly realtimePublisher: RealtimePublisher,
     private readonly logger: PinoLogger,
   ) {
     this.logger.setContext(ProjectMembersService.name);
@@ -122,6 +127,45 @@ export class ProjectMembersService {
       'Project member added',
     );
 
+    this.realtimePublisher.toOrg(
+      actor.orgId,
+      REALTIME_EVENT.projectMemberAdded,
+      {
+        projectId,
+        userId: dto.userId,
+        actorUserId: actor.id,
+        role: dto.role,
+      },
+    );
+    this.realtimePublisher.toUser(
+      dto.userId,
+      REALTIME_EVENT.projectMemberAdded,
+      {
+        projectId,
+        userId: dto.userId,
+        actorUserId: actor.id,
+        role: dto.role,
+      },
+    );
+
+    try {
+      await this.notificationsService.notifyProjectMemberAdded(dto.userId, {
+        projectId,
+        addedById: actor.id,
+      });
+    } catch (error) {
+      this.logger.warn(
+        {
+          event: 'project.member.added.notification_failed',
+          projectId,
+          actorUserId: actor.id,
+          addedUserId: dto.userId,
+          error,
+        },
+        'Failed to notify newly added project member',
+      );
+    }
+
     return toProjectMemberView(member);
   }
 
@@ -170,6 +214,50 @@ export class ProjectMembersService {
       'Project member role updated',
     );
 
+    this.realtimePublisher.toOrg(
+      actor.orgId,
+      REALTIME_EVENT.projectMemberRoleUpdated,
+      {
+        projectId,
+        userId: memberUserId,
+        actorUserId: actor.id,
+        newRole: dto.role,
+      },
+    );
+    this.realtimePublisher.toUser(
+      memberUserId,
+      REALTIME_EVENT.projectMemberRoleUpdated,
+      {
+        projectId,
+        userId: memberUserId,
+        actorUserId: actor.id,
+        newRole: dto.role,
+      },
+    );
+
+    try {
+      await this.notificationsService.notifyProjectMemberRoleChanged(
+        memberUserId,
+        {
+          projectId,
+          changedById: actor.id,
+          newRole: dto.role,
+        },
+      );
+    } catch (error) {
+      this.logger.warn(
+        {
+          event: 'project.member.role.updated.notification_failed',
+          projectId,
+          actorUserId: actor.id,
+          memberUserId,
+          newRole: dto.role,
+          error,
+        },
+        'Failed to notify project member role change',
+      );
+    }
+
     return toProjectMemberView(member);
   }
 
@@ -209,5 +297,42 @@ export class ProjectMembersService {
       },
       'Project member removed',
     );
+
+    this.realtimePublisher.toOrg(
+      actor.orgId,
+      REALTIME_EVENT.projectMemberRemoved,
+      {
+        projectId,
+        userId: memberUserId,
+        actorUserId: actor.id,
+      },
+    );
+    this.realtimePublisher.toUser(
+      memberUserId,
+      REALTIME_EVENT.projectMemberRemoved,
+      {
+        projectId,
+        userId: memberUserId,
+        actorUserId: actor.id,
+      },
+    );
+
+    try {
+      await this.notificationsService.notifyProjectMemberRemoved(memberUserId, {
+        projectId,
+        removedById: actor.id,
+      });
+    } catch (error) {
+      this.logger.warn(
+        {
+          event: 'project.member.removed.notification_failed',
+          projectId,
+          actorUserId: actor.id,
+          removedUserId: memberUserId,
+          error,
+        },
+        'Failed to notify removed project member',
+      );
+    }
   }
 }

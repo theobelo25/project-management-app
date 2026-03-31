@@ -54,6 +54,10 @@ const TASK_FORBIDDEN_ERRORS = {
     message: 'Cannot assign users from another organization',
     code: 'TASK_ASSIGN_USER_FORBIDDEN_OTHER_ORG',
   },
+  ASSIGN_USER_FORBIDDEN_NOT_PROJECT_MEMBER: {
+    message: 'Cannot assign users who are not project members',
+    code: 'TASK_ASSIGN_USER_FORBIDDEN_NOT_PROJECT_MEMBER',
+  },
 } as const;
 
 type TaskNotFoundKey = keyof typeof TASK_NOT_FOUND_ERRORS;

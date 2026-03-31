@@ -5,6 +5,7 @@ export type AppOptions = {
   host: string;
   port: number;
   frontendOrigin: string;
+  realtimeEnabled: boolean;
 };
 
 export function getAppOptions(config: ConfigService): AppOptions {
@@ -13,5 +14,6 @@ export function getAppOptions(config: ConfigService): AppOptions {
     host: config.getOrThrow<string>('APP_HOST'),
     port: config.getOrThrow<number>('APP_PORT'),
     frontendOrigin: config.getOrThrow<string>('FRONTEND_ORIGIN'),
+    realtimeEnabled: config.get<boolean>('REALTIME_ENABLED') ?? false,
   };
 }
