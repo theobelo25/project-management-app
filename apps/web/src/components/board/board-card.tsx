@@ -36,9 +36,12 @@ export function BoardCard({
       disabled: isOverlay || !canEdit,
     });
 
-  const style = transform
-    ? { transform: CSS.Translate.toString(transform) }
-    : undefined;
+  // With DragOverlay, do not translate the source: it stays in layout and avoids
+  // overflow scrollbars on column bodies (overflow-auto) during drag.
+  const style =
+    transform && !isDragging
+      ? { transform: CSS.Translate.toString(transform) }
+      : undefined;
 
   if (isOverlay) {
     return (
