@@ -69,7 +69,10 @@ export class ProjectsController {
     @Body() body: CreateProjectDto,
   ): Promise<ProjectView> {
     // ensure runtime serialization + OpenAPI response schema stay aligned
-    return this.projectsApplicationService.create(user, toCreateProjectCommand(body));
+    return this.projectsApplicationService.create(
+      user,
+      toCreateProjectCommand(body),
+    );
   }
 
   @Get()

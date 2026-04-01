@@ -78,10 +78,7 @@ export class OrganizationsDomainService {
     organizationId: string,
   ): Promise<void> {
     return this.uow.transaction(async (db) => {
-      const user = await this.usersService.findUserOrganizationIds(
-        userId,
-        db,
-      );
+      const user = await this.usersService.findUserOrganizationIds(userId, db);
 
       if (!user) {
         throw new NotFoundException(OrganizationErrorMessages.USER_NOT_FOUND);

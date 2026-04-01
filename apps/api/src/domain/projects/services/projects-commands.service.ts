@@ -28,7 +28,10 @@ export class ProjectsCommandsService {
     this.logger.setContext(ProjectsCommandsService.name);
   }
 
-  async create(user: AuthUser, command: CreateProjectCommand): Promise<ProjectView> {
+  async create(
+    user: AuthUser,
+    command: CreateProjectCommand,
+  ): Promise<ProjectView> {
     const input: CreateProjectWithOwnerInput = {
       orgId: user.orgId,
       ownerId: user.id,

@@ -84,9 +84,9 @@ import { UnassignTaskUserUseCase } from './use-cases/unassign-task-user.use-case
       useFactory:
         (): import('./repositories/tasks.repository').TasksRepositoryTxFactory =>
         (db) =>
-          new PrismaTasksRepositoryTx(db as ConstructorParameters<
-            typeof PrismaTasksRepositoryTx
-          >[0]),
+          new PrismaTasksRepositoryTx(
+            db as ConstructorParameters<typeof PrismaTasksRepositoryTx>[0],
+          ),
     },
   ],
   /**

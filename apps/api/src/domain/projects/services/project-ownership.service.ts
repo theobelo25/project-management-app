@@ -10,10 +10,7 @@ import {
   type ProjectAuthorizationRepository,
   type ProjectMemberRepository,
 } from '../repositories/projects.repository';
-import {
-  AuthUser,
-  ProjectView,
-} from '@repo/types';
+import { AuthUser, ProjectView } from '@repo/types';
 import { ProjectAccessService } from '../policies/project-access.service';
 import { UNIT_OF_WORK } from '@api/prisma';
 import { UnitOfWork } from '@api/prisma/uow/unit-of-work.interface';

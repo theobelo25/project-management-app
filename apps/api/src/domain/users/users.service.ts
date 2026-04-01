@@ -108,7 +108,10 @@ export class UsersService {
     organizationId: string,
     db?: Db,
   ): Promise<Array<{ id: string; defaultOrganizationId: string | null }>> {
-    return this.usersRepository.getUsersWithActiveOrganization(organizationId, db);
+    return this.usersRepository.getUsersWithActiveOrganization(
+      organizationId,
+      db,
+    );
   }
 
   async updateOrganization(

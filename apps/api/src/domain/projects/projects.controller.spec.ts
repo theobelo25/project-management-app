@@ -1,10 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { ProjectRole } from '@repo/database';
-import type {
-  AuthUser,
-  ProjectDetailView,
-  ProjectView,
-} from '@repo/types';
+import type { AuthUser, ProjectDetailView, ProjectView } from '@repo/types';
 
 import { ProjectsController } from './projects.controller';
 import type { ProjectIdParamDto } from './dto/project-id-param.dto';

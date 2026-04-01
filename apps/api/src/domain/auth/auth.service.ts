@@ -178,10 +178,7 @@ export class AuthService {
   }
 
   private async assertEmailAvailable(email: string, tx: Db): Promise<void> {
-    const existing = await this.usersService.findPrivateUserByEmail(
-      email,
-      tx,
-    );
+    const existing = await this.usersService.findPrivateUserByEmail(email, tx);
 
     if (existing) {
       this.logger.warn(

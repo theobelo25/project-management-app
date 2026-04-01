@@ -125,6 +125,4 @@ export abstract class TasksRepositoryTx implements ITasksRepositoryCore {
   ): Promise<TaskEntity[]>;
 }
 
-export type TasksRepositoryTxFactory = (
-  db: unknown,
-) => TasksRepositoryTx;
+export type TasksRepositoryTxFactory = (db: unknown) => TasksRepositoryTx;

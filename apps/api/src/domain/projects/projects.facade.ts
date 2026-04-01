@@ -33,7 +33,10 @@ export class ProjectsApplicationService {
     this.logger.setContext(ProjectsApplicationService.name);
   }
 
-  async create(user: AuthUser, command: CreateProjectCommand): Promise<ProjectView> {
+  async create(
+    user: AuthUser,
+    command: CreateProjectCommand,
+  ): Promise<ProjectView> {
     return this.projectsService.create(user, command);
   }
 
@@ -57,7 +60,12 @@ export class ProjectsApplicationService {
     command: UpdateProjectCommand,
     authorizedProject?: ProjectWithRole,
   ): Promise<ProjectView> {
-    return this.projectsService.update(projectId, user, command, authorizedProject);
+    return this.projectsService.update(
+      projectId,
+      user,
+      command,
+      authorizedProject,
+    );
   }
 
   async archive(

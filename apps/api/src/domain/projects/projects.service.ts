@@ -24,7 +24,10 @@ export class ProjectsService {
     this.logger.setContext(ProjectsService.name);
   }
 
-  async create(user: AuthUser, command: CreateProjectCommand): Promise<ProjectView> {
+  async create(
+    user: AuthUser,
+    command: CreateProjectCommand,
+  ): Promise<ProjectView> {
     return this.commands.create(user, command);
   }
 
