@@ -13,7 +13,7 @@ import {
   vi,
 } from 'vitest';
 
-import SignInForm from '@web/components/auth/signin-form';
+import SignUpForm from '@web/components/auth/signup-form';
 
 const push = vi.fn();
 const useSearchParamsMock = vi.fn(() => new URLSearchParams());
@@ -37,21 +37,27 @@ vi.mock('@web/lib/api/public-api-url', () => ({
 }));
 
 const server = setupServer(
-  http.post('http://127.0.0.1:9999/api/auth/login', async ({ request }) => {
-    const body = (await request.json()) as { email: string; password: string };
+  http.post('http://127.0.0.1:9999/api/auth/signup', async ({ request }) => {
+    const body = (await request.json()) as {
+      email: string;
+      name: string;
+      password: string;
+      confirmPassword: string;
+    };
+
     return HttpResponse.json({
       id: 'user-1',
       orgId: 'org-1',
       organizationName: 'Test Org',
       email: body.email,
-      name: 'Test User',
+      name: body.name,
       createdAt: '2020-01-01T00:00:00.000Z',
       updatedAt: '2020-01-01T00:00:00.000Z',
     });
   }),
 );
 
-describe('SignInForm (integration)', () => {
+describe('SignUpForm (integration)', () => {
   beforeAll(() => {
     server.listen({ onUnhandledRequest: 'error' });
   });
@@ -68,30 +74,6 @@ describe('SignInForm (integration)', () => {
     server.close();
   });
 
-  it('submits credentials and navigates on success', async () => {
-    const user = userEvent.setup();
-    const queryClient = new QueryClient({
-      defaultOptions: {
-        queries: { retry: false },
-        mutations: { retry: false },
-      },
-    });
-
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SignInForm />
-      </QueryClientProvider>,
-    );
-
-    await user.type(screen.getByLabelText('Email'), 'dev@example.com');
-    await user.type(screen.getByLabelText('Password'), 'password123');
-    await user.click(screen.getByRole('button', { name: /sign in/i }));
-
-    await waitFor(() => {
-      expect(push).toHaveBeenCalledWith('/projects');
-    });
-  });
-
   it('ignores external callbackUrl values and falls back to projects', async () => {
     const user = userEvent.setup();
     const queryClient = new QueryClient({
@@ -106,13 +88,15 @@ describe('SignInForm (integration)', () => {
 
     render(
       <QueryClientProvider client={queryClient}>
-        <SignInForm />
+        <SignUpForm />
       </QueryClientProvider>,
     );
 
+    await user.type(screen.getByLabelText('Name'), 'Dev User');
     await user.type(screen.getByLabelText('Email'), 'dev@example.com');
-    await user.type(screen.getByLabelText('Password'), 'password123');
-    await user.click(screen.getByRole('button', { name: /sign in/i }));
+    await user.type(screen.getByLabelText(/^Password$/i), 'Password123!');
+    await user.type(screen.getByLabelText('Confirm password'), 'Password123!');
+    await user.click(screen.getByRole('button', { name: /create account/i }));
 
     await waitFor(() => {
       expect(push).toHaveBeenCalledWith('/projects');

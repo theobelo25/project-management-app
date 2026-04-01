@@ -4,6 +4,7 @@ import { AuthCard } from '@web/components/auth/auth-card';
 
 import SignInForm from '@web/components/auth/signin-form';
 import { ROUTES } from '@web/lib/routes';
+import { sanitizeCallbackUrl } from '@web/lib/safe-callback-url';
 
 export const metadata: Metadata = {
   title: 'Sign In',
@@ -16,8 +17,10 @@ export default async function SignInPage({
   searchParams: Promise<{ callbackUrl?: string }> | { callbackUrl?: string };
 }) {
   const resolvedParams = await searchParams; // or use React.use() if you have it
-  const signupHref = resolvedParams?.callbackUrl
-    ? `${ROUTES.signup}?callbackUrl=${encodeURIComponent(resolvedParams.callbackUrl)}`
+  const hasCallbackUrl = Boolean(resolvedParams?.callbackUrl);
+  const callbackUrl = sanitizeCallbackUrl(resolvedParams?.callbackUrl);
+  const signupHref = hasCallbackUrl
+    ? `${ROUTES.signup}?callbackUrl=${encodeURIComponent(callbackUrl)}`
     : ROUTES.signup;
 
   return (

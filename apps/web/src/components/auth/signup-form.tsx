@@ -15,8 +15,8 @@ import { Label } from '@web/components/ui/label';
 import { Eye, EyeOff } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ME_QUERY_KEY } from '@web/lib/api/queries';
-import { ROUTES } from '@web/lib/routes';
 import { toast } from 'sonner';
+import { sanitizeCallbackUrl } from '@web/lib/safe-callback-url';
 
 type SignUpFormProps = {
   isLoading?: boolean;
@@ -27,7 +27,7 @@ export default function SignUpForm({ isLoading = false }: SignUpFormProps) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') ?? ROUTES.projects;
+  const callbackUrl = sanitizeCallbackUrl(searchParams.get('callbackUrl'));
 
   const queryClient = useQueryClient();
   const signupMutation = useMutation({
