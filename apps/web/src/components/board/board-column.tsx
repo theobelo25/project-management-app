@@ -39,8 +39,7 @@ export function BoardColumn({
         <h2 className="text-sm font-medium text-muted-foreground">{title}</h2>
         <span className="text-xs text-muted-foreground">{tasks.length}</span>
       </div>
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto py-0.5 -mx-0.5 px-0.5">
-        {' '}
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overflow-x-hidden overscroll-y-contain py-0.5 -mx-0.5 px-0.5">
         {tasks.map((task) => (
           <BoardCard key={task.id} task={task} canEdit={canEditTasks} />
         ))}
