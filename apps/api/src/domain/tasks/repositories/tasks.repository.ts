@@ -1,61 +1,64 @@
+import type {
+  TaskEntity,
+  TaskAssignmentResultEntity,
+} from '../domain/task.entity';
 import {
   CreateTaskInput,
-  UpdateTaskInput,
+  UpdateTaskRepositoryInput,
   FindTasksInput,
   PaginatedTasksResult,
-  TaskWithAssignees,
   TaskAccessContext,
-  TaskAssignmentResult,
 } from '../types/tasks.repository.types';
 import type { Prisma } from '@repo/database';
 
-export abstract class TasksRepository {
-  abstract create(data: CreateTaskInput): Promise<TaskWithAssignees>;
+/**
+ * Shared contract for root repository and transactional repository implementations.
+ * Keeps `TasksRepository` / `TasksRepositoryTx` in sync (DRY).
+ */
+export interface ITasksRepositoryCore {
+  create(data: CreateTaskInput): Promise<TaskEntity>;
 
-  abstract update(
-    taskId: string,
-    data: UpdateTaskInput,
-  ): Promise<TaskWithAssignees>;
+  update(taskId: string, data: UpdateTaskRepositoryInput): Promise<TaskEntity>;
 
-  abstract findByIdOrThrow(taskId: string): Promise<TaskWithAssignees>;
+  findByIdOrThrow(taskId: string): Promise<TaskEntity>;
 
-  abstract findByIdWithAccessContext(
+  findByIdWithAccessContext(
     taskId: string,
     userId: string,
   ): Promise<TaskAccessContext | null>;
 
-  abstract findMany(input: FindTasksInput): Promise<PaginatedTasksResult>;
+  findMany(input: FindTasksInput): Promise<PaginatedTasksResult>;
 
-  abstract delete(taskId: string): Promise<void>;
+  delete(taskId: string): Promise<void>;
 
-  abstract assignUser(
+  assignUser(
     taskId: string,
     userId: string,
-  ): Promise<TaskAssignmentResult>;
+  ): Promise<TaskAssignmentResultEntity>;
 
-  abstract unassignUser(taskId: string, userId: string): Promise<number>;
+  unassignUser(taskId: string, userId: string): Promise<number>;
 
-  abstract getTaskCountsByProjectIds(
+  getTaskCountsByProjectIds(
     projectIds: string[],
     orgId: string,
   ): Promise<Map<string, { total: number; completed: number }>>;
 
-  abstract findRecentByProjectId(
+  findRecentByProjectId(
     projectId: string,
     limit: number,
     orgId: string,
-  ): Promise<TaskWithAssignees[]>;
+  ): Promise<TaskEntity[]>;
 }
 
-export abstract class TasksRepositoryTx {
-  abstract create(data: CreateTaskInput): Promise<TaskWithAssignees>;
+export abstract class TasksRepository implements ITasksRepositoryCore {
+  abstract create(data: CreateTaskInput): Promise<TaskEntity>;
 
   abstract update(
     taskId: string,
-    data: UpdateTaskInput,
-  ): Promise<TaskWithAssignees>;
+    data: UpdateTaskRepositoryInput,
+  ): Promise<TaskEntity>;
 
-  abstract findByIdOrThrow(taskId: string): Promise<TaskWithAssignees>;
+  abstract findByIdOrThrow(taskId: string): Promise<TaskEntity>;
 
   abstract findByIdWithAccessContext(
     taskId: string,
@@ -69,7 +72,7 @@ export abstract class TasksRepositoryTx {
   abstract assignUser(
     taskId: string,
     userId: string,
-  ): Promise<TaskAssignmentResult>;
+  ): Promise<TaskAssignmentResultEntity>;
 
   abstract unassignUser(taskId: string, userId: string): Promise<number>;
 
@@ -82,7 +85,45 @@ export abstract class TasksRepositoryTx {
     projectId: string,
     limit: number,
     orgId: string,
-  ): Promise<TaskWithAssignees[]>;
+  ): Promise<TaskEntity[]>;
+}
+
+export abstract class TasksRepositoryTx implements ITasksRepositoryCore {
+  abstract create(data: CreateTaskInput): Promise<TaskEntity>;
+
+  abstract update(
+    taskId: string,
+    data: UpdateTaskRepositoryInput,
+  ): Promise<TaskEntity>;
+
+  abstract findByIdOrThrow(taskId: string): Promise<TaskEntity>;
+
+  abstract findByIdWithAccessContext(
+    taskId: string,
+    userId: string,
+  ): Promise<TaskAccessContext | null>;
+
+  abstract findMany(input: FindTasksInput): Promise<PaginatedTasksResult>;
+
+  abstract delete(taskId: string): Promise<void>;
+
+  abstract assignUser(
+    taskId: string,
+    userId: string,
+  ): Promise<TaskAssignmentResultEntity>;
+
+  abstract unassignUser(taskId: string, userId: string): Promise<number>;
+
+  abstract getTaskCountsByProjectIds(
+    projectIds: string[],
+    orgId: string,
+  ): Promise<Map<string, { total: number; completed: number }>>;
+
+  abstract findRecentByProjectId(
+    projectId: string,
+    limit: number,
+    orgId: string,
+  ): Promise<TaskEntity[]>;
 }
 
 export type TasksRepositoryTxFactory = (

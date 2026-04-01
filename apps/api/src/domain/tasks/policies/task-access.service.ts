@@ -15,6 +15,22 @@ export class TaskAccessService {
     private readonly rules: TaskAccessRules,
   ) {}
 
+  private warnTaskAccess(
+    event: string,
+    ctx: Record<string, unknown>,
+    message: string,
+  ): void {
+    this.logger.warn({ event, ...ctx }, message);
+  }
+
+  private debugTaskAccess(
+    event: string,
+    ctx: Record<string, unknown>,
+    message: string,
+  ): void {
+    this.logger.debug({ event, ...ctx }, message);
+  }
+
   async assertCanCreateInProject(
     user: AuthUser,
     projectId: string,
@@ -26,12 +42,9 @@ export class TaskAccessService {
     );
 
     if (!project) {
-      this.logger.warn(
-        {
-          event: 'task.access.create_project.not_found',
-          projectId,
-          userId: user.id,
-        },
+      this.warnTaskAccess(
+        'task.access.create_project.not_found',
+        { projectId, userId: user.id },
         'Project not found during task create access check',
       );
       throw taskNotFound('PROJECT_NOT_FOUND', { projectId, userId: user.id });
@@ -41,12 +54,9 @@ export class TaskAccessService {
       project.ownerId === user.id ? ProjectRole.OWNER : project.currentUserRole;
 
     if (!this.rules.canReadProject(role)) {
-      this.logger.warn(
-        {
-          event: 'task.access.create_project.forbidden',
-          projectId,
-          userId: user.id,
-        },
+      this.warnTaskAccess(
+        'task.access.create_project.forbidden',
+        { projectId, userId: user.id },
         'Task create access denied: user has no project access',
       );
       throw taskForbidden('CREATE_PROJECT_FORBIDDEN_NO_ACCESS', {
@@ -56,12 +66,9 @@ export class TaskAccessService {
     }
 
     if (!this.rules.canCreateProject(role)) {
-      this.logger.warn(
-        {
-          event: 'task.access.create_project.forbidden',
-          projectId,
-          userId: user.id,
-        },
+      this.warnTaskAccess(
+        'task.access.create_project.forbidden',
+        { projectId, userId: user.id },
         'Task create access denied: user has no project access',
       );
       throw taskForbidden('CREATE_PROJECT_FORBIDDEN_NO_PERMISSION', {
@@ -70,13 +77,9 @@ export class TaskAccessService {
       });
     }
 
-    this.logger.debug(
-      {
-        event: 'task.access.create_project.allowed',
-        projectId,
-        userId: user.id,
-        role,
-      },
+    this.debugTaskAccess(
+      'task.access.create_project.allowed',
+      { projectId, userId: user.id, role },
       'Task create access granted',
     );
   }
@@ -89,12 +92,9 @@ export class TaskAccessService {
     );
 
     if (!project) {
-      this.logger.warn(
-        {
-          event: 'task.access.read_project.not_found',
-          projectId,
-          userId: user.id,
-        },
+      this.warnTaskAccess(
+        'task.access.read_project.not_found',
+        { projectId, userId: user.id },
         'Project not found during task project read access check',
       );
       throw taskNotFound('PROJECT_NOT_FOUND', { projectId, userId: user.id });
@@ -103,13 +103,9 @@ export class TaskAccessService {
     const role =
       project.ownerId === user.id ? ProjectRole.OWNER : project.currentUserRole;
 
-    this.logger.debug(
-      {
-        event: 'task.access.read_project.allowed',
-        projectId,
-        userId: user.id,
-        role,
-      },
+    this.debugTaskAccess(
+      'task.access.read_project.allowed',
+      { projectId, userId: user.id, role },
       'Task project read access granted',
     );
   }
@@ -124,12 +120,9 @@ export class TaskAccessService {
     );
 
     if (!task) {
-      this.logger.warn(
-        {
-          event: 'task.access.read.not_found',
-          taskId,
-          userId: user.id,
-        },
+      this.warnTaskAccess(
+        'task.access.read.not_found',
+        { taskId, userId: user.id },
         'Task not found during access check',
       );
       throw taskNotFound('TASK_NOT_FOUND', { taskId, userId: user.id });
@@ -139,9 +132,9 @@ export class TaskAccessService {
     const canRead = this.rules.canReadTask(task, user.id);
 
     if (!isOrgMember || !canRead) {
-      this.logger.warn(
+      this.warnTaskAccess(
+        'task.access.read.forbidden',
         {
-          event: 'task.access.read.forbidden',
           taskId,
           userId: user.id,
           projectId: task.projectId,
@@ -157,9 +150,9 @@ export class TaskAccessService {
       });
     }
 
-    this.logger.debug(
+    this.debugTaskAccess(
+      'task.access.read.allowed',
       {
-        event: 'task.access.read.allowed',
         taskId,
         userId: user.id,
         projectId: task.projectId,
@@ -179,9 +172,9 @@ export class TaskAccessService {
     const task = await this.getAccessibleTaskOrThrow(taskId, user);
 
     if (!this.rules.canUpdateTask(task, user.id)) {
-      this.logger.warn(
+      this.warnTaskAccess(
+        'task.access.update.forbidden',
         {
-          event: 'task.access.update.forbidden',
           taskId,
           userId: user.id,
           projectId: task.projectId,
@@ -197,9 +190,9 @@ export class TaskAccessService {
       });
     }
 
-    this.logger.debug(
+    this.debugTaskAccess(
+      'task.access.update.allowed',
       {
-        event: 'task.access.update.allowed',
         taskId,
         userId: user.id,
         projectId: task.projectId,
@@ -213,9 +206,9 @@ export class TaskAccessService {
     const task = await this.getAccessibleTaskOrThrow(taskId, user);
 
     if (!this.rules.canDeleteTask(task, user.id)) {
-      this.logger.warn(
+      this.warnTaskAccess(
+        'task.access.delete.forbidden',
         {
-          event: 'task.access.delete.forbidden',
           taskId,
           userId: user.id,
           projectId: task.projectId,
@@ -231,9 +224,9 @@ export class TaskAccessService {
       });
     }
 
-    this.logger.debug(
+    this.debugTaskAccess(
+      'task.access.delete.allowed',
       {
-        event: 'task.access.delete.allowed',
         taskId,
         userId: user.id,
         projectId: task.projectId,
@@ -247,9 +240,9 @@ export class TaskAccessService {
     const task = await this.getAccessibleTaskOrThrow(taskId, user);
 
     if (!this.rules.canManageTask(task, user.id)) {
-      this.logger.warn(
+      this.warnTaskAccess(
+        'task.access.assign.forbidden',
         {
-          event: 'task.access.assign.forbidden',
           taskId,
           userId: user.id,
           projectId: task.projectId,
@@ -264,9 +257,9 @@ export class TaskAccessService {
       });
     }
 
-    this.logger.debug(
+    this.debugTaskAccess(
+      'task.access.assign.allowed',
       {
-        event: 'task.access.assign.allowed',
         taskId,
         userId: user.id,
         projectId: task.projectId,
@@ -287,9 +280,9 @@ export class TaskAccessService {
 
     if (isUnassigningSelf) {
       if (!this.rules.canUnassignOwnTask(task, currentUser.id)) {
-        this.logger.warn(
+        this.warnTaskAccess(
+          'task.access.unassign.self.forbidden',
           {
-            event: 'task.access.unassign.self.forbidden',
             taskId,
             userId: currentUser.id,
             projectId: task.projectId,
@@ -303,9 +296,9 @@ export class TaskAccessService {
         });
       }
 
-      this.logger.debug(
+      this.debugTaskAccess(
+        'task.access.unassign.self.allowed',
         {
-          event: 'task.access.unassign.self.allowed',
           taskId,
           userId: currentUser.id,
           projectId: task.projectId,
@@ -316,9 +309,9 @@ export class TaskAccessService {
     }
 
     if (!this.rules.canManageTask(task, currentUser.id)) {
-      this.logger.warn(
+      this.warnTaskAccess(
+        'task.access.unassign.forbidden',
         {
-          event: 'task.access.unassign.forbidden',
           taskId,
           userId: currentUser.id,
           projectId: task.projectId,
@@ -334,9 +327,9 @@ export class TaskAccessService {
       });
     }
 
-    this.logger.debug(
+    this.debugTaskAccess(
+      'task.access.unassign.allowed',
       {
-        event: 'task.access.unassign.allowed',
         taskId,
         userId: currentUser.id,
         projectId: task.projectId,

@@ -11,6 +11,17 @@
 
 For environment variables, PostgreSQL setup, and running the full stack, see the **[repository root README](../../README.md)**.
 
+## API architecture (reference domain)
+
+The **`tasks`** domain under [`src/domain/tasks/`](src/domain/tasks/) is the main **portfolio-style reference** for how a non-trivial Nest module is structured: clear boundaries, testable units, and side effects separated from core writes.
+
+- **HTTP edge** — Zod-backed DTOs from `@repo/types`; controllers map DTOs to **application commands** before calling the application layer (transport ≠ use case inputs).
+- **Application layer** — **Use case** classes orchestrate one operation each (create, update, assign, …); a thin **façade** (`TasksService`) wires them for the controller and tests.
+- **Persistence** — `TasksRepository` is an abstract port; the Prisma implementation maps persistence rows to **domain entities** before returning, so application code does not depend on Prisma models.
+- **Authorization** — Enforced at the HTTP boundary via **`TaskAccessGuard`** + **`TaskAccessService`**; **`TaskAccessRules`** holds pure, unit-tested policy predicates (no I/O).
+- **Reactions to state changes** — **`TaskDomainEventPublisher`** emits domain-shaped events after successful writes; **`@OnEvent` handlers** handle notifications and realtime. The global **`EventEmitterModule`** is registered once in **`AppModule`** (not per feature module).
+- **Other domains** — e.g. **projects** already split commands/queries and repository ports; **users** stays intentionally thinner until complexity grows.
+
 ## Local configuration
 
 Place a **`.env`** file in **`apps/api/`** (loaded by `ConfigModule`). Copy [`.env.example`](.env.example) as a starting point. All variables are validated at startup — see [env.validation.ts](src/config/env.validation.ts).

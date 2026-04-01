@@ -4,16 +4,17 @@ import {
 } from '@api/common/mappers/mapper.utils';
 import { TaskLabelColor } from '@repo/database';
 import {
-  TaskWithAssignees,
   CreateTaskInput,
-  UpdateTaskInput,
-  TaskAssigneeWithUser,
+  UpdateTaskRepositoryInput,
 } from '../types/tasks.repository.types';
 import { TaskView, TaskAssigneeView } from '@repo/types';
-import { CreateTaskDto } from '../dto/create-task.dto';
-import { UpdateTaskDto } from '../dto/update-task.dto';
+import type { TaskEntity } from '../domain/task.entity';
+import type {
+  CreateTaskCommand,
+  UpdateTaskCommand,
+} from '../application/task-application.types';
 
-export function toTaskView(task: TaskWithAssignees): TaskView {
+export function toTaskView(task: TaskEntity): TaskView {
   return {
     id: task.id,
     projectId: task.projectId,
@@ -28,7 +29,7 @@ export function toTaskView(task: TaskWithAssignees): TaskView {
     updatedAt: toIsoString(task.updatedAt),
     createdById: task.createdById,
     assignees: task.assignees.map(
-      (assignee: TaskAssigneeWithUser): TaskAssigneeView => ({
+      (assignee): TaskAssigneeView => ({
         userId: assignee.userId,
         assignedAt: toIsoString(assignee.assignedAt),
         user: {
@@ -41,29 +42,31 @@ export function toTaskView(task: TaskWithAssignees): TaskView {
   };
 }
 
-export function toTaskViews(tasks: TaskWithAssignees[]): TaskView[] {
+export function toTaskViews(tasks: TaskEntity[]): TaskView[] {
   return tasks.map(toTaskView);
 }
 
-export function toCreateTaskInput(
-  dto: CreateTaskDto,
+export function commandToCreateTaskInput(
+  command: CreateTaskCommand,
   userId: string,
 ): CreateTaskInput {
   return {
-    ...dto,
+    ...command,
     createdById: userId,
-    dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
+    dueDate: command.dueDate ? new Date(command.dueDate) : null,
   };
 }
 
-export function toUpdateTaskInput(dto: UpdateTaskDto): UpdateTaskInput {
+export function commandToUpdateTaskRepositoryInput(
+  command: UpdateTaskCommand,
+): UpdateTaskRepositoryInput {
   return {
-    ...dto,
+    ...command,
     dueDate:
-      dto.dueDate !== undefined
-        ? dto.dueDate === null
+      command.dueDate !== undefined
+        ? command.dueDate === null
           ? null
-          : new Date(dto.dueDate)
+          : new Date(command.dueDate)
         : undefined,
   };
 }

@@ -1,544 +1,152 @@
+/**
+ * Façade wiring only — business rules and side effects are covered in `use-cases/*.spec.ts`.
+ */
 import { TasksService } from './tasks.service';
-import { TasksRepository } from './repositories/tasks.repository';
-import { PinoLogger } from 'nestjs-pino';
-import { CreateTaskDto } from './dto/create-task.dto';
-import { UpdateTaskDto } from './dto/update-task.dto';
-import { FindTasksQueryDto } from './dto/find-tasks-query.dto';
-import { AuthUser, TaskAssignmentView, TaskView } from '@repo/types';
+import { CreateTaskUseCase } from './use-cases/create-task.use-case';
+import { UpdateTaskUseCase } from './use-cases/update-task.use-case';
+import { GetTaskByIdUseCase } from './use-cases/get-task-by-id.use-case';
+import { FindTasksUseCase } from './use-cases/find-tasks.use-case';
+import { DeleteTaskUseCase } from './use-cases/delete-task.use-case';
+import { AssignTaskUserUseCase } from './use-cases/assign-task-user.use-case';
+import { UnassignTaskUserUseCase } from './use-cases/unassign-task-user.use-case';
 import {
-  toCreateTaskInput,
-  toTaskView,
-  toTaskViews,
-  toUpdateTaskInput,
-} from './mappers/tasks.mapper';
-import { toTaskAssignmentView } from './mappers/task-assignment.mapper';
-import { TaskAssignmentNotifier } from './notifiers/task-assignment-notifier';
-import { TaskAssigneePolicy } from './policies/task-assignee-policy';
-import type { ProjectMemberRepository } from '../projects/repositories/projects.repository';
-
-jest.mock('./mappers/tasks.mapper', () => ({
-  toCreateTaskInput: jest.fn(),
-  toTaskView: jest.fn(),
-  toTaskViews: jest.fn(),
-  toUpdateTaskInput: jest.fn(),
-}));
-
-jest.mock('./mappers/task-assignment.mapper', () => ({
-  toTaskAssignmentView: jest.fn(),
-}));
-
-const TASKS_LOG_CTX = { domain: 'tasks', component: 'TasksService' } as const;
+  AuthUser,
+  TaskView,
+  PaginationResult,
+  TaskAssignmentView,
+} from '@repo/types';
+import type {
+  CreateTaskCommand,
+  FindTasksQueryCommand,
+  UpdateTaskCommand,
+} from './application/task-application.types';
 
 describe('TasksService', () => {
   let service: TasksService;
 
-  let tasksRepository: {
-    create: jest.Mock;
-    update: jest.Mock;
-    findByIdOrThrow: jest.Mock;
-    findMany: jest.Mock;
-    delete: jest.Mock;
-    assignUser: jest.Mock;
-    unassignUser: jest.Mock;
-  };
-
-  let taskAssigneePolicy: {
-    assertAssigneeCanBeAssignedToProjectOrThrow: jest.Mock;
-  };
-
-  let taskAssignmentNotifier: {
-    notifyTaskAssigned: jest.Mock;
-    notifyTaskUpdated: jest.Mock;
-  };
-
-  let realtimePublisher: {
-    toProject: jest.Mock;
-    toTask: jest.Mock;
-  };
-
-  let logger: {
-    info: jest.Mock;
-    warn: jest.Mock;
-  };
-
-  let projectMembersRepository: {
-    findMembersByProjectId: jest.Mock;
-  };
+  let createTaskUseCase: { execute: jest.Mock };
+  let updateTaskUseCase: { execute: jest.Mock };
+  let getTaskByIdUseCase: { execute: jest.Mock };
+  let findTasksUseCase: { execute: jest.Mock };
+  let deleteTaskUseCase: { execute: jest.Mock };
+  let assignTaskUserUseCase: { execute: jest.Mock };
+  let unassignTaskUserUseCase: { execute: jest.Mock };
 
   const currentUser: AuthUser = { id: 'user-1', orgId: 'org-1' };
 
   beforeEach(() => {
-    tasksRepository = {
-      create: jest.fn(),
-      update: jest.fn(),
-      findByIdOrThrow: jest.fn(),
-      findMany: jest.fn(),
-      delete: jest.fn(),
-      assignUser: jest.fn(),
-      unassignUser: jest.fn(),
-    };
-
-    taskAssigneePolicy = {
-      assertAssigneeCanBeAssignedToProjectOrThrow: jest.fn(),
-    };
-
-    taskAssignmentNotifier = {
-      notifyTaskAssigned: jest.fn(),
-      notifyTaskUpdated: jest.fn(),
-    };
-
-    realtimePublisher = {
-      toProject: jest.fn(),
-      toTask: jest.fn(),
-    };
-
-    logger = {
-      info: jest.fn(),
-      warn: jest.fn(),
-    };
-
-    projectMembersRepository = {
-      findMembersByProjectId: jest.fn(),
-    };
+    createTaskUseCase = { execute: jest.fn() };
+    updateTaskUseCase = { execute: jest.fn() };
+    getTaskByIdUseCase = { execute: jest.fn() };
+    findTasksUseCase = { execute: jest.fn() };
+    deleteTaskUseCase = { execute: jest.fn() };
+    assignTaskUserUseCase = { execute: jest.fn() };
+    unassignTaskUserUseCase = { execute: jest.fn() };
 
     service = new TasksService(
-      tasksRepository as unknown as TasksRepository,
-      taskAssigneePolicy as unknown as TaskAssigneePolicy,
-      taskAssignmentNotifier as unknown as TaskAssignmentNotifier,
-      realtimePublisher as never,
-      projectMembersRepository as unknown as ProjectMemberRepository,
-      logger as unknown as PinoLogger,
+      createTaskUseCase as unknown as CreateTaskUseCase,
+      updateTaskUseCase as unknown as UpdateTaskUseCase,
+      getTaskByIdUseCase as unknown as GetTaskByIdUseCase,
+      findTasksUseCase as unknown as FindTasksUseCase,
+      deleteTaskUseCase as unknown as DeleteTaskUseCase,
+      assignTaskUserUseCase as unknown as AssignTaskUserUseCase,
+      unassignTaskUserUseCase as unknown as UnassignTaskUserUseCase,
     );
-
-    jest.clearAllMocks();
   });
 
-  describe('create', () => {
-    it('creates a task, logs, and returns mapped view', async () => {
-      const dto: CreateTaskDto = {
-        title: 'Build tests',
-        description: 'Write unit tests for tasks service',
-        projectId: '550e8400-e29b-41d4-a716-446655440001',
-      };
+  it('create delegates to CreateTaskUseCase', async () => {
+    const command = {
+      title: 'T',
+      projectId: '550e8400-e29b-41d4-a716-446655440001',
+    } as CreateTaskCommand;
+    const view = { id: 'task-1' } as TaskView;
+    createTaskUseCase.execute.mockResolvedValue(view);
 
-      const createInput = {
-        title: dto.title,
-        description: dto.description,
-        projectId: dto.projectId,
-        createdById: currentUser.id,
-      };
-
-      const task = {
-        id: 'task-1',
-        title: dto.title,
-        description: dto.description,
-        projectId: dto.projectId,
-        createdById: currentUser.id,
-      };
-
-      const taskView: TaskView = { id: 'task-1', title: dto.title } as TaskView;
-
-      (toCreateTaskInput as jest.Mock).mockReturnValue(createInput);
-      tasksRepository.create.mockResolvedValue(task);
-      (toTaskView as jest.Mock).mockReturnValue(taskView);
-
-      const result = await service.create(currentUser, dto);
-
-      expect(toCreateTaskInput).toHaveBeenCalledWith(dto, currentUser.id);
-      expect(tasksRepository.create).toHaveBeenCalledWith(createInput);
-      expect(logger.info).toHaveBeenCalledWith(
-        {
-          ...TASKS_LOG_CTX,
-          event: 'task.created',
-          taskId: task.id,
-          createdById: task.createdById,
-          projectId: task.projectId,
-        },
-        'Task created successfully',
-      );
-      expect(toTaskView).toHaveBeenCalledWith(task);
-      expect(result).toEqual(taskView);
-      expect(
-        taskAssigneePolicy.assertAssigneeCanBeAssignedToProjectOrThrow,
-      ).not.toHaveBeenCalled();
-      expect(taskAssignmentNotifier.notifyTaskAssigned).not.toHaveBeenCalled();
-    });
-
-    it('validates assignees, notifies others on create when assigneeIds are set', async () => {
-      const dto: CreateTaskDto = {
-        title: 'T',
-        projectId: '550e8400-e29b-41d4-a716-446655440001',
-        assigneeIds: ['user-2', 'user-1'],
-      };
-
-      const createInput = {
-        title: dto.title,
-        projectId: dto.projectId,
-        createdById: currentUser.id,
-        assigneeIds: ['user-2', 'user-1'],
-      };
-
-      const task = {
-        id: 'task-1',
-        title: dto.title,
-        projectId: dto.projectId,
-        createdById: currentUser.id,
-      };
-
-      const taskView: TaskView = { id: 'task-1', title: dto.title } as TaskView;
-
-      (toCreateTaskInput as jest.Mock).mockReturnValue(createInput);
-      tasksRepository.create.mockResolvedValue(task);
-      (toTaskView as jest.Mock).mockReturnValue(taskView);
-
-      const result = await service.create(currentUser, dto);
-
-      expect(
-        taskAssigneePolicy.assertAssigneeCanBeAssignedToProjectOrThrow,
-      ).toHaveBeenCalledTimes(2);
-      expect(
-        taskAssigneePolicy.assertAssigneeCanBeAssignedToProjectOrThrow,
-      ).toHaveBeenCalledWith('user-2', dto.projectId, currentUser);
-      expect(
-        taskAssigneePolicy.assertAssigneeCanBeAssignedToProjectOrThrow,
-      ).toHaveBeenCalledWith('user-1', dto.projectId, currentUser);
-      expect(taskAssignmentNotifier.notifyTaskAssigned).toHaveBeenCalledTimes(
-        1,
-      );
-      expect(taskAssignmentNotifier.notifyTaskAssigned).toHaveBeenCalledWith(
-        'user-2',
-        {
-          taskId: task.id,
-          taskTitle: task.title,
-          projectId: task.projectId,
-          assignedById: currentUser.id,
-        },
-      );
-      expect(result).toEqual(taskView);
-    });
+    await expect(service.create(currentUser, command)).resolves.toBe(view);
+    expect(createTaskUseCase.execute).toHaveBeenCalledWith(
+      currentUser,
+      command,
+    );
   });
 
-  describe('update', () => {
-    it('updates a task, logs, and returns mapped view', async () => {
-      const taskId = 'task-1';
-      const dto: UpdateTaskDto = {
-        title: 'Updated title',
-        description: 'Updated description',
-      } as UpdateTaskDto;
+  it('update delegates to UpdateTaskUseCase', async () => {
+    const command = { title: 'U' } as UpdateTaskCommand;
+    const view = { id: 'task-1' } as TaskView;
+    updateTaskUseCase.execute.mockResolvedValue(view);
 
-      const updateInput = { title: dto.title, description: dto.description };
-
-      const task = {
-        id: taskId,
-        title: dto.title,
-        description: dto.description,
-        projectId: 'project-1',
-        assignees: [{ userId: 'user-2' }, { userId: currentUser.id }],
-      };
-
-      const taskView: TaskView = { id: taskId, title: dto.title } as TaskView;
-
-      (toUpdateTaskInput as jest.Mock).mockReturnValue(updateInput);
-      tasksRepository.update.mockResolvedValue(task);
-      projectMembersRepository.findMembersByProjectId.mockResolvedValue([
-        { userId: 'user-2' },
-        { userId: currentUser.id },
-        { userId: 'user-3' },
-      ]);
-      (toTaskView as jest.Mock).mockReturnValue(taskView);
-
-      const result = await service.update(taskId, currentUser, dto);
-
-      expect(toUpdateTaskInput).toHaveBeenCalledWith(dto);
-      expect(tasksRepository.update).toHaveBeenCalledWith(taskId, updateInput);
-      expect(logger.info).toHaveBeenCalledWith(
-        {
-          ...TASKS_LOG_CTX,
-          event: 'task.updated',
-          taskId: task.id,
-          updatedById: currentUser.id,
-          projectId: task.projectId,
-        },
-        'Task updated successfully',
-      );
-      expect(toTaskView).toHaveBeenCalledWith(task);
-      expect(result).toEqual(taskView);
-      expect(taskAssignmentNotifier.notifyTaskUpdated).toHaveBeenCalledWith(
-        'user-2',
-        expect.objectContaining({
-          taskId,
-          taskTitle: dto.title,
-          projectId: 'project-1',
-          updatedById: currentUser.id,
-        }),
-      );
-      expect(taskAssignmentNotifier.notifyTaskUpdated).toHaveBeenCalledWith(
-        'user-3',
-        expect.objectContaining({
-          taskId,
-          taskTitle: dto.title,
-          projectId: 'project-1',
-          updatedById: currentUser.id,
-        }),
-      );
-    });
+    await expect(service.update('task-1', currentUser, command)).resolves.toBe(
+      view,
+    );
+    expect(updateTaskUseCase.execute).toHaveBeenCalledWith(
+      'task-1',
+      currentUser,
+      command,
+    );
   });
 
-  describe('findById', () => {
-    it('loads task and returns mapped view', async () => {
-      const taskId = 'task-1';
+  it('findById delegates to GetTaskByIdUseCase', async () => {
+    const view = { id: 'task-1' } as TaskView;
+    getTaskByIdUseCase.execute.mockResolvedValue(view);
 
-      const task = { id: taskId, title: 'Task title', projectId: 'project-1' };
-      const taskView: TaskView = {
-        id: taskId,
-        title: 'Task title',
-      } as TaskView;
-
-      tasksRepository.findByIdOrThrow.mockResolvedValue(task);
-      (toTaskView as jest.Mock).mockReturnValue(taskView);
-
-      const result = await service.findById(taskId, currentUser);
-
-      expect(tasksRepository.findByIdOrThrow).toHaveBeenCalledWith(taskId);
-      expect(toTaskView).toHaveBeenCalledWith(task);
-      expect(result).toEqual(taskView);
-    });
+    await expect(service.findById('task-1', currentUser)).resolves.toBe(view);
+    expect(getTaskByIdUseCase.execute).toHaveBeenCalledWith(
+      'task-1',
+      currentUser,
+    );
   });
 
-  describe('findMany', () => {
-    it('returns paginated mapped task views', async () => {
-      const query: FindTasksQueryDto = {
-        projectId: '550e8400-e29b-41d4-a716-446655440001',
-        page: 1,
-        limit: 10,
-      } as unknown as FindTasksQueryDto;
+  it('findMany delegates to FindTasksUseCase', async () => {
+    const query = {
+      projectId: '550e8400-e29b-41d4-a716-446655440001',
+      page: 1,
+      limit: 10,
+    } as FindTasksQueryCommand;
+    const result = {
+      data: [],
+      meta: {},
+    } as unknown as PaginationResult<TaskView>;
+    findTasksUseCase.execute.mockResolvedValue(result);
 
-      const repositoryResult = {
-        data: [{ id: 'task-1', title: 'Task 1' }],
-        meta: {
-          total: 1,
-          page: 1,
-          limit: 10,
-          pageCount: 1,
-          hasNextPage: false,
-          hasPreviousPage: false,
-        },
-      };
-
-      const mappedViews = [{ id: 'task-1', title: 'Task 1' }] as TaskView[];
-
-      tasksRepository.findMany.mockResolvedValue(repositoryResult);
-      (toTaskViews as jest.Mock).mockReturnValue(mappedViews);
-
-      const result = await service.findMany(currentUser, query);
-
-      expect(tasksRepository.findMany).toHaveBeenCalledWith({
-        orgId: currentUser.orgId,
-        ...query,
-      });
-      expect(toTaskViews).toHaveBeenCalledWith(repositoryResult.data);
-      expect(result).toEqual({
-        ...repositoryResult,
-        data: mappedViews,
-      });
-    });
+    await expect(service.findMany(currentUser, query)).resolves.toBe(result);
+    expect(findTasksUseCase.execute).toHaveBeenCalledWith(currentUser, query);
   });
 
-  describe('delete', () => {
-    it('deletes and logs success', async () => {
-      const taskId = 'task-1';
-      tasksRepository.findByIdOrThrow.mockResolvedValue({
-        id: taskId,
-        projectId: 'project-1',
-        title: 'Task',
-        assignees: [],
-      });
+  it('delete delegates to DeleteTaskUseCase', async () => {
+    deleteTaskUseCase.execute.mockResolvedValue(undefined);
 
-      await service.delete(taskId, currentUser);
-
-      expect(tasksRepository.delete).toHaveBeenCalledWith(taskId);
-      expect(logger.info).toHaveBeenCalledWith(
-        {
-          ...TASKS_LOG_CTX,
-          event: 'task.deleted',
-          taskId,
-          deletedById: currentUser.id,
-        },
-        'Task deleted successfully',
-      );
-    });
+    await expect(
+      service.delete('task-1', currentUser),
+    ).resolves.toBeUndefined();
+    expect(deleteTaskUseCase.execute).toHaveBeenCalledWith(
+      'task-1',
+      currentUser,
+    );
   });
 
-  describe('assignUser', () => {
-    it('validates assignee, assigns, notifies (on created), logs, and returns mapped view', async () => {
-      const taskId = 'task-1';
-      const assigneeUserId = 'user-2';
+  it('assignUser delegates to AssignTaskUserUseCase', async () => {
+    const view = { taskId: 't1', userId: 'u2' } as TaskAssignmentView;
+    assignTaskUserUseCase.execute.mockResolvedValue(view);
 
-      const assignment = {
-        taskId,
-        userId: assigneeUserId,
-        task: { title: 'Task title', projectId: 'project-1' },
-      };
-
-      const assignmentView: TaskAssignmentView = {
-        taskId,
-        userId: assigneeUserId,
-      } as TaskAssignmentView;
-
-      taskAssigneePolicy.assertAssigneeCanBeAssignedToProjectOrThrow.mockResolvedValue(
-        undefined,
-      );
-      tasksRepository.findByIdOrThrow.mockResolvedValue({
-        id: taskId,
-        projectId: 'project-1',
-        title: 'Task',
-        assignees: [],
-      });
-
-      tasksRepository.assignUser.mockResolvedValue({
-        assignment,
-        created: true,
-      });
-
-      (toTaskAssignmentView as jest.Mock).mockReturnValue(assignmentView);
-
-      const result = await service.assignUser(
-        taskId,
-        assigneeUserId,
-        currentUser,
-      );
-
-      expect(
-        taskAssigneePolicy.assertAssigneeCanBeAssignedToProjectOrThrow,
-      ).toHaveBeenCalledWith(assigneeUserId, 'project-1', currentUser);
-
-      expect(tasksRepository.assignUser).toHaveBeenCalledWith(
-        taskId,
-        assigneeUserId,
-      );
-
-      expect(taskAssignmentNotifier.notifyTaskAssigned).toHaveBeenCalledWith(
-        assigneeUserId,
-        {
-          taskId,
-          taskTitle: assignment.task.title,
-          projectId: assignment.task.projectId,
-          assignedById: currentUser.id,
-        },
-      );
-
-      expect(logger.info).toHaveBeenCalledWith(
-        {
-          ...TASKS_LOG_CTX,
-          event: 'task.assignee.added',
-          taskId,
-          userId: assigneeUserId,
-          updatedById: currentUser.id,
-        },
-        'Task assignee added successfully',
-      );
-
-      expect(toTaskAssignmentView).toHaveBeenCalledWith(assignment);
-      expect(result).toEqual(assignmentView);
-    });
-
-    it('does not notify or log when assignment already exists', async () => {
-      const taskId = 'task-1';
-      const assigneeUserId = 'user-2';
-
-      const assignment = {
-        taskId,
-        userId: assigneeUserId,
-        task: { title: 'Task title', projectId: 'project-1' },
-      };
-
-      const assignmentView: TaskAssignmentView = {
-        taskId,
-        userId: assigneeUserId,
-      } as TaskAssignmentView;
-
-      taskAssigneePolicy.assertAssigneeCanBeAssignedToProjectOrThrow.mockResolvedValue(
-        undefined,
-      );
-      tasksRepository.findByIdOrThrow.mockResolvedValue({
-        id: taskId,
-        projectId: 'project-1',
-        title: 'Task',
-        assignees: [],
-      });
-
-      tasksRepository.assignUser.mockResolvedValue({
-        assignment,
-        created: false,
-      });
-
-      (toTaskAssignmentView as jest.Mock).mockReturnValue(assignmentView);
-
-      const result = await service.assignUser(
-        taskId,
-        assigneeUserId,
-        currentUser,
-      );
-
-      expect(taskAssignmentNotifier.notifyTaskAssigned).not.toHaveBeenCalled();
-      expect(logger.info).not.toHaveBeenCalled();
-      expect(toTaskAssignmentView).toHaveBeenCalledWith(assignment);
-      expect(result).toEqual(assignmentView);
-    });
+    await expect(
+      service.assignUser('task-1', 'user-2', currentUser),
+    ).resolves.toBe(view);
+    expect(assignTaskUserUseCase.execute).toHaveBeenCalledWith(
+      'task-1',
+      'user-2',
+      currentUser,
+    );
   });
 
-  describe('unassignUser', () => {
-    it('unassigns and logs success', async () => {
-      const taskId = 'task-1';
-      const assigneeUserId = 'user-2';
-      tasksRepository.findByIdOrThrow.mockResolvedValue({
-        id: taskId,
-        projectId: 'project-1',
-        title: 'Task',
-        assignees: [],
-      });
+  it('unassignUser delegates to UnassignTaskUserUseCase', async () => {
+    unassignTaskUserUseCase.execute.mockResolvedValue(undefined);
 
-      tasksRepository.unassignUser.mockResolvedValue(1);
-
-      await service.unassignUser(taskId, assigneeUserId, currentUser);
-
-      expect(tasksRepository.unassignUser).toHaveBeenCalledWith(
-        taskId,
-        assigneeUserId,
-      );
-
-      expect(logger.info).toHaveBeenCalledWith(
-        {
-          ...TASKS_LOG_CTX,
-          event: 'task.assignee.removed',
-          taskId,
-          userId: assigneeUserId,
-          updatedById: currentUser.id,
-        },
-        'Task assignee removed successfully',
-      );
-    });
-
-    it('does not log when assignment does not exist', async () => {
-      const taskId = 'task-1';
-      const assigneeUserId = 'user-2';
-      tasksRepository.findByIdOrThrow.mockResolvedValue({
-        id: taskId,
-        projectId: 'project-1',
-        title: 'Task',
-        assignees: [],
-      });
-
-      tasksRepository.unassignUser.mockResolvedValue(0);
-
-      await service.unassignUser(taskId, assigneeUserId, currentUser);
-
-      expect(tasksRepository.unassignUser).toHaveBeenCalledWith(
-        taskId,
-        assigneeUserId,
-      );
-
-      expect(logger.info).not.toHaveBeenCalled();
-    });
+    await expect(
+      service.unassignUser('task-1', 'user-2', currentUser),
+    ).resolves.toBeUndefined();
+    expect(unassignTaskUserUseCase.execute).toHaveBeenCalledWith(
+      'task-1',
+      'user-2',
+      currentUser,
+    );
   });
 });

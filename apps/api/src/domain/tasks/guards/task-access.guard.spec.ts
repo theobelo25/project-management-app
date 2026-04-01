@@ -6,6 +6,8 @@ import {
 import { Reflector } from '@nestjs/core';
 import type { AuthUser } from '@repo/types';
 
+import type { PinoLogger } from 'nestjs-pino';
+
 import { TaskAccessGuard } from './task-access.guard';
 import { TaskAccessService } from '../policies/task-access.service';
 
@@ -30,8 +32,8 @@ describe('TaskAccessGuard', () => {
 
   const makeContext = (request: any): ExecutionContext =>
     ({
-      getHandler: jest.fn(),
-      getClass: jest.fn(),
+      getHandler: jest.fn().mockReturnValue({ name: 'handler' }),
+      getClass: jest.fn().mockReturnValue({ name: 'TestController' }),
       switchToHttp: jest.fn().mockReturnValue({
         getRequest: jest.fn().mockReturnValue(request),
       }),
@@ -52,9 +54,12 @@ describe('TaskAccessGuard', () => {
       assertCanUnassign: jest.fn().mockResolvedValue(undefined),
     };
 
+    logger = { warn: jest.fn(), setContext: jest.fn() };
+
     guard = new TaskAccessGuard(
       reflector as unknown as Reflector,
       taskAccessService as unknown as TaskAccessService,
+      logger as unknown as PinoLogger,
     );
   });
 
