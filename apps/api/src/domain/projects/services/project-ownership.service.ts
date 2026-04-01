@@ -13,7 +13,6 @@ import {
 import {
   AuthUser,
   ProjectView,
-  TransferProjectOwnershipDto,
 } from '@repo/types';
 import { ProjectAccessService } from '../policies/project-access.service';
 import { UNIT_OF_WORK } from '@api/prisma';
@@ -22,6 +21,7 @@ import { ProjectRole } from '@repo/database';
 import { toProjectView } from '../mappers/project.mapper';
 import { PinoLogger } from 'nestjs-pino';
 import { ProjectWithRole } from '../types/projects.repository.types';
+import type { TransferProjectOwnershipCommand } from '../application/projects-application.types';
 
 @Injectable()
 export class ProjectOwnershipService {
@@ -41,7 +41,7 @@ export class ProjectOwnershipService {
   async transferOwnership(
     projectId: string,
     actor: AuthUser,
-    dto: TransferProjectOwnershipDto,
+    command: TransferProjectOwnershipCommand,
     authorizedProject?: ProjectWithRole,
   ): Promise<ProjectView> {
     return this.uow.transaction(async (db) => {
@@ -59,13 +59,13 @@ export class ProjectOwnershipService {
         );
       }
 
-      if (dto.userId === actor.id) {
+      if (command.userId === actor.id) {
         throw new ConflictException('User is already the project owner');
       }
 
       const targetMembership = await this.members.findMembership(
         projectId,
-        dto.userId,
+        command.userId,
         db,
       );
 
@@ -73,12 +73,12 @@ export class ProjectOwnershipService {
         throw new NotFoundException('Target user is not a project member');
       }
 
-      await this.members.updateOwner(projectId, dto.userId, db);
+      await this.members.updateOwner(projectId, command.userId, db);
 
       await this.members.updateMemberRole(
         {
           projectId,
-          userId: dto.userId,
+          userId: command.userId,
           role: ProjectRole.OWNER,
         },
         db,
@@ -95,7 +95,7 @@ export class ProjectOwnershipService {
 
       const updatedProject = await this.authProjects.findAuthorizedById(
         projectId,
-        dto.userId,
+        command.userId,
         actor.orgId,
         db,
       );
@@ -109,7 +109,7 @@ export class ProjectOwnershipService {
           event: 'project.owner.transferred',
           projectId,
           previousOwnerId: actor.id,
-          newOwnerId: dto.userId,
+          newOwnerId: command.userId,
         },
         'Project ownership transferred successfully',
       );

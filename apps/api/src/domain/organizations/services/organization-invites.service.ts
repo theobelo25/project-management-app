@@ -18,7 +18,7 @@ import type { UnitOfWork } from '@api/prisma/uow/unit-of-work.interface';
 import { OrganizationInvitesRepository } from '../repositories/organization-invites.repository';
 import { OrganizationMembershipsRepository } from '../repositories/organization-memberships.repository';
 import { OrganizationMembershipsService } from './organization-memberships.service';
-import { UsersRepository } from '../../users/repositories/users.repository';
+import { UsersService } from '../../users/users.service';
 
 import {
   generateInviteToken,
@@ -51,7 +51,7 @@ export class OrganizationInvitesService {
     private readonly uow: UnitOfWork,
 
     private readonly invitesRepository: OrganizationInvitesRepository,
-    private readonly usersRepository: UsersRepository,
+    private readonly usersService: UsersService,
     private readonly organizationMembershipsRepository: OrganizationMembershipsRepository,
     private readonly organizationMembershipsService: OrganizationMembershipsService,
     private readonly inviteUrlService: InviteUrlService,
@@ -130,7 +130,7 @@ export class OrganizationInvitesService {
         );
       }
 
-      const existingUser = await this.usersRepository.findByEmail(
+      const existingUser = await this.usersService.findByEmail(
         normalizedEmail,
         tx,
       );
@@ -300,7 +300,7 @@ export class OrganizationInvitesService {
     db?: Db,
   ): Promise<PendingInviteView[]> {
     return runInTx(this.uow, db, async (tx) => {
-      const user = await this.usersRepository.findById(userId, tx);
+      const user = await this.usersService.findById(userId, tx);
       if (!user) return [];
       const email = normalizeEmail(user.email);
       if (!email) return [];
@@ -320,7 +320,7 @@ export class OrganizationInvitesService {
     const tokenPrefix = inviteTokenPrefix(trimmed);
 
     return runInTx(this.uow, db, async (tx) => {
-      const user = await this.usersRepository.findById(userId, tx);
+      const user = await this.usersService.findById(userId, tx);
       if (!user) {
         throw new BadRequestException(OrganizationErrorMessages.USER_NOT_FOUND);
       }
@@ -355,7 +355,7 @@ export class OrganizationInvitesService {
     db?: Db,
   ): Promise<void> {
     return runInTx(this.uow, db, async (tx) => {
-      const user = await this.usersRepository.findById(userId, tx);
+      const user = await this.usersService.findById(userId, tx);
       if (!user) {
         throw new BadRequestException(OrganizationErrorMessages.USER_NOT_FOUND);
       }
@@ -385,7 +385,7 @@ export class OrganizationInvitesService {
     db?: Db,
   ): Promise<void> {
     return runInTx(this.uow, db, async (tx) => {
-      const user = await this.usersRepository.findById(userId, tx);
+      const user = await this.usersService.findById(userId, tx);
       if (!user) {
         throw new BadRequestException(OrganizationErrorMessages.USER_NOT_FOUND);
       }
@@ -478,7 +478,7 @@ export class OrganizationInvitesService {
       db,
     );
 
-    await this.usersRepository.updateOrganization(
+    await this.usersService.updateOrganization(
       userId,
       invite.organizationId,
       db,

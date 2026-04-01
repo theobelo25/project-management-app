@@ -12,6 +12,6 @@ import { PrismaModule } from '@api/prisma';
     UsersService,
     { provide: UsersRepository, useClass: PrismaUsersRepository },
   ],
-  exports: [UsersService, UsersRepository],
+  exports: [UsersService],
 })
 export class UsersModule {}

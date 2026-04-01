@@ -11,7 +11,7 @@ import { PinoLogger } from 'nestjs-pino';
 
 import { OrganizationsRepository } from '../repositories/organizations.repository';
 import { OrganizationMembershipsRepository } from '../repositories/organization-memberships.repository';
-import { UsersRepository } from '../../users/repositories/users.repository';
+import { UsersService } from '../../users/users.service';
 
 import { OrganizationErrorMessages } from '../constants/error-messages';
 import { OWNER_ROLE } from '../constants/organization-roles';
@@ -24,7 +24,7 @@ export class OrganizationsDomainService {
 
     private readonly organizationsRepository: OrganizationsRepository,
     private readonly organizationMembershipsRepository: OrganizationMembershipsRepository,
-    private readonly usersRepository: UsersRepository,
+    private readonly usersService: UsersService,
     private readonly logger: PinoLogger,
   ) {
     this.logger.setContext(OrganizationsDomainService.name);
@@ -51,7 +51,7 @@ export class OrganizationsDomainService {
         db,
       );
 
-      await this.usersRepository.updateUserOrganizationIds(
+      await this.usersService.updateUserOrganizationIds(
         userId,
         {
           activeOrganizationId: organization.id,
@@ -78,7 +78,7 @@ export class OrganizationsDomainService {
     organizationId: string,
   ): Promise<void> {
     return this.uow.transaction(async (db) => {
-      const user = await this.usersRepository.findUserOrganizationIds(
+      const user = await this.usersService.findUserOrganizationIds(
         userId,
         db,
       );
@@ -139,7 +139,7 @@ export class OrganizationsDomainService {
           updateData.defaultOrganizationId = fallbackOrganizationId;
         }
 
-        await this.usersRepository.updateUserOrganizationIds(
+        await this.usersService.updateUserOrganizationIds(
           userId,
           updateData,
           db,
@@ -187,7 +187,7 @@ export class OrganizationsDomainService {
       }
 
       const activeUsers =
-        await this.usersRepository.getUsersWithActiveOrganization(
+        await this.usersService.getUsersWithActiveOrganization(
           organizationId,
           db,
         );
@@ -232,7 +232,7 @@ export class OrganizationsDomainService {
         };
       });
 
-      await this.usersRepository.updateUsersOrganizationIds(updates, db);
+      await this.usersService.updateUsersOrganizationIds(updates, db);
       await this.organizationsRepository.delete(organizationId, db);
 
       this.logger.info(

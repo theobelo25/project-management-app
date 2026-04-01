@@ -53,6 +53,10 @@ export class UsersService {
     return this.usersRepository.findById(id, db);
   }
 
+  async findByEmail(email: string, db?: Db): Promise<UserView | null> {
+    return this.usersRepository.findByEmail(email, db);
+  }
+
   async requireById(id: string, db?: Db): Promise<UserView> {
     const user = await this.usersRepository.findById(id, db);
     if (!user) throw new NotFoundException('User not found');
@@ -87,5 +91,50 @@ export class UsersService {
 
   async getAllUsers(db?: Db): Promise<UserView[]> {
     return this.usersRepository.getAllUsers(db);
+  }
+
+  async findUserOrganizationIds(
+    userId: string,
+    db?: Db,
+  ): Promise<{
+    id: string;
+    activeOrganizationId: string;
+    defaultOrganizationId: string | null;
+  } | null> {
+    return this.usersRepository.findUserOrganizationIds(userId, db);
+  }
+
+  async getUsersWithActiveOrganization(
+    organizationId: string,
+    db?: Db,
+  ): Promise<Array<{ id: string; defaultOrganizationId: string | null }>> {
+    return this.usersRepository.getUsersWithActiveOrganization(organizationId, db);
+  }
+
+  async updateOrganization(
+    userId: string,
+    organizationId: string,
+    db?: Db,
+  ): Promise<void> {
+    return this.usersRepository.updateOrganization(userId, organizationId, db);
+  }
+
+  async updateUserOrganizationIds(
+    userId: string,
+    data: { activeOrganizationId: string; defaultOrganizationId?: string },
+    db?: Db,
+  ): Promise<void> {
+    return this.usersRepository.updateUserOrganizationIds(userId, data, db);
+  }
+
+  async updateUsersOrganizationIds(
+    updates: Array<{
+      userId: string;
+      activeOrganizationId: string;
+      defaultOrganizationId?: string;
+    }>,
+    db?: Db,
+  ): Promise<void> {
+    return this.usersRepository.updateUsersOrganizationIds(updates, db);
   }
 }

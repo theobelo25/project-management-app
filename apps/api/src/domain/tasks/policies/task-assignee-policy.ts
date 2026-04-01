@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { AuthUser } from '@repo/types';
-import { UsersRepository } from '../../users/repositories/users.repository';
 import { taskForbidden, taskNotFound } from '../errors/task-errors';
 import {
   PROJECT_MEMBER_REPOSITORY,
   type ProjectMemberRepository,
 } from '@api/domain/projects/repositories/projects.repository';
 import { Inject } from '@nestjs/common';
+import { UsersService } from '../../users/users.service';
 
 @Injectable()
 export class TaskAssigneePolicy {
   constructor(
-    private readonly usersRepository: UsersRepository,
+    private readonly usersService: UsersService,
     @Inject(PROJECT_MEMBER_REPOSITORY)
     private readonly projects: ProjectMemberRepository,
   ) {}
@@ -20,7 +20,7 @@ export class TaskAssigneePolicy {
     assigneeUserId: string,
     currentUser: AuthUser,
   ): Promise<void> {
-    const assignee = await this.usersRepository.findById(assigneeUserId);
+    const assignee = await this.usersService.findById(assigneeUserId);
 
     if (!assignee) {
       throw taskNotFound('USER_NOT_FOUND', { assigneeUserId });

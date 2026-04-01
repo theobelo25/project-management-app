@@ -21,7 +21,7 @@ import { AccessTokensService } from './accessTokens/access-tokens.service';
 import { RefreshTokensService } from './refreshTokens/refresh-tokens.service';
 import { Db } from '@api/prisma';
 import { toUserView } from '../users/mappers/user.mapper';
-import { UsersRepository } from '../users/repositories/users.repository';
+import { UsersService } from '../users/users.service';
 import { PinoLogger } from 'nestjs-pino';
 import {
   ORGANIZATION_WORKSPACE_BOOTSTRAP,
@@ -31,7 +31,7 @@ import {
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly usersRepository: UsersRepository,
+    private readonly usersService: UsersService,
     @Inject(HASHING_SERVICE) private readonly hashingService: HashingService,
     private readonly accessTokensService: AccessTokensService,
     private readonly refreshTokenService: RefreshTokensService,
@@ -78,7 +78,7 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<UserView> {
-    const user = await this.usersRepository.findPrivateUserByEmail(email);
+    const user = await this.usersService.findPrivateUserByEmail(email);
     if (!user) {
       this.logger.warn({ email }, 'Authentication failed: user not found');
       throw new UnauthorizedException('Credentials are not valid');
@@ -119,7 +119,7 @@ export class AuthService {
         tx,
       );
 
-      const user = await this.usersRepository.findById(userId, tx);
+      const user = await this.usersService.findById(userId, tx);
 
       if (!user) {
         this.logger.warn(
@@ -174,11 +174,11 @@ export class AuthService {
       passwordHash: hashedPassword,
     };
 
-    return this.usersRepository.create(createUserDto, tx);
+    return this.usersService.create(createUserDto, tx);
   }
 
   private async assertEmailAvailable(email: string, tx: Db): Promise<void> {
-    const existing = await this.usersRepository.findPrivateUserByEmail(
+    const existing = await this.usersService.findPrivateUserByEmail(
       email,
       tx,
     );

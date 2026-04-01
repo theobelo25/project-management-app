@@ -10,7 +10,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
-import { UsersRepository } from '../users/repositories/users.repository';
+import { UsersService } from '../users/users.service';
 import { ORGANIZATION_WORKSPACE_BOOTSTRAP } from '../organizations/organization-workspace-bootstrap.interface';
 
 describe('AuthService', () => {
@@ -132,7 +132,7 @@ describe('AuthService', () => {
       providers: [
         AuthService,
         {
-          provide: UsersRepository,
+          provide: UsersService,
           useValue: usersRepository,
         },
         {
