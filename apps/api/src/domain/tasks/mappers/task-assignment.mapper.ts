@@ -1,13 +1,13 @@
 import { TaskAssignee } from '@repo/database';
 import { TaskAssignmentView } from '@repo/types';
-import type { TaskAssigneeWithUserAndTaskInfo } from '../types/tasks.repository.types';
+import type { TaskAssignmentWithContextEntity } from '../domain/task.entity';
 
 /**
- * Maps persistence model → API view.
- * Accepts `TaskAssigneeWithUserAndTaskInfo` (what assign APIs return) or plain `TaskAssignee`.
+ * Maps domain assignment → API view.
+ * Accepts domain assignment entity or plain Prisma `TaskAssignee` (minimal fields).
  */
 export function toTaskAssignmentView(
-  assignment: TaskAssigneeWithUserAndTaskInfo | TaskAssignee,
+  assignment: TaskAssignmentWithContextEntity | TaskAssignee,
 ): TaskAssignmentView {
   return {
     taskId: assignment.taskId,
@@ -17,7 +17,7 @@ export function toTaskAssignmentView(
 }
 
 export function toTaskAssigneeViews(
-  assignees: (TaskAssigneeWithUserAndTaskInfo | TaskAssignee)[],
+  assignees: (TaskAssignmentWithContextEntity | TaskAssignee)[],
 ): TaskAssignmentView[] {
   return assignees.map(toTaskAssignmentView);
 }

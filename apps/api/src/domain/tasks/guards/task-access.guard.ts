@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { PinoLogger } from 'nestjs-pino';
 import type { Request } from 'express';
 import type { AuthUser } from '@repo/types';
 import { TaskAccessService } from '../policies/task-access.service';
@@ -52,7 +53,9 @@ export class TaskAccessGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly taskAccessService: TaskAccessService,
+    private readonly logger: PinoLogger,
   ) {
+    this.logger.setContext(TaskAccessGuard.name);
     this.handlers = {
       createInProject: async ({ user, request }) => {
         const projectId = parseRequiredProjectIdFromBody(request.body);
@@ -106,10 +109,27 @@ export class TaskAccessGuard implements CanActivate {
     );
 
     if (raw === undefined || raw === null) {
+      this.logger.warn(
+        {
+          event: 'task.access.guard.missing_metadata',
+          handler: context.getHandler().name,
+          className: context.getClass().name,
+        },
+        'TaskAccessGuard: route missing @RequireTaskAccess metadata (fail closed)',
+      );
       return false;
     }
 
     if (!isTaskAccessAction(raw)) {
+      this.logger.warn(
+        {
+          event: 'task.access.guard.invalid_action',
+          handler: context.getHandler().name,
+          className: context.getClass().name,
+          raw,
+        },
+        'TaskAccessGuard: invalid @RequireTaskAccess action (fail closed)',
+      );
       return false;
     }
 

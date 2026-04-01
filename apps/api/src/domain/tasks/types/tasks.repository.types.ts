@@ -8,6 +8,7 @@ import {
   User,
 } from '@repo/database';
 import { PaginationQuery, PaginationResult, ProjectRole } from '@repo/types';
+import type { TaskEntity } from '../domain/task.entity';
 
 export const taskWithAssigneesInclude = {
   assignees: { include: { user: true } },
@@ -21,7 +22,8 @@ export type TaskAssigneeWithUserAndTaskInfo = TaskAssigneeWithUser & {
   task: Pick<Task, 'title' | 'projectId'>;
 };
 
-export type TaskAssignmentResult = {
+/** Raw assign result from Prisma before mapping to `TaskAssignmentResultEntity`. */
+export type TaskAssignmentPersistenceResult = {
   assignment: TaskAssigneeWithUserAndTaskInfo;
   created: boolean;
 };
@@ -43,7 +45,8 @@ export type CreateTaskInput = {
   assigneeIds?: string[];
 };
 
-export type UpdateTaskInput = {
+/** Patch shape for Prisma `task.update` (persistence layer). */
+export type UpdateTaskRepositoryInput = {
   title?: string;
   description?: string | null;
   status?: TaskStatus;
@@ -64,7 +67,7 @@ export type FindTasksInput = {
   sort?: 'updated-desc' | 'created-desc' | 'title-asc' | 'status-asc';
 } & PaginationQuery;
 
-export type PaginatedTasksResult = PaginationResult<TaskWithAssignees>;
+export type PaginatedTasksResult = PaginationResult<TaskEntity>;
 
 export type TaskAccessContext = {
   id: string;

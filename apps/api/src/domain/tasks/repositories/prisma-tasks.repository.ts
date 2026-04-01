@@ -3,16 +3,21 @@ import { Prisma, PrismaClient, TaskStatus } from '@repo/database';
 import {
   CreateTaskInput,
   TaskWithAssignees,
-  UpdateTaskInput,
+  UpdateTaskRepositoryInput,
   FindTasksInput,
   PaginatedTasksResult,
-  TaskAssignmentResult,
+  TaskAssignmentPersistenceResult,
   taskWithAssigneesInclude,
   TaskAccessContext,
 } from '../types/tasks.repository.types';
 import { TasksRepository, TasksRepositoryTx } from './tasks.repository';
 import { Inject, Injectable } from '@nestjs/common';
 import { buildPaginationResult, getPaginationParams } from '@api/common';
+import {
+  mapTaskAssignmentPersistenceToEntity,
+  mapTaskListToEntities,
+  mapTaskWithAssigneesToEntity,
+} from '../mappers/persistence-to-domain.mapper';
 
 const taskAssigneeForAssignmentInclude = {
   user: true,
@@ -86,7 +91,9 @@ function buildTaskOrderBy(
   return [{ updatedAt: 'desc' }, { id: 'asc' }];
 }
 
-function buildUpdateTaskPatch(data: UpdateTaskInput): Prisma.TaskUpdateInput {
+function buildUpdateTaskPatch(
+  data: UpdateTaskRepositoryInput,
+): Prisma.TaskUpdateInput {
   return {
     ...(data.title !== undefined ? { title: data.title } : {}),
     ...(data.description !== undefined
@@ -148,7 +155,7 @@ function createTask(
 function updateTask(
   prisma: PrismaLike,
   taskId: string,
-  data: UpdateTaskInput,
+  data: UpdateTaskRepositoryInput,
 ): Promise<TaskWithAssignees> {
   return prisma.task.update({
     where: { id: taskId },
@@ -189,7 +196,7 @@ async function assignUserImpl(
   prisma: PrismaLike,
   taskId: string,
   userId: string,
-): Promise<TaskAssignmentResult> {
+): Promise<TaskAssignmentPersistenceResult> {
   try {
     const created = await prisma.taskAssignee.create({
       data: { taskId, userId },
@@ -287,16 +294,20 @@ export class PrismaTasksRepository extends TasksRepository {
     super();
   }
 
-  create(data: CreateTaskInput): Promise<TaskWithAssignees> {
-    return createTask(this.prisma, data);
+  create(data: CreateTaskInput) {
+    return createTask(this.prisma, data).then(mapTaskWithAssigneesToEntity);
   }
 
-  update(taskId: string, data: UpdateTaskInput): Promise<TaskWithAssignees> {
-    return updateTask(this.prisma, taskId, data);
+  update(taskId: string, data: UpdateTaskRepositoryInput) {
+    return updateTask(this.prisma, taskId, data).then(
+      mapTaskWithAssigneesToEntity,
+    );
   }
 
-  findByIdOrThrow(taskId: string): Promise<TaskWithAssignees> {
-    return findTaskByIdOrThrow(this.prisma, taskId);
+  findByIdOrThrow(taskId: string) {
+    return findTaskByIdOrThrow(this.prisma, taskId).then(
+      mapTaskWithAssigneesToEntity,
+    );
   }
 
   async findMany(input: FindTasksInput): Promise<PaginatedTasksResult> {
@@ -305,7 +316,7 @@ export class PrismaTasksRepository extends TasksRepository {
     const where = buildTaskWhere(input);
     const orderBy = buildTaskOrderBy(input.sort);
 
-    const [data, total] = await this.prisma.$transaction([
+    const [rows, total] = await this.prisma.$transaction([
       this.prisma.task.findMany({
         where,
         include: taskWithAssigneesInclude,
@@ -316,7 +327,10 @@ export class PrismaTasksRepository extends TasksRepository {
       this.prisma.task.count({ where }),
     ]);
 
-    return buildPaginationResult(data, total, { page, limit });
+    return buildPaginationResult(mapTaskListToEntities(rows), total, {
+      page,
+      limit,
+    });
   }
 
   findByIdWithAccessContext(
@@ -330,15 +344,14 @@ export class PrismaTasksRepository extends TasksRepository {
     await deleteTask(this.prisma, taskId);
   }
 
-  assignUser(taskId: string, userId: string): Promise<TaskAssignmentResult> {
-    return this.prisma.$transaction(
-      (tx) => assignUserImpl(tx, taskId, userId),
-      {
+  assignUser(taskId: string, userId: string) {
+    return this.prisma
+      .$transaction((tx) => assignUserImpl(tx, taskId, userId), {
         isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
         maxWait: 5_000,
         timeout: 10_000,
-      },
-    );
+      })
+      .then(mapTaskAssignmentPersistenceToEntity);
   }
 
   unassignUser(taskId: string, userId: string): Promise<number> {
@@ -359,12 +372,10 @@ export class PrismaTasksRepository extends TasksRepository {
     return getTaskCountsByProjectIdsImpl(this.prisma, projectIds, orgId);
   }
 
-  findRecentByProjectId(
-    projectId: string,
-    limit: number,
-    orgId: string,
-  ): Promise<TaskWithAssignees[]> {
-    return findRecentByProjectIdImpl(this.prisma, projectId, limit, orgId);
+  findRecentByProjectId(projectId: string, limit: number, orgId: string) {
+    return findRecentByProjectIdImpl(this.prisma, projectId, limit, orgId).then(
+      mapTaskListToEntities,
+    );
   }
 }
 
@@ -374,16 +385,20 @@ export class PrismaTasksRepositoryTx extends TasksRepositoryTx {
     super();
   }
 
-  create(data: CreateTaskInput): Promise<TaskWithAssignees> {
-    return createTask(this.prisma, data);
+  create(data: CreateTaskInput) {
+    return createTask(this.prisma, data).then(mapTaskWithAssigneesToEntity);
   }
 
-  update(taskId: string, data: UpdateTaskInput): Promise<TaskWithAssignees> {
-    return updateTask(this.prisma, taskId, data);
+  update(taskId: string, data: UpdateTaskRepositoryInput) {
+    return updateTask(this.prisma, taskId, data).then(
+      mapTaskWithAssigneesToEntity,
+    );
   }
 
-  findByIdOrThrow(taskId: string): Promise<TaskWithAssignees> {
-    return findTaskByIdOrThrow(this.prisma, taskId);
+  findByIdOrThrow(taskId: string) {
+    return findTaskByIdOrThrow(this.prisma, taskId).then(
+      mapTaskWithAssigneesToEntity,
+    );
   }
 
   async findMany(input: FindTasksInput): Promise<PaginatedTasksResult> {
@@ -392,7 +407,7 @@ export class PrismaTasksRepositoryTx extends TasksRepositoryTx {
     const where = buildTaskWhere(input);
     const orderBy = buildTaskOrderBy(input.sort);
 
-    const data = await this.prisma.task.findMany({
+    const rows = await this.prisma.task.findMany({
       where,
       include: taskWithAssigneesInclude,
       orderBy,
@@ -402,7 +417,10 @@ export class PrismaTasksRepositoryTx extends TasksRepositoryTx {
 
     const total = await this.prisma.task.count({ where });
 
-    return buildPaginationResult(data, total, { page, limit });
+    return buildPaginationResult(mapTaskListToEntities(rows), total, {
+      page,
+      limit,
+    });
   }
 
   findByIdWithAccessContext(
@@ -416,8 +434,10 @@ export class PrismaTasksRepositoryTx extends TasksRepositoryTx {
     await deleteTask(this.prisma, taskId);
   }
 
-  assignUser(taskId: string, userId: string): Promise<TaskAssignmentResult> {
-    return assignUserImpl(this.prisma, taskId, userId);
+  assignUser(taskId: string, userId: string) {
+    return assignUserImpl(this.prisma, taskId, userId).then(
+      mapTaskAssignmentPersistenceToEntity,
+    );
   }
 
   unassignUser(taskId: string, userId: string): Promise<number> {
@@ -431,12 +451,10 @@ export class PrismaTasksRepositoryTx extends TasksRepositoryTx {
     return getTaskCountsByProjectIdsImpl(this.prisma, projectIds, orgId);
   }
 
-  findRecentByProjectId(
-    projectId: string,
-    limit: number,
-    orgId: string,
-  ): Promise<TaskWithAssignees[]> {
-    return findRecentByProjectIdImpl(this.prisma, projectId, limit, orgId);
+  findRecentByProjectId(projectId: string, limit: number, orgId: string) {
+    return findRecentByProjectIdImpl(this.prisma, projectId, limit, orgId).then(
+      mapTaskListToEntities,
+    );
   }
 }
 

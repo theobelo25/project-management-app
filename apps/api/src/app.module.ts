@@ -20,6 +20,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from '@api/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ZodSerializerInterceptor } from 'nestjs-zod';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -39,6 +40,9 @@ import { ZodSerializerInterceptor } from 'nestjs-zod';
     UsersModule,
     AuthModule,
     LoggerModule,
+    EventEmitterModule.forRoot({
+      global: true,
+    }),
     ProjectsModule,
     TasksModule,
     OrganizationsModule,

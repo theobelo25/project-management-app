@@ -1,5 +1,10 @@
 import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
+import {
+  toCreateTaskCommand,
+  toFindTasksQueryCommand,
+  toUpdateTaskCommand,
+} from './application/task-http.mapper';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { FindTasksQueryDto } from './dto/find-tasks-query.dto';
@@ -62,7 +67,10 @@ describe('TasksController', () => {
 
       const result = await controller.create(user, body);
 
-      expect(tasksService.create).toHaveBeenCalledWith(user, body);
+      expect(tasksService.create).toHaveBeenCalledWith(
+        user,
+        toCreateTaskCommand(body),
+      );
       expect(result).toEqual(taskView);
     });
   });
@@ -125,7 +133,10 @@ describe('TasksController', () => {
 
       const result = await controller.findMany(user, query);
 
-      expect(tasksService.findMany).toHaveBeenCalledWith(user, query);
+      expect(tasksService.findMany).toHaveBeenCalledWith(
+        user,
+        toFindTasksQueryCommand(query),
+      );
       expect(result).toEqual(paginatedResult);
     });
   });
@@ -158,7 +169,7 @@ describe('TasksController', () => {
       expect(tasksService.update).toHaveBeenCalledWith(
         params.taskId,
         user,
-        body,
+        toUpdateTaskCommand(body),
       );
       expect(result).toEqual(taskView);
     });

@@ -13,6 +13,11 @@ import {
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { TasksService } from './tasks.service';
+import {
+  toCreateTaskCommand,
+  toFindTasksQueryCommand,
+  toUpdateTaskCommand,
+} from './application/task-http.mapper';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { CurrentUser } from '@api/common';
 import {
@@ -63,7 +68,7 @@ export class TasksController {
     @CurrentUser() user: AuthUser,
     @Body() body: CreateTaskDto,
   ): Promise<TaskView> {
-    return this.tasksService.create(user, body);
+    return this.tasksService.create(user, toCreateTaskCommand(body));
   }
 
   /**
@@ -76,7 +81,7 @@ export class TasksController {
     @CurrentUser() user: AuthUser,
     @Query() query: FindTasksQueryDto,
   ): Promise<PaginationResult<TaskView>> {
-    return this.tasksService.findMany(user, query);
+    return this.tasksService.findMany(user, toFindTasksQueryCommand(query));
   }
 
   /**
@@ -101,7 +106,11 @@ export class TasksController {
     @Param() params: TaskIdParamDto,
     @Body() body: UpdateTaskDto,
   ): Promise<TaskView> {
-    return this.tasksService.update(params.taskId, user, body);
+    return this.tasksService.update(
+      params.taskId,
+      user,
+      toUpdateTaskCommand(body),
+    );
   }
 
   /**

@@ -19,9 +19,27 @@ import { TaskAccessGuard } from './guards/task-access.guard';
 import { TaskAccessContextLoader } from './policies/task-access-context.loader';
 import { ProjectTaskInfoProviderAdapter } from './adapters/project-task-info-provider.adapter';
 import { PROJECT_TASK_INFO_PROVIDER } from '../projects/types/project-task-info.types';
+import { TaskDomainEventPublisher } from './events/task-domain-event.publisher';
+import { TaskCreatedNotificationsHandler } from './handlers/task-created-notifications.handler';
+import { TaskCreatedRealtimeHandler } from './handlers/task-created-realtime.handler';
+import { TaskUpdatedNotificationsHandler } from './handlers/task-updated-notifications.handler';
+import { TaskUpdatedRealtimeHandler } from './handlers/task-updated-realtime.handler';
+import { TaskDeletedRealtimeHandler } from './handlers/task-deleted-realtime.handler';
+import { TaskAssigneeAddedNotificationsHandler } from './handlers/task-assignee-added-notifications.handler';
+import { TaskAssigneeAddedRealtimeHandler } from './handlers/task-assignee-added-realtime.handler';
+import { TaskAssigneeRemovedRealtimeHandler } from './handlers/task-assignee-removed-realtime.handler';
+import { LoggerModule } from '../../logger/logger.module';
+import { CreateTaskUseCase } from './use-cases/create-task.use-case';
+import { UpdateTaskUseCase } from './use-cases/update-task.use-case';
+import { GetTaskByIdUseCase } from './use-cases/get-task-by-id.use-case';
+import { FindTasksUseCase } from './use-cases/find-tasks.use-case';
+import { DeleteTaskUseCase } from './use-cases/delete-task.use-case';
+import { AssignTaskUserUseCase } from './use-cases/assign-task-user.use-case';
+import { UnassignTaskUserUseCase } from './use-cases/unassign-task-user.use-case';
 
 @Module({
   imports: [
+    LoggerModule,
     ProjectsPersistenceModule,
     UsersModule,
     NotificationsModule,
@@ -30,6 +48,22 @@ import { PROJECT_TASK_INFO_PROVIDER } from '../projects/types/project-task-info.
   controllers: [TasksController],
   providers: [
     TasksService,
+    CreateTaskUseCase,
+    UpdateTaskUseCase,
+    GetTaskByIdUseCase,
+    FindTasksUseCase,
+    DeleteTaskUseCase,
+    AssignTaskUserUseCase,
+    UnassignTaskUserUseCase,
+    TaskDomainEventPublisher,
+    TaskCreatedNotificationsHandler,
+    TaskCreatedRealtimeHandler,
+    TaskUpdatedNotificationsHandler,
+    TaskUpdatedRealtimeHandler,
+    TaskDeletedRealtimeHandler,
+    TaskAssigneeAddedNotificationsHandler,
+    TaskAssigneeAddedRealtimeHandler,
+    TaskAssigneeRemovedRealtimeHandler,
     TaskAccessContextLoader,
     TaskAccessService,
     { provide: TaskAccessRules, useValue: new TaskAccessRules() },

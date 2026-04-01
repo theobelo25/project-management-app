@@ -64,6 +64,10 @@ project-management-app
 | `@repo/database` | Prisma schema, migrations, client export    |
 | `@repo/types`    | Shared validation and types for API and web |
 
+### Backend architecture
+
+The Nest API uses **feature folders** under `apps/api/src/domain/`. The **tasks** module documents a layered style (use cases, repository port, domain events, access policies). For a short overview and file map, see **[`apps/api/README.md` — API architecture](apps/api/README.md#api-architecture-reference-domain)**.
+
 ---
 
 ## Prerequisites
