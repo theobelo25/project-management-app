@@ -16,7 +16,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ME_QUERY_KEY } from '@web/lib/api/queries';
 import { toast } from 'sonner';
-import { ROUTES } from '@web/lib/routes';
+import { sanitizeCallbackUrl } from '@web/lib/safe-callback-url';
 
 type SignInFormProps = {
   isLoading?: boolean;
@@ -27,7 +27,7 @@ export default function SignInForm({ isLoading = false }: SignInFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') ?? ROUTES.projects;
+  const callbackUrl = sanitizeCallbackUrl(searchParams.get('callbackUrl'));
 
   const signinMutation = useMutation({
     mutationFn: signin,

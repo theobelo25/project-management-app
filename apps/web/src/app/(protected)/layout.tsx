@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { AppFooter, AppHeader } from '@web/components/layout';
+import { AuthenticatedAppSetups } from '@web/components/providers/authenticated-app-setups';
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -13,6 +14,7 @@ export default function ProtectedLayout({
 }>) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      <AuthenticatedAppSetups />
       <AppHeader />
       <main
         id="main-content"
