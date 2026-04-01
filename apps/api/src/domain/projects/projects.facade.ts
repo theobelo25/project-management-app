@@ -2,26 +2,27 @@ import { Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import {
   AuthUser,
-  AddProjectMemberDto,
-  CreateProjectDto,
-  GetProjectsQueryDto,
   PaginatedProjectsListView,
   ProjectDetailView,
   ProjectMembersView,
   ProjectMemberView,
   ProjectView,
-  TransferProjectOwnershipDto,
-  UpdateProjectMemberRoleDto,
-  UpdateProjectDto,
 } from '@repo/types';
 import { ProjectWithRole } from './types/projects.repository.types';
-
 import { ProjectsService } from './projects.service';
 import { ProjectMembersService } from './services/project-members.service';
 import { ProjectOwnershipService } from './services/project-ownership.service';
+import type {
+  AddProjectMemberCommand,
+  CreateProjectCommand,
+  GetProjectsQueryCommand,
+  TransferProjectOwnershipCommand,
+  UpdateProjectCommand,
+  UpdateProjectMemberRoleCommand,
+} from './application/projects-application.types';
 
 @Injectable()
-export class ProjectsFacade {
+export class ProjectsApplicationService {
   constructor(
     private readonly projectsService: ProjectsService,
     private readonly projectMembersService: ProjectMembersService,
@@ -29,16 +30,19 @@ export class ProjectsFacade {
     // Optional: only if you want façade-level logging/metrics
     private readonly logger: PinoLogger,
   ) {
-    this.logger.setContext(ProjectsFacade.name);
+    this.logger.setContext(ProjectsApplicationService.name);
   }
 
-  async create(user: AuthUser, dto: CreateProjectDto): Promise<ProjectView> {
-    return this.projectsService.create(user, dto);
+  async create(
+    user: AuthUser,
+    command: CreateProjectCommand,
+  ): Promise<ProjectView> {
+    return this.projectsService.create(user, command);
   }
 
   async findManyForUser(
     user: AuthUser,
-    query: GetProjectsQueryDto,
+    query: GetProjectsQueryCommand,
   ): Promise<PaginatedProjectsListView> {
     return this.projectsService.findManyForUser(user, query);
   }
@@ -53,10 +57,15 @@ export class ProjectsFacade {
   async update(
     projectId: string,
     user: AuthUser,
-    dto: UpdateProjectDto,
+    command: UpdateProjectCommand,
     authorizedProject?: ProjectWithRole,
   ): Promise<ProjectView> {
-    return this.projectsService.update(projectId, user, dto, authorizedProject);
+    return this.projectsService.update(
+      projectId,
+      user,
+      command,
+      authorizedProject,
+    );
   }
 
   async archive(
@@ -90,13 +99,13 @@ export class ProjectsFacade {
   async addMember(
     projectId: string,
     actor: AuthUser,
-    dto: AddProjectMemberDto,
+    command: AddProjectMemberCommand,
     authorizedProject?: ProjectWithRole,
   ): Promise<ProjectMemberView> {
     return this.projectMembersService.addMember(
       projectId,
       actor,
-      dto,
+      command,
       authorizedProject,
     );
   }
@@ -105,14 +114,14 @@ export class ProjectsFacade {
     projectId: string,
     actor: AuthUser,
     memberUserId: string,
-    dto: UpdateProjectMemberRoleDto,
+    command: UpdateProjectMemberRoleCommand,
     authorizedProject?: ProjectWithRole,
   ): Promise<ProjectMemberView> {
     return this.projectMembersService.updateMemberRole(
       projectId,
       actor,
       memberUserId,
-      dto,
+      command,
       authorizedProject,
     );
   }
@@ -134,13 +143,13 @@ export class ProjectsFacade {
   async transferOwnership(
     projectId: string,
     actor: AuthUser,
-    dto: TransferProjectOwnershipDto,
+    command: TransferProjectOwnershipCommand,
     authorizedProject?: ProjectWithRole,
   ): Promise<ProjectView> {
     return this.projectOwnershipService.transferOwnership(
       projectId,
       actor,
-      dto,
+      command,
       authorizedProject,
     );
   }

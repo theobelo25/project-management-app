@@ -9,7 +9,6 @@ import {
   PaginatedTasksResult,
   TaskAccessContext,
 } from '../types/tasks.repository.types';
-import type { Prisma } from '@repo/database';
 
 /**
  * Shared contract for root repository and transactional repository implementations.
@@ -126,6 +125,4 @@ export abstract class TasksRepositoryTx implements ITasksRepositoryCore {
   ): Promise<TaskEntity[]>;
 }
 
-export type TasksRepositoryTxFactory = (
-  db: Prisma.TransactionClient,
-) => TasksRepositoryTx;
+export type TasksRepositoryTxFactory = (db: unknown) => TasksRepositoryTx;

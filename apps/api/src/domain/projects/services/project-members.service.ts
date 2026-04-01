@@ -9,7 +9,6 @@ import {
   toProjectMembersView,
   toProjectMemberView,
 } from '../mappers/project-member.mapper';
-import { AddProjectMemberDto, UpdateProjectMemberRoleDto } from '../dto';
 import { ProjectMembersView, ProjectMemberView, AuthUser } from '@repo/types';
 import { ProjectAccessService } from '../policies/project-access.service';
 import {
@@ -22,6 +21,10 @@ import { ProjectWithRole } from '../types/projects.repository.types';
 import { NotificationsService } from '@api/domain/notifications/notifications.service';
 import { RealtimePublisher } from '@api/domain/realtime/realtime.publisher';
 import { REALTIME_EVENT } from '@api/domain/realtime/realtime.events';
+import type {
+  AddProjectMemberCommand,
+  UpdateProjectMemberRoleCommand,
+} from '../application/projects-application.types';
 
 @Injectable()
 export class ProjectMembersService {
@@ -79,7 +82,7 @@ export class ProjectMembersService {
   async addMember(
     projectId: string,
     actor: AuthUser,
-    dto: AddProjectMemberDto,
+    command: AddProjectMemberCommand,
     authorizedProject?: ProjectWithRole,
   ): Promise<ProjectMemberView> {
     await this.requireOwnerAndNotArchivedForMembershipChange(
@@ -88,11 +91,11 @@ export class ProjectMembersService {
       authorizedProject,
     );
 
-    if (dto.userId === actor.id) {
+    if (command.userId === actor.id) {
       throw new ConflictException('Owner is already a member of this project');
     }
 
-    const targetUser = await this.usersService.findById(dto.userId);
+    const targetUser = await this.usersService.findById(command.userId);
     if (!targetUser) throw new NotFoundException('User not found');
 
     if (targetUser.orgId !== actor.orgId) {
@@ -103,7 +106,7 @@ export class ProjectMembersService {
 
     const existingMember = await this.projects.findMembership(
       projectId,
-      dto.userId,
+      command.userId,
     );
 
     if (existingMember) {
@@ -112,8 +115,8 @@ export class ProjectMembersService {
 
     const member = await this.projects.addMember({
       projectId,
-      userId: dto.userId,
-      role: dto.role,
+      userId: command.userId,
+      role: command.role,
     });
 
     this.logger.info(
@@ -121,8 +124,8 @@ export class ProjectMembersService {
         event: 'project.member.added',
         projectId,
         actorUserId: actor.id,
-        addedUserId: dto.userId,
-        role: dto.role,
+        addedUserId: command.userId,
+        role: command.role,
       },
       'Project member added',
     );
@@ -132,24 +135,24 @@ export class ProjectMembersService {
       REALTIME_EVENT.projectMemberAdded,
       {
         projectId,
-        userId: dto.userId,
+        userId: command.userId,
         actorUserId: actor.id,
-        role: dto.role,
+        role: command.role,
       },
     );
     this.realtimePublisher.toUser(
-      dto.userId,
+      command.userId,
       REALTIME_EVENT.projectMemberAdded,
       {
         projectId,
-        userId: dto.userId,
+        userId: command.userId,
         actorUserId: actor.id,
-        role: dto.role,
+        role: command.role,
       },
     );
 
     try {
-      await this.notificationsService.notifyProjectMemberAdded(dto.userId, {
+      await this.notificationsService.notifyProjectMemberAdded(command.userId, {
         projectId,
         addedById: actor.id,
       });
@@ -159,7 +162,7 @@ export class ProjectMembersService {
           event: 'project.member.added.notification_failed',
           projectId,
           actorUserId: actor.id,
-          addedUserId: dto.userId,
+          addedUserId: command.userId,
           error,
         },
         'Failed to notify newly added project member',
@@ -173,7 +176,7 @@ export class ProjectMembersService {
     projectId: string,
     actor: AuthUser,
     memberUserId: string,
-    dto: UpdateProjectMemberRoleDto,
+    command: UpdateProjectMemberRoleCommand,
     authorizedProject?: ProjectWithRole,
   ): Promise<ProjectMemberView> {
     await this.requireOwnerAndNotArchivedForMembershipChange(
@@ -200,7 +203,7 @@ export class ProjectMembersService {
     const member = await this.projects.updateMemberRole({
       projectId,
       userId: memberUserId,
-      role: dto.role,
+      role: command.role,
     });
 
     this.logger.info(
@@ -209,7 +212,7 @@ export class ProjectMembersService {
         projectId,
         actorUserId: actor.id,
         memberUserId,
-        newRole: dto.role,
+        newRole: command.role,
       },
       'Project member role updated',
     );
@@ -221,7 +224,7 @@ export class ProjectMembersService {
         projectId,
         userId: memberUserId,
         actorUserId: actor.id,
-        newRole: dto.role,
+        newRole: command.role,
       },
     );
     this.realtimePublisher.toUser(
@@ -231,7 +234,7 @@ export class ProjectMembersService {
         projectId,
         userId: memberUserId,
         actorUserId: actor.id,
-        newRole: dto.role,
+        newRole: command.role,
       },
     );
 
@@ -241,7 +244,7 @@ export class ProjectMembersService {
         {
           projectId,
           changedById: actor.id,
-          newRole: dto.role,
+          newRole: command.role,
         },
       );
     } catch (error) {
@@ -251,7 +254,7 @@ export class ProjectMembersService {
           projectId,
           actorUserId: actor.id,
           memberUserId,
-          newRole: dto.role,
+          newRole: command.role,
           error,
         },
         'Failed to notify project member role change',

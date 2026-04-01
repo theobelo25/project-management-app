@@ -10,7 +10,7 @@ import { UsersModule } from '../users/users.module';
 import { ProjectsCommandsService } from './services/projects-commands.service';
 import { ProjectsQueriesService } from './services/projects-queries.service';
 import { TasksModule } from '../tasks/tasks.module';
-import { ProjectsFacade } from './projects.facade';
+import { ProjectsApplicationService } from './projects.facade';
 import { ProjectsPersistenceModule } from './projects-persistence.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 
@@ -31,7 +31,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     ProjectOwnershipService,
     ProjectAccessService,
     ProjectRoleGuard,
-    ProjectsFacade,
+    ProjectsApplicationService,
   ],
   exports: [
     ProjectsPersistenceModule,

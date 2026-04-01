@@ -5,7 +5,6 @@ import {
 } from '../types/project-task-info.types';
 import {
   AuthUser,
-  GetProjectsQueryDto,
   PaginatedProjectsListView,
   ProjectDetailView,
   ProjectView,
@@ -21,6 +20,7 @@ import {
   toProjectView,
 } from '../mappers/project.mapper';
 import { ProjectWithRole } from '../types/projects.repository.types';
+import type { GetProjectsQueryCommand } from '../application/projects-application.types';
 
 @Injectable()
 export class ProjectsQueriesService {
@@ -34,7 +34,7 @@ export class ProjectsQueriesService {
 
   async findManyForUser(
     user: AuthUser,
-    query: GetProjectsQueryDto,
+    query: GetProjectsQueryCommand,
   ): Promise<PaginatedProjectsListView> {
     const result = await this.projects.findManyForUser({
       orgId: user.orgId,

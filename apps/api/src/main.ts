@@ -4,7 +4,6 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
-import { AppExceptionFilter } from './common/filters/app-exception.filter';
 import { ZodValidationPipe } from './common';
 import { getCorsOptions } from './config';
 import { getAppOptions } from './config/app.options';
@@ -71,7 +70,6 @@ async function bootstrap() {
   }
 
   app.useGlobalPipes(new ZodValidationPipe());
-  app.useGlobalFilters(app.get(AppExceptionFilter));
 
   await app.listen(appOpts.port, appOpts.host);
 }

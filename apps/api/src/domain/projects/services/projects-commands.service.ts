@@ -1,12 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { ProjectRole } from '@repo/database';
-import {
-  AuthUser,
-  CreateProjectDto,
-  ProjectView,
-  UpdateProjectDto,
-} from '@repo/types';
+import { AuthUser, ProjectView } from '@repo/types';
 import {
   PROJECT_COMMAND_REPOSITORY,
   type ProjectCommandRepository,
@@ -17,6 +12,10 @@ import {
   CreateProjectWithOwnerInput,
   ProjectWithRole,
 } from '../types/projects.repository.types';
+import type {
+  CreateProjectCommand,
+  UpdateProjectCommand,
+} from '../application/projects-application.types';
 
 @Injectable()
 export class ProjectsCommandsService {
@@ -29,12 +28,15 @@ export class ProjectsCommandsService {
     this.logger.setContext(ProjectsCommandsService.name);
   }
 
-  async create(user: AuthUser, dto: CreateProjectDto): Promise<ProjectView> {
+  async create(
+    user: AuthUser,
+    command: CreateProjectCommand,
+  ): Promise<ProjectView> {
     const input: CreateProjectWithOwnerInput = {
       orgId: user.orgId,
       ownerId: user.id,
-      name: dto.name,
-      description: dto.description,
+      name: command.name,
+      description: command.description,
     };
 
     const project = await this.projects.createWithOwner(input);
@@ -50,7 +52,7 @@ export class ProjectsCommandsService {
   async update(
     projectId: string,
     user: AuthUser,
-    dto: UpdateProjectDto,
+    command: UpdateProjectCommand,
     authorizedProject?: ProjectWithRole,
   ): Promise<ProjectView> {
     if (authorizedProject) {
@@ -74,9 +76,9 @@ export class ProjectsCommandsService {
       projectId,
       user.id,
       {
-        ...(dto.name !== undefined ? { name: dto.name } : {}),
-        ...(dto.description !== undefined
-          ? { description: dto.description }
+        ...(command.name !== undefined ? { name: command.name } : {}),
+        ...(command.description !== undefined
+          ? { description: command.description }
           : {}),
       },
     );

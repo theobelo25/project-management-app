@@ -1,4 +1,4 @@
-import type { TaskLabelColor, TaskPriority, TaskStatus } from '@repo/database';
+import type { TaskLabelColor, TaskPriority, TaskStatus } from '@repo/types';
 
 /**
  * Task aggregate in the domain layer — no Prisma model types.

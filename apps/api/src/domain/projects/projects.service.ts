@@ -2,15 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import {
   AuthUser,
-  CreateProjectDto,
-  GetProjectsQueryDto,
   PaginatedProjectsListView,
   ProjectDetailView,
   ProjectView,
-  UpdateProjectDto,
 } from '@repo/types';
 import { ProjectWithRole } from './types/projects.repository.types';
 import { ProjectsCommandsService, ProjectsQueriesService } from './services';
+import type {
+  CreateProjectCommand,
+  GetProjectsQueryCommand,
+  UpdateProjectCommand,
+} from './application/projects-application.types';
 
 @Injectable()
 export class ProjectsService {
@@ -22,13 +24,16 @@ export class ProjectsService {
     this.logger.setContext(ProjectsService.name);
   }
 
-  async create(user: AuthUser, dto: CreateProjectDto): Promise<ProjectView> {
-    return this.commands.create(user, dto);
+  async create(
+    user: AuthUser,
+    command: CreateProjectCommand,
+  ): Promise<ProjectView> {
+    return this.commands.create(user, command);
   }
 
   async findManyForUser(
     user: AuthUser,
-    query: GetProjectsQueryDto,
+    query: GetProjectsQueryCommand,
   ): Promise<PaginatedProjectsListView> {
     return this.queries.findManyForUser(user, query);
   }
@@ -44,10 +49,10 @@ export class ProjectsService {
   async update(
     projectId: string,
     user: AuthUser,
-    dto: UpdateProjectDto,
+    command: UpdateProjectCommand,
     authorizedProject?: ProjectWithRole,
   ): Promise<ProjectView> {
-    return this.commands.update(projectId, user, dto, authorizedProject);
+    return this.commands.update(projectId, user, command, authorizedProject);
   }
 
   async archive(

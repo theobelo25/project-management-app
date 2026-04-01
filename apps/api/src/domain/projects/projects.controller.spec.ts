@@ -1,19 +1,12 @@
 import { Test } from '@nestjs/testing';
 import { ProjectRole } from '@repo/database';
-import type {
-  AuthUser,
-  CreateProjectDto,
-  GetProjectsQueryDto,
-  ProjectDetailView,
-  ProjectView,
-  UpdateProjectDto,
-} from '@repo/types';
+import type { AuthUser, ProjectDetailView, ProjectView } from '@repo/types';
 
 import { ProjectsController } from './projects.controller';
 import type { ProjectIdParamDto } from './dto/project-id-param.dto';
 import type { ProjectMemberParamDto } from './dto/project-member-param.dto';
 import type { ProjectWithRole } from './types/projects.repository.types';
-import { ProjectsFacade } from './projects.facade';
+import { ProjectsApplicationService } from './projects.facade';
 import { ProjectRoleGuard } from './guards/project-role.guard';
 
 describe('ProjectsController', () => {
@@ -59,7 +52,7 @@ describe('ProjectsController', () => {
   beforeEach(async () => {
     const mod = await Test.createTestingModule({
       controllers: [ProjectsController],
-      providers: [{ provide: ProjectsFacade, useValue: facade }],
+      providers: [{ provide: ProjectsApplicationService, useValue: facade }],
     })
       .overrideGuard(ProjectRoleGuard)
       .useValue({ canActivate: () => true })
@@ -70,7 +63,7 @@ describe('ProjectsController', () => {
   });
 
   it('create + list + detail — thin wrappers', async () => {
-    const dto: CreateProjectDto = {
+    const dto = {
       name: 'Project Alpha',
       description: 'Test',
     };
@@ -84,7 +77,7 @@ describe('ProjectsController', () => {
       includeArchived: false,
       filter: 'all',
       sort: 'updated-desc',
-    } as GetProjectsQueryDto;
+    };
 
     const page = {
       items: [projectView],
@@ -102,7 +95,7 @@ describe('ProjectsController', () => {
   });
 
   it('patch flows forward ids + user (+ optional current project)', async () => {
-    const dto: UpdateProjectDto = { name: 'Updated' };
+    const dto = { name: 'Updated' };
     facade.update.mockResolvedValue(projectView);
     await controller.update(user, { id: 'project-1' }, dto);
     expect(facade.update).toHaveBeenCalledWith(
