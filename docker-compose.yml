@@ -1,0 +1,21 @@
+# Local PostgreSQL for development. From repo root:
+#   docker compose up -d postgres
+# Connection: postgresql://postgres:postgres@localhost:5432/project_management?schema=public
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    container_name: pma-postgres-dev
+    ports:
+      - '5432:5432'
+    volumes:
+      - pma_postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d project_management']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pma_postgres_dev_data:
