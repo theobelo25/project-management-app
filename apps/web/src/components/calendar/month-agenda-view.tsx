@@ -57,7 +57,11 @@ function AgendaDayRow({
           <p className="text-xs text-muted-foreground">No tasks due</p>
         ) : (
           tasks.map((task) => (
-            <CalendarTaskChip key={task.id} task={task} canEdit={canEditTasks} />
+            <CalendarTaskChip
+              key={task.id}
+              task={task}
+              canEdit={canEditTasks}
+            />
           ))
         )}
       </div>
