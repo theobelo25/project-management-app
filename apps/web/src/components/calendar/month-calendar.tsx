@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import { useMdUp } from '@web/lib/use-md-up';
 import {
   DndContext,
   DragOverlay,
@@ -16,6 +17,7 @@ import { CalendarDayCell } from './calendar-day-cell';
 import { CalendarMonthHeader } from './calendar-month-header';
 import { CalendarTaskChip } from './calendar-task-chip';
 import { CalendarWeekdayRow } from './calendar-weekday-row';
+import { MonthAgendaView } from './month-agenda-view';
 import type { CalendarDay, CalendarTask } from './types';
 
 type MonthCalendarProps = {
@@ -40,6 +42,7 @@ export function MonthCalendar({
   onDueDateChange,
 }: MonthCalendarProps) {
   const [activeTask, setActiveTask] = useState<CalendarTask | null>(null);
+  const mdUp = useMdUp();
 
   const validDates = useMemo(() => new Set(days.map((d) => d.date)), [days]);
 
@@ -86,18 +89,29 @@ export function MonthCalendar({
           onNext={onNextMonth}
         />
         <CardContent className="space-y-4">
-          <CalendarWeekdayRow />
-          <div className="grid grid-cols-7 gap-2">
-            {days.map((day) => (
-              <CalendarDayCell
-                key={day.date}
-                day={day}
-                tasks={getTasksForDate(day.date)}
-                isToday={day.date === today}
-                canEditTasks={canEditTasks}
-              />
-            ))}
-          </div>
+          {mdUp ? (
+            <>
+              <CalendarWeekdayRow />
+              <div className="grid grid-cols-7 gap-2">
+                {days.map((day) => (
+                  <CalendarDayCell
+                    key={day.date}
+                    day={day}
+                    tasks={getTasksForDate(day.date)}
+                    isToday={day.date === today}
+                    canEditTasks={canEditTasks}
+                  />
+                ))}
+              </div>
+            </>
+          ) : (
+            <MonthAgendaView
+              days={days}
+              getTasksForDate={getTasksForDate}
+              today={today}
+              canEditTasks={canEditTasks}
+            />
+          )}
         </CardContent>
       </Card>
 

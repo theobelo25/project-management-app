@@ -66,22 +66,25 @@ export function Board({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div
-        className="grid gap-4 flex-1"
-        style={{
-          gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`,
-        }}
-      >
-        {columns.map((column) => (
-          <BoardColumn
-            key={column.key}
-            projectId={projectId}
-            status={column.key}
-            title={column.title}
-            tasks={grouped[column.key] ?? []}
-            canEditTasks={canEditTasks}
-          />
-        ))}
+      <div className="min-w-0 w-full flex-1 overflow-x-auto overscroll-x-contain pb-2 touch-pan-x">
+        <div
+          className="grid min-h-0 gap-4"
+          style={{
+            gridTemplateColumns: `repeat(${columns.length}, minmax(280px, 1fr))`,
+            minWidth: '100%',
+          }}
+        >
+          {columns.map((column) => (
+            <BoardColumn
+              key={column.key}
+              projectId={projectId}
+              status={column.key}
+              title={column.title}
+              tasks={grouped[column.key] ?? []}
+              canEditTasks={canEditTasks}
+            />
+          ))}
+        </div>
       </div>
 
       <DragOverlay dropAnimation={null}>

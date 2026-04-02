@@ -14,6 +14,8 @@
     "db:migrate": "pnpm --filter database exec prisma migrate dev",
     "db:studio": "pnpm --filter database exec prisma studio",
     "db:generate": "pnpm --filter database exec prisma generate",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
     "web:test": "pnpm --filter web test",
     "web:test-unit": "pnpm --filter web test:unit",
     "web:test-integration": "pnpm --filter web test:integration",

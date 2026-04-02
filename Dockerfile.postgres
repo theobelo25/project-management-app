@@ -1,0 +1,8 @@
+# Local development PostgreSQL — use with docker-compose.yml (`docker compose up postgres`).
+FROM postgres:16-alpine
+
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=postgres
+ENV POSTGRES_DB=project_management
+
+EXPOSE 5432
